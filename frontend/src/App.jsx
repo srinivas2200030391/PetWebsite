@@ -1,35 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import 'react';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import Image from './image';
+import { CarouselEx } from './assets/Carsoule';
+import Intro from './pages/Hero';
+import Login from './pages/Login';
+import CustomButton from './assets/CustomButton';
+import Signup from './pages/Signup';
+import Navbar from './assets/Navbar';
+import { useState } from 'react';
+import Home from './pages/Home'
+
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const [ setIsAuthenticated] = useState(false);
+
+  const handleSignOut = () => {
+    setIsAuthenticated(false); 
+    navigate('/intro');
+  };
+
+  const isPublicPage = location.pathname === '/intro' || location.pathname === '/login'  || location.pathname === '/signup' || location.pathname === '/';
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      {isPublicPage ? (
+        <Routes>
+          <Route path="/" element={<Intro />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Routes>
+      ) : (
+        <div>
+          <Navbar onSignOut={handleSignOut} />
+          <Routes>
+          <Route path="/home" element={<Home />} />
+          <Route path="/images" element={<Image />} />
+        <Route path="/carousel" element={<CarouselEx />} />
+        <Route path="/custombuttom" element={<CustomButton />} />
+          </Routes>
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default function AppWrapper() {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+}
