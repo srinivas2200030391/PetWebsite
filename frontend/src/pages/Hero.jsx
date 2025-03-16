@@ -15,7 +15,11 @@ export default function Intro() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <div className="bg-white">
+    <div className="relative min-h-screen bg-cover bg-center bg-no-repeat before:absolute before:inset-0 before:bg-white/10 before:backdrop-blur-sm" 
+         style={{
+           backgroundImage: `url('https://img.freepik.com/premium-photo/large-group-cats-dogs-looking-camera-blue-background_191971-28557.jpg?w=2000')`,
+         }}>
+    <div className="relative z-10">
       <header className="absolute inset-x-0 top-0 z-50">
         <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
           <div className="flex lg:flex-1">
@@ -148,6 +152,7 @@ export default function Intro() {
           />
         </div>
       </div>
+    </div>
     </div>
   )
 }

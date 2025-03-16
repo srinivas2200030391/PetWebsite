@@ -12,8 +12,15 @@ import {
    
   export default function LoginCard() {
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <Card className="w-96">
+      <div 
+      className=" min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(155, 143, 143, 0.8), rgba(255, 255, 255, 0.8)), 
+        url('https://th.bing.com/th/id/OIP.nLlxitLDCgisRaAh44NfPgHaGX?w=220&h=189&c=7&r=0&o=5&dpr=2&pid=1.7')`,
+      }}
+    >
+      <div className="relative">
+        <Card className="w-96 shadow-xl">
         <CardHeader
           variant="gradient"
           color="gray"
@@ -50,6 +57,7 @@ import {
           </Typography>
         </CardFooter>
       </Card>
+    </div>
     </div>
     );
   }
