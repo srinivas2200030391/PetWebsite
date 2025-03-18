@@ -155,10 +155,6 @@ export default function Intro() {
         </div>
       </div>
     </div>
-<<<<<<< HEAD
     </div>
   )
-=======
-  );
->>>>>>> 447459b0130bcf81ce6d5aa137bc2dd0e363c775
 }

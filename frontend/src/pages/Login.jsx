@@ -1,9 +1,6 @@
-import React, { useState,useEffect } from "react";
-import { useNavigate,Link } from "react-router-dom";
-import axios from "axios";
-import { useAuthStore } from "../store/store";
+import React from "react";
+import { Link } from "react-router-dom";
 import {
-<<<<<<< HEAD
     Card,
     CardHeader,
     CardBody,
@@ -13,9 +10,43 @@ import {
     Checkbox,
     Button,
   } from "@material-tailwind/react";
-  import { Link } from "react-router-dom";
+  import { useNavigate } from "react-router-dom"; 
+  import { useAuthStore } from "../store/store"; 
    
   export default function LoginCard() {
+    const navigate = useNavigate(); 
+    const login = useAuthStore((state) => state.login); 
+    const [error] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
+    const [formData, setFormData] = React.useState({
+      email: "",
+      password: "",
+      rememberMe: false,
+    });
+
+    const handleInputChange = (event) => {
+      const { name, value, type, checked } = event.target;
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    };
+
+    const handleSubmit = async (event) => {
+      event.preventDefault();
+      setLoading(true);
+      try {
+        await login(formData.email, formData.password);
+        navigate('/home'); 
+      } catch (error) {
+        console.error('Login failed:', error);
+      } finally {
+        setLoading(false);
+      }
+       console.log("Form submitted");
+      setTimeout(() => setLoading(false), 2000); 
+      console.log("Form submitted");
+    };
     return (
       <div 
       className=" min-h-screen bg-cover bg-center bg-no-repeat"
@@ -24,90 +55,8 @@ import {
         url('https://th.bing.com/th/id/OIP.nLlxitLDCgisRaAh44NfPgHaGX?w=220&h=189&c=7&r=0&o=5&dpr=2&pid=1.7')`,
       }}
     >
-      <div className="relative">
+      <div className="flex justify-center items-center h-screen">
         <Card className="w-96 shadow-xl">
-=======
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Typography,
-  Input,
-  Checkbox,
-  Button,
-} from "@material-tailwind/react";
-
-const Login = () => {
-  const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuthStore();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/home");
-    }
-  }, [isAuthenticated, navigate]);
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      // Make API call to your backend
-      // const response = await axios.post("https://your-api-url/login", {
-      //   email: formData.email,
-      //   password: formData.password,
-      // });
-
-      // const userData = {
-      //   user: response.data.user,
-      //   token: response.data.token,
-      //   isAuthenticated: true,
-      // };
-      const userData = {
-        user: formData,
-        token: "AABC",
-        isAuthenticated: true,
-      };
-
-      // Store user data in local storage
-      localStorage.setItem("authData", JSON.stringify(userData));
-
-      // Update Zustand store
-      login(userData);
-
-      // Navigate to home page after successful login
-      navigate("/home");
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Login failed. Please check your credentials and try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <Card className="w-96">
->>>>>>> 447459b0130bcf81ce6d5aa137bc2dd0e363c775
         <CardHeader
           variant="gradient"
           color="gray"
@@ -151,6 +100,8 @@ const Login = () => {
           </CardBody>
           <CardFooter className="pt-0">
             <Button
+              as ={Link}
+              to="/home"
               variant="gradient"
               fullWidth
               type="submit"
@@ -172,13 +123,6 @@ const Login = () => {
         </form>
       </Card>
     </div>
-<<<<<<< HEAD
     </div>
     );
   }
-=======
-  );
-};
-
-export default Login;
->>>>>>> 447459b0130bcf81ce6d5aa137bc2dd0e363c775

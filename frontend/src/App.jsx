@@ -1,11 +1,10 @@
-import React from "react";
 import {
   BrowserRouter,
   Routes,
   Route,
-  useLocation,
   useNavigate,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import Image from "./image";
 import { CarouselEx } from "./assets/Carsoule";
@@ -17,16 +16,28 @@ import Navbar from "./assets/Navbar";
 import Home from "./pages/Home";
 import Footer from "./pages/Footer";
 import { useAuthStore } from "./store/store";
+import PropTypes from "prop-types";
+import Petshop from "./pages/Petshop";
+import Products from './pages/Products';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 function App() {
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation(); // Get current route
   const { logout, isAuthenticated } = useAuthStore();
 
   const handleSignOut = () => {
@@ -34,16 +45,22 @@ function App() {
     navigate("/intro");
   };
 
-  // Define public pages
-  const publicPaths = ["/intro", "/login", "/signup", "/"];
-
   return (
     <div className="min-h-screen">
       <Navbar onSignOut={handleSignOut} />
       <Routes>
-        {/* Redirect logged-in users away from public pages */}
-        {isAuthenticated && publicPaths.includes(location.pathname) ? (
-          <Route path="*" element={<Navigate to="/home" replace />} />
+        {isAuthenticated ? (
+          <>
+            {/* Protected Routes */}
+            <Route path="/home" element={<Home />} />
+            <Route path="/images" element={<Image />} />
+            <Route path="/carousel" element={<CarouselEx />} />
+            <Route path="/custombutton" element={<CustomButton />} />
+            <Route path="/Petshop" element={<Petshop />} />
+            <Route path="/products" element={<Products />} />
+            {/* Redirect authenticated users trying to access public routes */}
+            <Route path="*" element={<Navigate to="/home" replace />} />
+          </>
         ) : (
           <>
             {/* Public Routes */}
@@ -51,47 +68,13 @@ function App() {
             <Route path="/intro" element={<Intro />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-
-            {/* Protected Routes */}
-            <Route
-              path="/home"
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/images"
-              element={
-                <ProtectedRoute>
-                  <Image />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/carousel"
-              element={
-                <ProtectedRoute>
-                  <CarouselEx />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/custombutton"
-              element={
-                <ProtectedRoute>
-                  <CustomButton />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Default redirect for unknown routes */}
-            <Route path="*" element={<Navigate to="/home" replace />} />
+            {/* Redirect unauthenticated users trying to access protected routes */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </>
         )}
       </Routes>
-      <Footer />
+      {/* Hide footer if the route is '/' */}
+      {location.pathname !== "/" && <Footer />}
     </div>
   );
 }
