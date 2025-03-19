@@ -159,7 +159,7 @@ function NavList() {
     <List className="mt-4 mb-6 p-0 lg:mt-0 lg:mb-0 lg:flex-row lg:p-1">
       <Typography
         as="a"
-        href="#"
+        href="/home"
         variant="small"
         color="blue-gray"
         className="font-medium">
@@ -210,10 +210,10 @@ export default function NavbarWithMegaMenu() {
       <div className="flex items-center justify-between text-blue-gray-900">
         <Typography
           as="a"
-          href="#"
+          href="/home"
           variant="h6"
           className="mr-4 cursor-pointer py-1.5 lg:ml-2">
-          Material Tailwind
+          The Pet Shop
         </Typography>
         <div className="hidden lg:block">
           <NavList />

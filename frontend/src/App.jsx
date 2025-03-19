@@ -7,7 +7,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import Image from "./image";
-import { CarouselEx } from "./assets/Carsoule";
 import Intro from "./pages/Hero";
 import Login from "./pages/Login";
 import CustomButton from "./assets/CustomButton";
@@ -19,6 +18,7 @@ import { useAuthStore } from "./store/store";
 import PropTypes from "prop-types";
 import Petshop from "./pages/Petshop";
 import Products from './pages/Products';
+import Boarding from './pages/Boarding';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -54,10 +54,10 @@ function App() {
             {/* Protected Routes */}
             <Route path="/home" element={<Home />} />
             <Route path="/images" element={<Image />} />
-            <Route path="/carousel" element={<CarouselEx />} />
             <Route path="/custombutton" element={<CustomButton />} />
             <Route path="/Petshop" element={<Petshop />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/boarding" element={<Boarding />} />
             {/* Redirect authenticated users trying to access public routes */}
             <Route path="*" element={<Navigate to="/home" replace />} />
           </>

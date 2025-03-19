@@ -1,11 +1,23 @@
 import { Carousel } from "@material-tailwind/react";
 import {Link} from "react-router-dom";
+import { useEffect, useState } from "react";
 
-export function CarouselEx() {
+export default function CarouselEx() {
+  const [setActiveIndex] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveIndex((prevIndex) => (prevIndex + 1) % 3);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="h-screen"> {/* Parent container with full screen height */}
+    <div className="h-[50vh]"> {/* Changed from h-screen to h-[50vh] */}
       <Carousel
-        className="rounded-xl h-1/2 w-full" 
+         className="rounded-xl h-full w-full"
+         autoplay={true}
+         autoplayDelay={3000}
+         loop={true}
         navigation={({ setActiveIndex, activeIndex, length }) => (
           <div className="absolute bottom-4 left-2/4 z-50 flex -translate-x-2/4 gap-2">
             {new Array(length).fill("").map((_, i) => (
@@ -30,7 +42,7 @@ export function CarouselEx() {
           alt="image 2"
           className="h-full w-full object-cover"
         />
-        <Link to="/">
+        <Link to="">
         <img
           src="https://images.unsplash.com/photo-1518623489648-a173ef7824f3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2762&q=80"
           alt="image 3"

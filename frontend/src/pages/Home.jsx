@@ -1,9 +1,11 @@
 import {Card, CardHeader, CardFooter, Image, Button} from "@heroui/react";
 import { Link } from "react-router-dom";
-
+import Carsoule from "../assets/Carsoule";
 export default function Example() {
   return (
-    <div className="min-h-screen flex items-center justify-center py-12">
+    <div className="flex flex-col gap-10 py-16 px-10">
+      <Carsoule />
+    <div className="flex items-center justify-center">
     <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
       <Link to="/Petshop" className="col-span-12 sm:col-span-4 h-[300px]">
       <Card className="col-span-12 sm:col-span-4 h-[300px]">
@@ -20,6 +22,7 @@ export default function Example() {
         />
       </Card>
       </Link>
+      <Link to="/boarding" className="col-span-12 sm:col-span-4 h-[300px]">
       <Card className="col-span-12 sm:col-span-4 h-[300px]">
         <CardHeader className="absolute z-10 top-1 flex-col !items-start">
           <p className="text-tiny text-white/60 uppercase font-bold">Plant a tree</p>
@@ -33,6 +36,7 @@ export default function Example() {
           src="https://heroui.com/images/card-example-3.jpeg"
         />
       </Card>
+      </Link>
       <Card className="col-span-12 sm:col-span-4 h-[300px]">
         <CardHeader className="absolute z-10 top-1 flex-col !items-start">
           <p className="text-tiny text-white/60 uppercase font-bold">Supercharged</p>
@@ -98,6 +102,7 @@ export default function Example() {
           </Button>
         </CardFooter>
       </Card>
+    </div>
     </div>
     </div>
   );
