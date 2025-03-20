@@ -14,15 +14,17 @@ import Signup from "./pages/Signup";
 import Navbar from "./assets/Navbar";
 import Home from "./pages/Home";
 import Footer from "./pages/Footer";
-import { useAuthStore } from "./store/store";
+import { useStore } from "./store/store";
 import PropTypes from "prop-types";
 import Petshop from "./pages/Petshop";
-import Products from './pages/Products';
-import Boarding from './pages/Boarding';
+import Products from "./pages/Products";
+import Boarding from "./pages/Boarding";
+// Import removed: PetStore and Cart are now inside Home
+import { useState } from "react";
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useStore();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -38,7 +40,9 @@ ProtectedRoute.propTypes = {
 function App() {
   const navigate = useNavigate();
   const location = useLocation(); // Get current route
-  const { logout, isAuthenticated } = useAuthStore();
+  const { logout, isAuthenticated } = useStore();
+
+  // Cart count state removed as it's now in Home component
 
   const handleSignOut = () => {
     logout();
@@ -52,13 +56,13 @@ function App() {
         {isAuthenticated ? (
           <>
             {/* Protected Routes */}
-            <Route path="/home" element={<Home />} />
+            <Route path="/home/*" element={<Home />} />{" "}
+            {/* Note the wildcard * to allow nested routes */}
             <Route path="/images" element={<Image />} />
             <Route path="/custombutton" element={<CustomButton />} />
             <Route path="/Petshop" element={<Petshop />} />
             <Route path="/products" element={<Products />} />
             <Route path="/boarding" element={<Boarding />} />
-            {/* Redirect authenticated users trying to access public routes */}
             <Route path="*" element={<Navigate to="/home" replace />} />
           </>
         ) : (

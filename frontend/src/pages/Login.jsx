@@ -11,11 +11,11 @@ import {
     Button,
   } from "@material-tailwind/react";
   import { useNavigate } from "react-router-dom"; 
-  import { useAuthStore } from "../store/store"; 
+  import { useStore } from "../store/store"; 
    
   export default function LoginCard() {
     const navigate = useNavigate(); 
-    const login = useAuthStore((state) => state.login); 
+    const login = useStore((state) => state.login); 
     const [error] = React.useState(null);
     const [loading, setLoading] = React.useState(false);
     const [formData, setFormData] = React.useState({
