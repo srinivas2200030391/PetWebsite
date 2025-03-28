@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import Carsoule from "../assets/Carsoule";
 import PetStore from "./PetStore";
@@ -13,115 +13,6 @@ const Home = () => {
   };
 
   return (
-<<<<<<< HEAD
-    <div className="flex flex-col gap-10 py-16 px-10 pt-20">
-      <Carsoule/>
-    <div className="flex items-center justify-center">
-    <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
-      <Link to="/Petshop" className="col-span-12 sm:col-span-4 h-[300px]">
-      <Card className="col-span-12 sm:col-span-4 h-[300px]">
-        <CardHeader className="absolute z-10 top-1 flex-col !items-start">
-          <p className="text-tiny text-white/60 uppercase font-bold">Pets </p>
-          <h4 className="text-white font-medium text-large">Get your pet now</h4>
-        </CardHeader>
-        <Image
-          removeWrapper
-          isZoomed
-          alt="Card background"
-          className="z-0 w-full h-full object-cover"
-          src="https://heroui.com/images/card-example-4.jpeg"
-        />
-      </Card>
-      </Link>
-      <Link to="/boardingpage" className="col-span-12 sm:col-span-4 h-[300px]">
-      <Card className="col-span-12 sm:col-span-4 h-[300px]">
-        <CardHeader className="absolute z-10 top-1 flex-col !items-start">
-          <p className="text-tiny text-white/60 uppercase font-bold">Boarding shops</p>
-          <h4 className="text-white font-medium text-large">Leave your pet go live</h4>
-        </CardHeader>
-        <Image
-          removeWrapper
-          isZoomed
-          alt="Card background"
-          className="z-0 w-full h-full object-cover"
-          src="https://heroui.com/images/card-example-3.jpeg"
-        />
-      </Card>
-      </Link>
-      <Link to="/matingpage" className="col-span-12 sm:col-span-4 h-[300px]">
-      <Card className="col-span-12 sm:col-span-4 h-[300px]">
-        <CardHeader className="absolute z-10 top-1 flex-col !items-start">
-          <p className="text-tiny text-white/60 uppercase font-bold"></p>
-          <h4 className="text-white font-medium text-large">get things for your pet</h4>
-        </CardHeader>
-        <Image
-        isZoomed
-          removeWrapper
-          alt="Card background"
-          className="z-0 w-full h-full object-cover"
-          src="https://heroui.com/images/card-example-2.jpeg"
-        />
-      </Card>
-      </Link>
-      <Link to="/matingpage" className="col-span-12 sm:col-span-4 h-[300px]">
-      <Card isFooterBlurred className="w-full h-[300px] col-span-12 sm:col-span-5">
-        <CardHeader className="absolute z-10 top-1 flex-col items-start">
-          <p className="text-tiny text-white/60 uppercase font-bold">New</p>
-          <h4 className="text-black font-medium text-2xl">Acme camera</h4>
-        </CardHeader>
-        <Image
-        isZoomed
-          removeWrapper
-          alt="Card background"
-          className="z-0 w-full h-full object-cover"
-          src="https://heroui.com/images/card-example-6.jpeg"
-        />
-        <CardFooter className="absolute bg-white/30 bottom-0 border-t-1 border-zinc-100/50 z-10 justify-between">
-          <div>
-            <p className="text-black text-tiny">Available soon.</p>
-            <p className="text-black text-tiny">Get notified.</p>
-          </div>
-          <Button className="text-tiny" color="primary" radius="full" size="sm">
-            Notify Me
-          </Button>
-        </CardFooter>
-      </Card>
-      </Link>
-      <Link to="/form" className="w-full h-[300px] col-span-12 sm:col-span-7">
-      <Card isFooterBlurred className="w-full h-[300px] col-span-12 sm:col-span-7">
-        <CardHeader className="absolute z-10 top-1 flex-col items-start">
-          <p className="text-tiny text-white/60 uppercase font-bold">About Pets</p>
-          <h4 className="text-white/90 font-medium text-xl">Know more about your Pet</h4>
-        </CardHeader>
-        <Image
-          removeWrapper
-          isZoomed
-          alt="Relaxing app background"
-          className="z-0 w-full h-full object-cover"
-          src="https://heroui.com/images/card-example-5.jpeg"
-        />
-        <CardFooter className="absolute bg-black/40 bottom-0 z-10 border-t-1 border-default-600 dark:border-default-100">
-          <div className="flex flex-grow gap-2 items-center">
-            <Image
-              alt="Breathing app icon"
-              className="rounded-full w-10 h-11 bg-black"
-              src="https://heroui.com/images/breathing-app-icon.jpeg"
-            />
-            <div className="flex flex-col">
-              <p className="text-tiny text-white/60">Breathing App</p>
-              <p className="text-tiny text-white/60">Get a good night&#39;s sleep.</p>
-            </div>
-            <div className="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5 max-lg:rounded-b-[2rem] lg:rounded-r-[2rem]"></div>
-          </div>
-          <Button radius="full" size="sm">
-            Get App
-          </Button>
-        </CardFooter>
-      </Card>
-      </Link>
-    </div>
-    </div>
-=======
     <div className="min-h-screen bg-gray-50">
       {/* Main content with navigation */}
       <div className="container mx-auto px-4">
@@ -166,7 +57,6 @@ const Home = () => {
           />
         </Routes>
       </div>
->>>>>>> 702b9bbd9c577a789b89d6fb02275fe99dd5a6c8
     </div>
   );
 };
@@ -267,7 +157,7 @@ const HomeDashboard = () => {
                 <div className="flex flex-col">
                   <p className="text-xs text-white/60">Breathing App</p>
                   <p className="text-xs text-white/60">
-                    Get a good night's sleep.
+                    Get a good night&apos;s sleep.
                   </p>
                 </div>
               </div>

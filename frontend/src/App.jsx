@@ -6,10 +6,8 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import Image from "./image";
 import Intro from "./pages/Hero";
 import Login from "./pages/Login";
-// Removed duplicate import of CustomButton
 import Signup from "./pages/Signup";
 import Navbar from "./assets/Navbar";
 import Home from "./pages/Home";
@@ -17,7 +15,6 @@ import Footer from "./pages/Footer";
 import { useStore } from "./store/store";
 import PropTypes from "prop-types";
 import Petshop from "./pages/Petshop";
-<<<<<<< HEAD
 import Products from './pages/Products';
 import ProductOverview from './assets/ProductOverView';
 import MatingPage from "./pages/MatingPage";
@@ -30,13 +27,6 @@ import BoardingPage from './pages/boarding/BoardingPage';
 import BoardingShops from './pages/boarding/BoardingShops';
 import BoardingShopFilter from './pages/boarding/BoardingShopFilter';
 import CustomButton from "./assets/CustomButton";
-=======
-import Products from "./pages/Products";
-import Boarding from "./pages/Boarding";
-// Import removed: PetStore and Cart are now inside Home
-import { useState } from "react";
-
->>>>>>> 702b9bbd9c577a789b89d6fb02275fe99dd5a6c8
 // Protected route component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useStore();
@@ -77,11 +67,9 @@ function App() {
             {/* Protected Routes */}
             <Route path="/home/*" element={<Home />} />{" "}
             {/* Note the wildcard * to allow nested routes */}
-            <Route path="/images" element={<Image />} />
             <Route path="/custombutton" element={<CustomButton />} />
             <Route path="/Petshop" element={<Petshop />} />
             <Route path="/products" element={<Products />} />
-<<<<<<< HEAD
             <Route path="/productoverview" element={<ProductOverview />} />
             <Route path="/matingpage" element={<MatingPage />} />
             <Route path="/matingpagefilter" element={<MatingPageFilter />} />
@@ -93,10 +81,6 @@ function App() {
             <Route path="/boardingshops" element={<BoardingShops />} />
             <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />
             <Route path="/custombutton" element={<CustomButton />} />
-            {/* Redirect authenticated users trying to access public routes */}
-=======
-            <Route path="/boarding" element={<Boarding />} />
->>>>>>> 702b9bbd9c577a789b89d6fb02275fe99dd5a6c8
             <Route path="*" element={<Navigate to="/home" replace />} />
           </>
         ) : (

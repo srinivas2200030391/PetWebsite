@@ -6,12 +6,8 @@ import {
   Avatar,
   Typography,
 } from "@material-tailwind/react";
-<<<<<<< HEAD
-import { useAuthStore } from "../store/store";
-import { Link } from "react-router-dom";
-=======
 import { useStore } from "../store/store";
->>>>>>> 702b9bbd9c577a789b89d6fb02275fe99dd5a6c8
+import { Link } from "react-router-dom";
 export default function ProfileMenu() {
   const logout = useStore((state) => state.logout);
   return (

@@ -31,17 +31,7 @@ import {
   TagIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
-<<<<<<< HEAD
-import { useAuthStore } from "../store/store";
-const handleSearch = (e) => {
-  e.preventDefault();
-  // Add search logic here
-  console.log('Searching:', e.target.search.value);
-};
-
-=======
 import { useStore } from "../store/store";
->>>>>>> 702b9bbd9c577a789b89d6fb02275fe99dd5a6c8
 
 const navListMenuItems = [
   {
@@ -232,6 +222,13 @@ export default function NavbarWithMegaMenu() {
   const [openNav, setOpenNav] = React.useState(false);
   const isAuthenticated = useStore((state) => state.isAuthenticated);
   const logout = useStore((state) => state.logout);
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const searchQuery = event.target.search.value;
+    console.log("Search query:", searchQuery);
+    // Add your search logic here
+  };
 
   React.useEffect(() => {
     const handleResize = () => {
