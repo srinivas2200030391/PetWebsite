@@ -31,6 +31,7 @@ import {
   TagIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
+<<<<<<< HEAD
 import { useAuthStore } from "../store/store";
 const handleSearch = (e) => {
   e.preventDefault();
@@ -38,6 +39,9 @@ const handleSearch = (e) => {
   console.log('Searching:', e.target.search.value);
 };
 
+=======
+import { useStore } from "../store/store";
+>>>>>>> 702b9bbd9c577a789b89d6fb02275fe99dd5a6c8
 
 const navListMenuItems = [
   {
@@ -190,6 +194,14 @@ function NavList() {
       <NavListMenu />
       <Typography
         as="a"
+        href="/home/store"
+        variant="small"
+        color="blue-gray"
+        className="font-medium">
+        <ListItem className="flex items-center gap-2 py-2 pr-4">Store</ListItem>
+      </Typography>
+      <Typography
+        as="a"
         href="#"
         variant="small"
         color="blue-gray"
@@ -218,8 +230,8 @@ import { useLocation } from "react-router-dom";
 export default function NavbarWithMegaMenu() {
   const location = useLocation();
   const [openNav, setOpenNav] = React.useState(false);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const logout = useAuthStore((state) => state.logout);
+  const isAuthenticated = useStore((state) => state.isAuthenticated);
+  const logout = useStore((state) => state.logout);
 
   React.useEffect(() => {
     const handleResize = () => {

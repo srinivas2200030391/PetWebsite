@@ -6,10 +6,14 @@ import {
   Avatar,
   Typography,
 } from "@material-tailwind/react";
+<<<<<<< HEAD
 import { useAuthStore } from "../store/store";
 import { Link } from "react-router-dom";
+=======
+import { useStore } from "../store/store";
+>>>>>>> 702b9bbd9c577a789b89d6fb02275fe99dd5a6c8
 export default function ProfileMenu() {
-   const logout = useAuthStore((state) => state.logout);
+  const logout = useStore((state) => state.logout);
   return (
     <Menu>
       <MenuHandler>
@@ -96,6 +100,36 @@ export default function ProfileMenu() {
             Wishlist
           </Typography>
         </MenuItem>
+        <a href="/home/cart">
+          <MenuItem className="flex items-center gap-2 -translate-x-[0.3rem] ">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M6.3 7H21L19 14H7L6.3 7Z"
+                stroke="#90A4AE"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="9" cy="20" r="2" stroke="#90A4AE" strokeWidth="2" />
+              <circle cx="18" cy="20" r="2" stroke="#90A4AE" strokeWidth="2" />
+              <path
+                d="M6 6L4 3H1"
+                stroke="#90A4AE"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <Typography variant="small" className="font-medium">
+              Cart
+            </Typography>
+          </MenuItem>
+        </a>
         <MenuItem className="flex items-center gap-2">
           <svg
             width="16"
