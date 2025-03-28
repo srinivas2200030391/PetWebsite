@@ -1,5 +1,5 @@
 'use client'
-import Products from './Products'
+import MatingPets from './Matingpets'
 import { useState } from 'react'
 import {
   Dialog,
@@ -13,6 +13,7 @@ import {
   MenuItem,
   MenuItems,
 } from '@headlessui/react'
+import { Button } from "@material-tailwind/react";
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from '@heroicons/react/20/solid'
 
@@ -187,7 +188,7 @@ export default function Example() {
 
         <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-baseline justify-between border-b border-gray-200 pb-6 pt-24">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900">Pets Store</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900">Pets Dating</h1>
 
             <div className="flex items-center">
               <Menu as="div" className="relative inline-block text-left">
@@ -199,6 +200,7 @@ export default function Example() {
                       className="-mr-1 ml-1 size-5 shrink-0 text-gray-400 group-hover:text-gray-500"
                     />
                   </MenuButton>
+                  <Button variant="outlined" className='px-5'>your pet</Button>
                 </div>
 
                 <MenuItems
@@ -313,7 +315,7 @@ export default function Example() {
                 ))}
               </form>
               <div className="lg:col-span-3">
-                <Products />
+                <MatingPets />
               </div>
             </div>
           </section>

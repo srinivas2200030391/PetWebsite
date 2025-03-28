@@ -1,5 +1,4 @@
 'use client'
-import Products from './Products'
 import { useState } from 'react'
 import {
   Dialog,
@@ -313,7 +312,7 @@ export default function Example() {
                 ))}
               </form>
               <div className="lg:col-span-3">
-                <Products />
+                
               </div>
             </div>
           </section>

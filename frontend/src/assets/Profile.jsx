@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useAuthStore } from "../store/store";
+import { Link } from "react-router-dom";
 export default function ProfileMenu() {
    const logout = useAuthStore((state) => state.logout);
   return (
@@ -53,7 +54,6 @@ export default function ProfileMenu() {
               fill="#90A4AE"
             />
           </svg>
-
           <Typography variant="small" className="font-medium">
             Edit Profile
           </Typography>
@@ -72,9 +72,28 @@ export default function ProfileMenu() {
               fill="#90A4AE"
             />
           </svg>
-
+          <Link to="/custombutton">
           <Typography variant="small" className="font-medium">
             Inbox
+          </Typography>
+          </Link>
+        </MenuItem>
+        <MenuItem className="flex items-center gap-2">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+              fill="#90A4AE"
+            />
+          </svg>
+          <Typography variant="small" className="font-medium">
+            Wishlist
           </Typography>
         </MenuItem>
         <MenuItem className="flex items-center gap-2">

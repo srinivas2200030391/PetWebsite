@@ -9,7 +9,7 @@ import {
 import Image from "./image";
 import Intro from "./pages/Hero";
 import Login from "./pages/Login";
-import CustomButton from "./assets/CustomButton";
+// Removed duplicate import of CustomButton
 import Signup from "./pages/Signup";
 import Navbar from "./assets/Navbar";
 import Home from "./pages/Home";
@@ -18,8 +18,17 @@ import { useAuthStore } from "./store/store";
 import PropTypes from "prop-types";
 import Petshop from "./pages/Petshop";
 import Products from './pages/Products';
-import Boarding from './pages/Boarding';
-
+import ProductOverview from './assets/ProductOverView';
+import MatingPage from "./pages/MatingPage";
+import MatingPageFilter from "./pages/MatingPageFilter";
+import MatingPets from "./pages/Matingpets";
+import Form from "./pages/Form";
+import PetSaleForm from "./assets/PetSaleForm";
+import MatingForm from "./assets/MatingForm";
+import BoardingPage from './pages/boarding/BoardingPage';
+import BoardingShops from './pages/boarding/BoardingShops';
+import BoardingShopFilter from './pages/boarding/BoardingShopFilter';
+import CustomButton from "./assets/CustomButton";
 // Protected route component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -45,9 +54,13 @@ function App() {
     navigate("/intro");
   };
 
+  const noHeaderFooterRoutes = ['/', '/intro', '/login', '/signup'];
+  const shouldShowHeaderFooter = !noHeaderFooterRoutes.includes(location.pathname);
+
+
   return (
     <div className="min-h-screen">
-      <Navbar onSignOut={handleSignOut} />
+      {shouldShowHeaderFooter && <Navbar onSignOut={handleSignOut} />}
       <Routes>
         {isAuthenticated ? (
           <>
@@ -57,7 +70,17 @@ function App() {
             <Route path="/custombutton" element={<CustomButton />} />
             <Route path="/Petshop" element={<Petshop />} />
             <Route path="/products" element={<Products />} />
-            <Route path="/boarding" element={<Boarding />} />
+            <Route path="/productoverview" element={<ProductOverview />} />
+            <Route path="/matingpage" element={<MatingPage />} />
+            <Route path="/matingpagefilter" element={<MatingPageFilter />} />
+            <Route path="/matingpets" element={<MatingPets />} />
+            <Route path="/form" element={<Form />} />
+            <Route path="/petsaleform" element={<PetSaleForm />} />
+            <Route path="/matingform" element={<MatingForm />} />
+            <Route path="/boardingpage" element={<BoardingPage />} />
+            <Route path="/boardingshops" element={<BoardingShops />} />
+            <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />
+            <Route path="/custombutton" element={<CustomButton />} />
             {/* Redirect authenticated users trying to access public routes */}
             <Route path="*" element={<Navigate to="/home" replace />} />
           </>
@@ -74,7 +97,7 @@ function App() {
         )}
       </Routes>
       {/* Hide footer if the route is '/' */}
-      {location.pathname !== "/" && <Footer />}
+      {shouldShowHeaderFooter && <Footer />}
     </div>
   );
 }

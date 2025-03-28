@@ -1,5 +1,4 @@
 'use client'
-import Products from './Products'
 import { useState } from 'react'
 import {
   Dialog,
@@ -15,6 +14,7 @@ import {
 } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from '@heroicons/react/20/solid'
+import BoardingShops from './BoardingShops'
 
 const sortOptions = [
   { name: 'Most Popular', href: '#', current: true },
@@ -313,7 +313,7 @@ export default function Example() {
                 ))}
               </form>
               <div className="lg:col-span-3">
-                <Products />
+                <BoardingShops />
               </div>
             </div>
           </section>

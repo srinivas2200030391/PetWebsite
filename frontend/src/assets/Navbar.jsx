@@ -12,6 +12,8 @@ import {
   MenuList,
   MenuItem,
 } from "@material-tailwind/react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+
 import Profile from "./Profile";
 import {
   ChevronDownIcon,
@@ -30,10 +32,17 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import { useAuthStore } from "../store/store";
+const handleSearch = (e) => {
+  e.preventDefault();
+  // Add search logic here
+  console.log('Searching:', e.target.search.value);
+};
+
 
 const navListMenuItems = [
   {
     title: "Products",
+    href: "/",
     description: "Find the perfect solution for your needs.",
     icon: SquaresPlusIcon,
   },
@@ -63,12 +72,14 @@ const navListMenuItems = [
     icon: PhoneIcon,
   },
   {
-    title: "News",
+    title: "SalesForm",
+    href: "/petsaleform",
     description: "Read insightful articles, tips, and expert opinions.",
     icon: NewspaperIcon,
   },
   {
-    title: "Products",
+    title: "Matingform",
+    href: "/matingform",
     description: "Find the perfect solution for your needs.",
     icon: RectangleGroupIcon,
   },
@@ -82,34 +93,34 @@ const navListMenuItems = [
 function NavListMenu() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const renderItems = navListMenuItems.map(
-    ({ icon, title, description }, key) => (
-      <a href="#" key={key}>
-        <MenuItem className="flex items-center gap-3 rounded-lg">
-          <div className="flex items-center justify-center rounded-lg !bg-blue-gray-50 p-2 ">
-            {" "}
-            {React.createElement(icon, {
-              strokeWidth: 2,
-              className: "h-6 text-gray-900 w-6",
-            })}
-          </div>
-          <div>
-            <Typography
-              variant="h6"
-              color="blue-gray"
-              className="flex items-center text-sm font-bold">
-              {title}
-            </Typography>
-            <Typography
-              variant="paragraph"
-              className="text-xs !font-medium text-blue-gray-500">
-              {description}
-            </Typography>
-          </div>
-        </MenuItem>
-      </a>
-    )
-  );
+  // In the NavListMenu component, update the renderItems mapping:
+const renderItems = navListMenuItems.map(
+  ({ icon, title, description, href }, key) => (
+    <a href={href} key={key}>
+      <MenuItem className="flex items-center gap-3 rounded-lg">
+        <div className="flex items-center justify-center rounded-lg !bg-blue-gray-50 p-2 ">
+          {React.createElement(icon, {
+            strokeWidth: 2,
+            className: "h-6 text-gray-900 w-6",
+          })}
+        </div>
+        <div>
+          <Typography
+            variant="h6"
+            color="blue-gray"
+            className="flex items-center text-sm font-bold">
+            {title}
+          </Typography>
+          <Typography
+            variant="paragraph"
+            className="text-xs !font-medium text-blue-gray-500">
+            {description}
+          </Typography>
+        </div>
+      </MenuItem>
+    </a>
+  )
+);
 
   return (
     <React.Fragment>
@@ -165,6 +176,17 @@ function NavList() {
         className="font-medium">
         <ListItem className="flex items-center gap-2 py-2 pr-4">Home</ListItem>
       </Typography>
+
+      <Typography
+        as="a"
+        href="#"
+        variant="small"
+        color="blue-gray"
+        className="font-medium">
+        <ListItem className="flex items-center gap-2 py-2 pr-4">
+          Cart  
+        </ListItem>
+      </Typography>
       <NavListMenu />
       <Typography
         as="a"
@@ -173,9 +195,20 @@ function NavList() {
         color="blue-gray"
         className="font-medium">
         <ListItem className="flex items-center gap-2 py-2 pr-4">
-          Contact Us
+          Settings
         </ListItem>
       </Typography>
+      <Typography
+        as="a"
+        href="#"
+        variant="small"
+        color="blue-gray"
+        className="font-medium">
+        <ListItem className="flex items-center gap-2 py-2 pr-4">
+          Orders
+        </ListItem>
+      </Typography>
+      
     </List>
   );
 }
@@ -215,9 +248,30 @@ export default function NavbarWithMegaMenu() {
           className="mr-4 cursor-pointer py-1.5 lg:ml-2">
           The Pet Shop
         </Typography>
-        <div className="hidden lg:block">
-          <NavList />
-        </div>
+        <div className="flex items-center gap-4 flex-1 justify-between">
+  <form 
+    onSubmit={handleSearch}
+    className="hidden lg:flex items-center w-72"
+  >
+    <div className="relative flex w-full">
+      <input
+        type="search"
+        name="search"
+        placeholder="Search products..."
+        className="w-full h-10 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400"
+      />
+      <button
+        type="submit"
+        className="absolute right-2 top-1/2 -translate-y-1/2"
+      >
+        <MagnifyingGlassIcon className="h-5 w-5 text-gray-500" />
+      </button>
+    </div>
+  </form>
+  <div className="hidden lg:block">
+    <NavList />
+  </div>
+</div>
         <div className="hidden gap-2 lg:flex">
           <Profile />
         </div>
@@ -235,6 +289,7 @@ export default function NavbarWithMegaMenu() {
       </div>
       <Collapse open={openNav}>
         <NavList />
+        
         <div className="flex w-full flex-nowrap items-center gap-2 lg:hidden">
           {isAuthenticated ? (
             <Button

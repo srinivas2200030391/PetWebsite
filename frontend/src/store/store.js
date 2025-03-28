@@ -10,7 +10,6 @@ const getInitialState = () => {
   } catch (error) {
     console.error("Error reading from localStorage:", error);
   }
-
   // Default state if nothing in localStorage
   return {
     user: null,
