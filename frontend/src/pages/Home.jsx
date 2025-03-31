@@ -17,7 +17,7 @@ const Home = () => {
       {/* Main content with navigation */}
       <div className="container mx-auto px-4">
         {/* Navigation tabs for Store and Cart */}
-        <div className="flex justify-center my-6">
+        {/*<div className="flex justify-center my-6">
           <div className="flex space-x-4 bg-white rounded-lg shadow-sm p-1">
             <Link
               to="/home"
@@ -40,7 +40,7 @@ const Home = () => {
               )}
             </Link>
           </div>
-        </div>
+        </div>*/}
 
         {/* Routes for Store and Cart components */}
         <Routes>
@@ -64,7 +64,7 @@ const Home = () => {
 // Home Dashboard component that shows the cards from your Example component
 const HomeDashboard = () => {
   return (
-    <div className="flex flex-col gap-10 py-8">
+    <div className="flex flex-col gap-10 py-8 pt-20">
       <Carsoule />
       <div className="flex items-center justify-center">
         <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">

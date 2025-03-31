@@ -137,7 +137,7 @@ const PetStore = ({ userId, updateCartCount}) => {
   //     : products.filter((product) => product.category === selectedCategory);
 
   return (
-    <div className="mt-[5.5rem] container mx-auto px-4 mb-5">
+    <div className=" container mx-auto mb-5 ">
       {/* Category Filter */}
       <div className="mb-8">
         <div className="flex flex-wrap gap-2">

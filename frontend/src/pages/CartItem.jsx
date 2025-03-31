@@ -1,4 +1,3 @@
-import React from 'react';
 
 const CartItem = ({ item, updateQuantity, removeItem }) => {
   const { id, name, price, quantity, image } = item;

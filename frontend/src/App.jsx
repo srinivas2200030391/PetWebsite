@@ -17,9 +17,9 @@ import PropTypes from "prop-types";
 import Petshop from "./pages/Petshop";
 import Products from './pages/Products';
 import ProductOverview from './assets/ProductOverView';
-import MatingPage from "./pages/MatingPage";
-import MatingPageFilter from "./pages/MatingPageFilter";
-import MatingPets from "./pages/Matingpets";
+import MatingPage from "./pages/Mating/MatingPage";
+import MatingPageFilter from "./pages/Mating/MatingPageFilter";
+import MatingPets from "./pages/Mating/MatingPets";
 import Form from "./pages/Form";
 import PetSaleForm from "./assets/PetSaleForm";
 import MatingForm from "./assets/MatingForm";
@@ -27,7 +27,6 @@ import BoardingPage from './pages/boarding/BoardingPage';
 import BoardingShops from './pages/boarding/BoardingShops';
 import BoardingShopFilter from './pages/boarding/BoardingShopFilter';
 import CustomButton from "./assets/CustomButton";
-// Protected route component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useStore();
 
@@ -47,7 +46,6 @@ function App() {
   const location = useLocation(); // Get current route
   const { logout, isAuthenticated } = useStore();
 
-  // Cart count state removed as it's now in Home component
 
   const handleSignOut = () => {
     logout();

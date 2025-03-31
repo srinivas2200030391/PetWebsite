@@ -1,23 +1,22 @@
 import { Carousel } from "@material-tailwind/react";
 import {Link} from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function CarouselEx() {
-  const [setActiveIndex] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveIndex((prevIndex) => (prevIndex + 1) % 3);
+      // Autoplay logic handled by the Carousel component
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, []); 
 
   return (
-    <div className="h-[50vh]"> {/* Changed from h-screen to h-[50vh] */}
+    <div className="h-[50vh]">
       <Carousel
-         className="rounded-xl h-full w-full"
-         autoplay={true}
-         autoplayDelay={3000}
-         loop={true}
+        className="rounded-xl h-full w-full"
+        autoplay={true}
+        autoplayDelay={3000}
+        loop={true}
         navigation={({ setActiveIndex, activeIndex, length }) => (
           <div className="absolute bottom-4 left-2/4 z-50 flex -translate-x-2/4 gap-2">
             {new Array(length).fill("").map((_, i) => (

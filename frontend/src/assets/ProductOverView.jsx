@@ -78,106 +78,110 @@
    };
  
    return (
-     <div className="max-w-7xl mx-auto px-4 py-8 pt-20">
-       {/* Navigation */}
-       <div className="relative mb-8">
-         <button 
-           onClick={() => navigate(-1)}
-           className="absolute top-0 left-0 p-2 rounded-full hover:bg-gray-100"
-         >
-           <IoChevronBack size={24} />
-         </button>
-         <button className="absolute top-0 right-0 p-2 rounded-full hover:bg-gray-100">
-           <FaShare size={24} className="text-blue-600" />
-         </button>
-       </div>
- 
-       {/* Product Image */}
-       <div className="flex justify-center mb-8">
-         <img 
-           src=" https://th.bing.com/th?id=ODL.6feebfa091b76783ba5a09446b6caba7&w=143&h=91&c=10&rs=1&qlt=99&o=6&dpr=2&pid=AlgoBlockDebug" 
-           alt={item.title}
-           className="w-full max-w-xl rounded-lg object-cover"
-         />
-       </div>
- 
-       {/* Product Info */}
-       <div className="flex justify-between items-center mb-6">
-         <h1 className="text-2xl font-bold">{item.title}</h1>
-         <p className="text-xl font-bold">₹{item.price}/-</p>
-       </div>
- 
-       {/* Details */}
-       <div className="bg-gray-50 rounded-lg p-6 mb-8">
-         <h2 className="text-2xl font-bold text-center mb-4">Details</h2>
-         <div className="grid gap-4">
-           <DetailRow label="Gender" value={item.Gender} />
-           <DetailRow label="Breed Lineage" value={item.Bread_lineage} />
-           <DetailRow label="Breeder Details" value={item.Breader_details} />
-           <DetailRow label="Category" value={item.category} />
-           <DetailRow label="Contact Details" value={item.Contact_details} />
-           <DetailRow label="Availability" value={item.isAvailable ? "Available" : "Not Available"} />
-           <DetailRow label="Shop Address" value={item.Address} />
-           <DetailRow label="Quality" value={item.quality} />
-           <DetailRow label="Breed Name" value={item.Bread_name} />
-         </div>
-       </div>
- 
-       {/* Quantity */}
-       <div className="flex justify-between items-center mb-8">
-         <h2 className="text-xl font-bold">Quantity</h2>
-         <div className="flex items-center gap-4">
-           <button 
-             onClick={decrement}
-             className="text-red-500 hover:bg-red-50 p-2 rounded-full"
-           >
-             <AiOutlineMinus size={24} />
-           </button>
-           <span className="text-xl text-blue-600">{count}</span>
-           <button 
-             onClick={increment}
-             className="text-green-500 hover:bg-green-50 p-2 rounded-full"
-           >
-             <AiOutlinePlus size={24} />
-           </button>
-         </div>
-       </div>
- 
-       {/* Buy Button */}
-       <button 
-         className="w-full bg-blue-600 text-white py-3 rounded-full text-lg font-semibold hover:bg-blue-700 transition-colors mb-8"
-         onClick={() => navigate('/order-page', { state: { 
-           orderItem: {
-             animalId: id,
-             quantity: count,
-             totalPrice: item.price,
-             title: item.title
-           }
-         }})}
-       >
-         Buy Now
-       </button>
- 
-       {/* Tags */}
-       <div className="flex gap-2 mb-6 overflow-x-auto">
-         {foodtags.map((tag) => (
-           <span 
-             key={tag}
-             className="px-4 py-1 bg-blue-100 text-blue-800 rounded-full whitespace-nowrap"
-           >
-             {tag}
-           </span>
-         ))}
-       </div>
- 
- 
-       {/* Related Items */}
-       <div>
-         <h2 className="text-2xl font-bold mb-4">Related Items</h2>
-         {/* Add your related items component here */}
-       </div>
-     </div>
-   );
+    <div className="max-w-7xl mx-auto px-4 py-8 pt-20">
+      {/* Navigation */}
+      <div className="relative mb-8">
+        <button 
+          onClick={() => navigate(-1)}
+          className="absolute top-0 left-0 p-2 rounded-full hover:bg-gray-100"
+        >
+          <IoChevronBack size={24} />
+        </button>
+        <button className="absolute top-0 right-0 p-2 rounded-full hover:bg-gray-100">
+          <FaShare size={24} className="text-blue-600" />
+        </button>
+      </div>
+  
+      {/* Main Product Container */}
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Left Side - Product Image */}
+        <div className="md:w-1/2 px-10 py-5">
+          <img 
+            src="https://th.bing.com/th?id=ODL.6feebfa091b76783ba5a09446b6caba7&w=143&h=91&c=10&rs=1&qlt=99&o=6&dpr=2&pid=AlgoBlockDebug" 
+            alt={item.title}
+            className="w-full rounded-lg object-cover"
+          />
+          
+          {/* Tags moved under image */}
+          <div className="flex gap-2 mt-4 overflow-x-auto">
+            {foodtags.map((tag) => (
+              <span 
+                key={tag}
+                className="px-4 py-1 bg-blue-100 text-blue-800 rounded-full whitespace-nowrap"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+  
+        {/* Right Side - Product Details */}
+        <div className="md:w-1/2">
+  
+          {/* Details Section */}
+          <div className="bg-gray-50 rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-bold mb-4">Product Details</h2>
+            <div className="grid gap-4">
+              <DetailRow label="Gender" value={item.Gender} />
+              <DetailRow label="Breed Lineage" value={item.Bread_lineage} />
+              <DetailRow label="Breeder Details" value={item.Breader_details} />
+              <DetailRow label="Category" value={item.category} />
+              <DetailRow label="Contact Details" value={item.Contact_details} />
+              <DetailRow label="Availability" value={item.isAvailable ? "Available" : "Not Available"} />
+              <DetailRow label="Shop Address" value={item.Address} />
+              <DetailRow label="Quality" value={item.quality} />
+              <DetailRow label="Breed Name" value={item.Bread_name} />
+            </div>
+          </div>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">{item.title}</h1>
+            <p className="text-2xl font-bold text-blue-600">₹{item.price}/-</p>
+          </div>
+  
+          {/* Quantity Selector */}
+          <div className="flex items-center gap-4 mb-8">
+            <span className="text-lg font-semibold">Quantity:</span>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={decrement}
+                className="text-red-500 hover:bg-red-50 p-2 rounded-full"
+              >
+                <AiOutlineMinus size={24} />
+              </button>
+              <span className="text-xl text-blue-600">{count}</span>
+              <button 
+                onClick={increment}
+                className="text-green-500 hover:bg-green-50 p-2 rounded-full"
+              >
+                <AiOutlinePlus size={24} />
+              </button>
+            </div>
+          </div>
+  
+          {/* Buy Button */}
+          <button 
+            className="w-full bg-blue-600 text-white py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors"
+            onClick={() => navigate('/order-page', { state: { 
+              orderItem: {
+                animalId: id,
+                quantity: count,
+                totalPrice: item.price,
+                title: item.title
+              }
+            }})}
+          >
+            Buy Now
+          </button>
+        </div>
+      </div>
+  
+      {/* Related Items Section */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold mb-4">Related Items</h2>
+        {/* Add your related items component here */}
+      </div>
+    </div>
+  );
  };
  
  import PropTypes from 'prop-types';

@@ -1,6 +1,7 @@
 
 // components/ProductCard.jsx
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const ProductCard = ({ product, onAddToCart }) => {
   const { name, price, image, category } = product;
@@ -8,11 +9,13 @@ const ProductCard = ({ product, onAddToCart }) => {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1">
       <div className="h-48 overflow-hidden">
+        <Link to='/productoverview' state={{ product }}>
         <img 
           src={image} 
           alt={name} 
           className="w-full h-full object-cover"
         />
+        </Link>
       </div>
       <div className="p-4">
         <span className="text-xs text-indigo-600 font-medium">{category}</span>
