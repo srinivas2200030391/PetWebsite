@@ -31,7 +31,7 @@ import {
   TagIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
-import { useStore } from "../store/store";
+import { useStore } from "../pages/store/store";
 
 const navListMenuItems = [
   {

@@ -1,5 +1,5 @@
 import {create} from"zustand"
-import { axiosinstance } from "../lib/axios"
+import { axiosinstance } from "../../lib/axios"
 import toast from "react-hot-toast";
 
 

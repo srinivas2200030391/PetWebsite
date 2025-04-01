@@ -1,11 +1,11 @@
 import  { useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
-import Carsoule from "../assets/Carsoule";
-import PetStore from "./PetStore";
+import Carsoule from "../components/Carsoule";
+import PetStore from "./petshop/PetStore";
 import Cart from "./Cart";
 
 const Home = () => {
-  const [cartCount, setCartCount] = useState(0);
+  const [ setCartCount] = useState(0);
   const userId = 1; // Assuming this is the user ID you want to use
 
   const updateCartCount = (newCount) => {

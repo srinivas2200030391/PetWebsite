@@ -1,6 +1,5 @@
-import React from "react";
 import CartItem from "./CartItem";
-import { useStore } from "../store/store"; // Adjust the path as needed
+import { useStore } from "./store/store"; // Adjust the path as needed
 
 const Cart = () => {
   // Get cart state and actions from the store

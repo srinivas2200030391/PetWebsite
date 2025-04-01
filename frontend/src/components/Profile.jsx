@@ -7,7 +7,7 @@ import {
   Typography,
   Button,
 } from "@material-tailwind/react";
-import { useAuthStore } from "../store/useAuthstore"
+import { useAuthStore } from "../pages/store/useAuthstore"
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 export default function ProfileMenu() {
