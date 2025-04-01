@@ -1,5 +1,5 @@
 'use client'
-import MatingPets from './Matingpets'
+import MatingPets from "./MatingPets"
 import { useState } from 'react'
 import {
   Dialog,

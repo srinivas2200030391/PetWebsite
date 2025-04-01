@@ -5,11 +5,21 @@ import {
   MenuItem,
   Avatar,
   Typography,
+  Button,
 } from "@material-tailwind/react";
-import { useStore } from "../store/store";
+import { useAuthStore } from "../store/useAuthstore"
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 export default function ProfileMenu() {
-  const logout = useStore((state) => state.logout);
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
+
+    const handleLogout = () => {
+      console.log("Logging out..."); // Debugging
+      logout();
+      navigate("/login");
+    };
+
   return (
     <Menu>
       <MenuHandler>
@@ -17,7 +27,7 @@ export default function ProfileMenu() {
           variant="circular"
           alt="tania andrew"
           className="cursor-pointer"
-          src="https://ts4.mm.bing.net/th?id=OIP.IFZ287nVOltkIqmbaMNc4gHaHa&pid=15.1"
+          src="https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-image-182145777.jpg"
         />
       </MenuHandler>
       <MenuList>
@@ -159,9 +169,9 @@ export default function ProfileMenu() {
               fill="#90A4AE"
             />
           </svg>
-          <Typography variant="small" className="font-medium" onClick={logout}>
+          <Button variant="small" className="font-medium" onClick={handleLogout}>
             Sign Out
-          </Typography>
+          </Button>
         </MenuItem>
       </MenuList>
     </Menu>

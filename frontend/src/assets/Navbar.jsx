@@ -1,6 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
-
 import {
   Navbar,
   Collapse,
@@ -174,8 +172,8 @@ function NavList() {
       </Typography>
 
       <Typography
-        as={Link}  // Change 'a' to Link
-        to="/cart"  // Add the cart route
+        as="a"
+        href="#"
         variant="small"
         color="blue-gray"
         className="font-medium">
@@ -184,6 +182,14 @@ function NavList() {
         </ListItem>
       </Typography>
       <NavListMenu />
+      <Typography
+        as="a"
+        href="/home/store"
+        variant="small"
+        color="blue-gray"
+        className="font-medium">
+        <ListItem className="flex items-center gap-2 py-2 pr-4">Store</ListItem>
+      </Typography>
       <Typography
         as="a"
         href="#"
