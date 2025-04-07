@@ -184,7 +184,7 @@ function NavList() {
       <NavListMenu />
       <Typography
         as="a"
-        href="/home/store"
+        href="/Petshop"
         variant="small"
         color="blue-gray"
         className="font-medium">
@@ -249,7 +249,7 @@ export default function NavbarWithMegaMenu() {
 
   return (
     <Navbar className="mx-auto max-w-screen-xl px-4 py-2 fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-0">
-      <div className="flex items-center justify-between text-blue-gray-900">
+      <div className="flex items-center justify-between text-xs text-black uppercase font-bold">
         <Typography
           as="a"
           href="/home"

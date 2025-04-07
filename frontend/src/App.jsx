@@ -19,9 +19,12 @@ import BoardingPage from "./pages/boarding/BoardingPage";
 import BoardingShops from "./pages/boarding/BoardingShops";
 import BoardingShopFilter from "./pages/boarding/BoardingShopFilter";
 import CustomButton from "./components/CustomButton";
+import AboutPets from "./pages/About/AboutPets";
 import { useAuthStore } from "./pages/store/useAuthstore";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
+import DogBreeds from './pages/About/DogBreeds';
+
 
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
@@ -55,6 +58,8 @@ const App = () => {
         <Route path="/boardingpage" element={<BoardingPage />} />
         <Route path="/boardingshops" element={<BoardingShops />} />
         <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />
+        <Route path="/aboutpets" element={<AboutPets />} />
+        <Route path="/dog-breeds/:item" element={<DogBreeds />} />
 
         <Route path="/" element={!authUser ? <Intro /> : <Navigate to="/home" />} />
         <Route path="/intro" element={!authUser ? <Intro /> : <Navigate to="/home" />} />

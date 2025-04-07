@@ -32,18 +32,18 @@ export default function CarouselEx() {
         )}
       >
         <img
-          src="https://th.bing.com/th/id/OIP.tO1ONiBV_dMv2cyV1kLKmAHaDo?w=346&h=180&c=7&r=0&o=5&dpr=2&pid=1.7"
+          src="https://image.shutterstock.com/image-photo/group-pets-isolated-on-white-260nw-227674867.jpg"
           alt="image 1"
           className="h-full w-full object-cover"
         />
         <img
-          src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"
+          src="https://th.bing.com/th/id/OIP.3tcNKFSZcOAT6nnb2OHrxQHaEK?w=329&h=185&c=7&r=0&o=5&dpr=2&pid=1.7"
           alt="image 2"
           className="h-full w-full object-cover"
         />
         <Link to="">
         <img
-          src="https://images.unsplash.com/photo-1518623489648-a173ef7824f3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2762&q=80"
+          src="https://th.bing.com/th/id/OIP.81eSKy3-I9F1_7DocXHg_wHaCa?w=301&h=180&c=7&r=0&o=5&dpr=2&pid=1.7"
           alt="image 3"
           className="h-full w-full object-cover"
         />
