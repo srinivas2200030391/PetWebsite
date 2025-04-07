@@ -1,24 +1,25 @@
-import cors from "cors"
-import express from "express"
-import dotenv from "dotenv"
+import cors from "cors";
+import express from "express";
+import dotenv from "dotenv";
 import cookieparser from "cookie-parser";
-
 
 import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
-import cartRoute from "./routes/cart.route.js"
+import cartRoute from "./routes/cart.route.js";
+import aboutPetRoute from "./routes/aboutpet.route.js";
+import hospitalRoute from "./routes/hospital.route.js";
+import userRoutes from "./routes/user.route.js";
+import hospitalCardRoute from "./routes/hospitalcard.route.js";
+import vendorRoute from "./routes/vendor.route.js"; // Assuming you have a vendor route
 // import boardingRoute from "./routes/boarding.route.js"
-
 
 const app = express();
 dotenv.config();
 const PORT = process.env.PORT || 8000;
 
-
-
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow only your frontend
+    origin: "*", // Allow only your frontend
     credentials: true, // Allow credentials (cookies, auth headers)
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
   })
@@ -26,33 +27,22 @@ app.use(
 app.use(express.json());
 app.use(cookieparser());
 
-
-
-
-
-app.use("/api/cart",cartRoute);
+app.use("/api/cart", cartRoute);
 // app.use("/api/boarding",boardingRoute);
-app.use("/api/auth",authRoutes)
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/aboutpet", aboutPetRoute);
+app.use("/api/hospital", hospitalRoute);
+app.use("/api/hospitalcard", hospitalCardRoute);
+app.use("/api/vendor", vendorRoute); // Assuming you have a vendor route
 
-
-
-
-app.listen(PORT, () =>{
-     console.log(`Server running on port ${PORT}`)
-     connectDB();
-    });
-
-
-
-
-
-
-
-
-
-
-
-
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  connectDB();
+});
 
 // import dotenv from "dotenv";
 // import cookieparser from "cookie-parser";
@@ -61,10 +51,9 @@ app.listen(PORT, () =>{
 // import connectdb from "./lib/db.js";
 // import express from "express"
 
-
 // const app = express();
 
-// dotenv.config(); 
+// dotenv.config();
 
 // const PORT = process.env.PORT;
 
@@ -77,11 +66,8 @@ app.listen(PORT, () =>{
 //   credentials: true,  // Allow cookies to be sent/received
 // }));
 
-
 // // Routes
 // app.use("/api/auth", authRoutes);
-
-
 
 // // Start the server
 // server.listen(PORT, () => {
