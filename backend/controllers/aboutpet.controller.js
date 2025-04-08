@@ -57,6 +57,50 @@ const aboutPet = {
       res.status(500).json(error.message);
     }
   },
+ getDogBreeds: async (req, res) => {
+   try {
+     // get dog breeds
+    const allBreeds = await AboutPet.find({category:"Dog"}).select("breed");
+
+    if (!allBreeds || allBreeds.length === 0) {
+      return res.status(404).json("No breeds found, love 🐾");
+    }
+    // Extract, filter, and deduplicate the Breed values
+    const uniqueBreeds = [
+      ...new Set(
+        allBreeds
+          .map((item) => item.breed)
+          .filter((breed) => breed && breed.trim() !== "")
+      ),
+    ];
+
+    res.status(200).json(uniqueBreeds);
+  } catch (error) {
+    res.status(500).json(`Server error, darling 💔: ${error.message}`);
+  }
+},
+ getCatBreeds: async (req, res) => {
+   try {
+     // get dog breeds
+    const allBreeds = await AboutPet.find({category:"Cat"}).select("breed");
+
+    if (!allBreeds || allBreeds.length === 0) {
+      return res.status(404).json("No breeds found, love 🐾");
+    }
+    // Extract, filter, and deduplicate the Breed values
+    const uniqueBreeds = [
+      ...new Set(
+        allBreeds
+          .map((item) => item.breed)
+          .filter((breed) => breed && breed.trim() !== "")
+      ),
+    ];
+
+    res.status(200).json(uniqueBreeds);
+  } catch (error) {
+    res.status(500).json(`Server error, darling 💔: ${error.message}`);
+  }
+}
 };
 
 export default aboutPet;

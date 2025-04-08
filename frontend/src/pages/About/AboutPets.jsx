@@ -7,7 +7,7 @@ const cards = [
     subtitle: "50+ Breeds",
     description: "Popular Dog Breeds",
     image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1",
-    href: "/dog-breeds/dog",
+    href: "/breeds/dog",
   },
   {
     title: "Cats",

@@ -50,23 +50,29 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-      const { email, password } = req.body;
-      console.log("Login attempt with email:", email); // Debugging line
-      console.log("Password length:", password ? password.length : "No password provided"); // Debugging line
-    
-      // Add validation
-      if (!email || !password) {
-          return res.status(400).json({ message: "All fields are required" });
-      }
-      // find user by email
-      const user = User.find({email:email});
-      if(user) return JSON.stringify(user);
-      return res.status(400).json({ message: "user not found" });
+    const { email, password } = req.body;
+    console.log("Login attempt with email:", email);
+    console.log("Password length:", password ? password.length : "No password provided");
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const user = await User.find({ email: email });
+
+    if (user.length === 0) {
+      return res.status(401).json({ message: "User not found, my love 💔" });
+    }
+
+    console.log("Login Successful for", user[0].fullname); // Log before sending response
+    return res.status(200).json({ message: "Login successful 💕", data: user });
+
   } catch (error) {
-      console.error("Login error:", error);
-      res.status(500).json({ message: "Server error" });
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 
 export const logout = (req, res) => {
   try {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { IoChevronBack } from "react-icons/io5";
+import config from "../../config";
 
 const DogBreeds = () => {
   const { item } = useParams();
@@ -17,13 +18,15 @@ const DogBreeds = () => {
   const fetchProductData = async () => {
     try {
       setLoading(true);
+      // capitalize first letter of item
+      //const capitalizedItem = item.charAt(0).toUpperCase() + item.slice(1);
       const response = await axios.get(
-        `http://localhost:8000/api/pets/breeds/${item}`,
-        {
-          withCredentials: true
-        }
+        `${config.baseURL}/api/aboutpet/get${item}breeds`
+        // {
+        //   withCredentials: true,
+        // }
       );
-      
+
       if (response.status === 200) {
         setAnimalData(response.data);
       }
@@ -57,8 +60,7 @@ const DogBreeds = () => {
       <div className="flex items-center justify-between mt-20 px-4 py-6 shadow-sm fixed top-0 w-full bg-white z-50">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-gray-100"
-        >
+          className="p-2 rounded-full hover:bg-gray-100">
           <IoChevronBack size={25} className="text-indigo-600" />
         </button>
         <h1 className="text-2xl font-bold text-indigo-600">
@@ -71,23 +73,8 @@ const DogBreeds = () => {
       <div className="container mx-auto px-4 pt-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {animalData.map((breed, index) => (
-            <div 
-              key={breed._id || index}
-              onClick={() => navigate(`/breed/${breed._id}`)}
-              className="transform transition-all duration-300 hover:scale-105 cursor-pointer"
-            >
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <img
-                  src={breed.image}
-                  alt={breed.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="text-xl font-semibold mb-2">{breed.title}</h3>
-                  <p className="text-sm text-gray-500 mb-1">{breed.subtitle}</p>
-                  <p className="text-gray-600">{breed.description}</p>
-                </div>
-              </div>
+            <div key={index} className="bg-white rounded-lg shadow-md p-4">
+              <h2 className="text-lg font-bold text-indigo-600">{breed}</h2>
             </div>
           ))}
         </div>
