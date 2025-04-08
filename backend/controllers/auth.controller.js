@@ -49,30 +49,22 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(400).json({ message: "invalid crediantials" });
-    }
-
-    const ispasswordcorrect = await bcrypt.compare(password, user.password);
-    if (!ispasswordcorrect) {
-      return res.status(400).json({ message: "invalid crediantials" });
-    }
-
-    generatetoken(user._id, res);
-
-    return res.status(201).json({
-      id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      profilepic: user.profilepic,
-    });
+      const { email, password } = req.body;
+      console.log("Login attempt with email:", email); // Debugging line
+      console.log("Password length:", password ? password.length : "No password provided"); // Debugging line
+    
+      // Add validation
+      if (!email || !password) {
+          return res.status(400).json({ message: "All fields are required" });
+      }
+      // find user by email
+      const user = User.find({email:email});
+      if(user) return JSON.stringify(user);
+      return res.status(400).json({ message: "user not found" });
   } catch (error) {
-    console.log("error in login controller ", error.message);
-    return res.status(500).json({ message: "internal server error" });
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -120,11 +112,16 @@ export const updateprofile = async (req, res) => {
   }
 };
 
-export const checkauth = (req, res) => {
+export const checkauth = async (req, res) => {
   try {
-    res.status(200).json(req.user);
+      // User is already verified by protectroute middleware
+      const user = await User.findById(req.user.id).select("-password");
+      if (!user) {
+          return res.status(401).json({ message: "User not found" });
+      }
+      res.status(200).json(user);
   } catch (error) {
-    console.log("error in checkauth controller", error.message);
-    res.status(500).json({ message: "internal server error" });
+      console.error("Check auth error:", error);
+      res.status(500).json({ message: "Server error" });
   }
 };

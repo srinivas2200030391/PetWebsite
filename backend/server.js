@@ -1,30 +1,23 @@
-import dotenv from "dotenv";
-import cookieparser from "cookie-parser";
+import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.js";
-import connectdb from "./lib/db.js";
 
-dotenv.config(); 
+const app = express();
 
-const PORT = process.env.PORT;
-
-// Middleware for parsing cookies
-app.use(cookieparser());
-
-// CORS configuration (ensure frontend URL is correct)
 app.use(cors({
-  origin: "http://localhost:5173", // Frontend URL
-  credentials: true,  // Allow cookies to be sent/received
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"]
 }));
 
+app.use(cookieParser());
+app.use(express.json());
 
-// Routes
 app.use("/api/auth", authRoutes);
 
+const PORT = process.env.PORT || 8000;
 
-
-// Start the server
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  connectdb();  // Connect to the database
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

@@ -1,6 +1,7 @@
 import {create} from"zustand"
 import { axiosinstance } from "../../lib/axios"
 import toast from "react-hot-toast";
+import config from "../../config"
 
 
 export const useAuthStore = create((set,get) =>({
@@ -13,19 +14,20 @@ export const useAuthStore = create((set,get) =>({
     socket:null,
 
 
-    checkAuth:async ()=> {
-            try {
-                const res = await axiosinstance.get("/auth/check");
-
-                set ({authUser:res.data}) 
-
-            } catch (error) {
-                set ({authUser:null})
-                console.log("error in checkauth" , error.message)  
-            }finally{
-                set({ischeckingAuth:false})
-            }
-        },
+    checkAuth: async () => {
+      try {
+          set({ ischeckingAuth: true });
+          const res = await axiosinstance.get("/auth/check");
+          if (res.data) {
+              set({ authUser: res.data });
+          }
+      } catch (error) {
+          set({ authUser: null });
+          console.error("Auth check error:", error.message);
+      } finally {
+          set({ ischeckingAuth: false });
+      }
+  },
 
     signup: async (data) => {
         set({ isSigningUp: true });
@@ -45,11 +47,12 @@ export const useAuthStore = create((set,get) =>({
         }
       },
       // In your logout function in the store
+
 logout: async () => {
   console.log("Starting logout process");
   try {
     console.log("About to make logout API call");
-    const response = await axiosinstance.post("/auth/logout", {}, { withCredentials: true });
+    const response = await axiosinstance.post(`${config.baseURL}`, {}, { withCredentials: true });
     console.log("Logout API response:", response);
     
     set({ authUser: null });
@@ -68,22 +71,21 @@ logout: async () => {
 },
 
 
-      login: async(data) =>{
-        set({isLoggingIn:true})
-        try {
-            const res = await axiosinstance.post("/auth/login",data);
-            set({authUser: res.data})
-            toast.success("Logged in successfully")
-
-            get().connectSocket()
-            window.location.reload();
-
-
-        } catch (error) {
-            toast.error(error.response.data.message) 
-            
-        }finally{
-            set({isLoggingIn:false})
-        }
+login: async (data) => {
+  try {
+      set({ isLoggingIn: true });
+      const res = await axiosinstance.post(`${config.baseURL}/api/auth/login`, data);
+      if (res.data) {
+          set({ authUser: res.data });
+          toast.success("Logged in successfully");
+          return true;
       }
+  } catch (error) {
+      const message = error.response?.data?.message || "Login failed";
+      toast.error(message);
+      return false;
+  } finally {
+      set({ isLoggingIn: false });
+  }
+}
 }))

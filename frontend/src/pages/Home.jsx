@@ -70,11 +70,11 @@ const HomeDashboard = () => {
         <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
           <Link to="/Petshop" className="col-span-12 sm:col-span-4 h-[300px]">
             <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-md">
-              <div className="absolute z-10 top-4 left-4 flex-col items-start">
-                <p className="text-xs text-black uppercase font-bold">
+            <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
+                <p className="text-xs text-white uppercase font-bold">
                   get your pet
                 </p>
-                <h4 className="text-black font-medium text-lg ">
+                <h4 className="text-white  font-medium text-lg ">
                   make a new family member
                 </h4>
               </div>
@@ -87,7 +87,7 @@ const HomeDashboard = () => {
           </Link>
           <Link to="/boardingshopfilter" className="col-span-12 sm:col-span-4 h-[300px]">
             <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-md">
-              <div className="absolute z-10 top-4 left-4 flex-col items-start">
+            <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
                 <p className="text-xs text-white/60 uppercase font-bold">
                   Boarding
                 </p>
@@ -104,8 +104,8 @@ const HomeDashboard = () => {
           </Link>
           <Link to="" className="col-span-12 sm:col-span-4 h-[300px]">
           <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-md">
-            <div className="absolute z-10 top-4 left-4 flex-col items-start">
-              <p className="text-xs text-white/60 uppercase font-bold">
+            <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
+              <p className="text-xs text-white/60 uppercase font-bold bg-">
                 Mating
               </p>
               <h4 className="text-white font-medium text-lg">
@@ -121,9 +121,9 @@ const HomeDashboard = () => {
           </Link>
           <Link to="" className="col-span-12 sm:col-span-4 h-[300px]">
           <div className="w-full h-[300px] col-span-12 sm:col-span-5 relative rounded-lg overflow-hidden shadow-md">
-            <div className="absolute z-10 top-4 left-4 flex-col items-start">
+          <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
               <p className="text-xs text-white/60 uppercase font-bold">Services</p>
-              <h4 className="text-black font-medium text-2xl">more for your pet</h4>
+              <h4 className="text-white  font-medium text-2xl">more for your pet</h4>
             </div>
             <img
               alt="Card background"
@@ -134,11 +134,11 @@ const HomeDashboard = () => {
           </Link> 
           <Link to="/aboutpets" className="h-[300px] col-span-4 sm:col-span-7">
           <div className="w-full h-[300px] col-span-4 sm:col-span-7 relative rounded-lg overflow-hidden shadow-md">
-            <div className="absolute z-10 top-4 left-4 flex-col items-start">
-              <p className="text-xs text-balck uppercase font-bold">
+          <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
+          <p className="text-xs text-white uppercase font-bold">
                 Know about your pet
               </p>
-              <h4 className="text-black font-medium text-xl">
+              <h4 className="text-white font-medium text-xl">
                 Checkout Here
               </h4>
             </div>
@@ -149,16 +149,15 @@ const HomeDashboard = () => {
             />
             <div className="absolute bg-black/40 bottom-0 z-10 border-t border-gray-600 w-full p-4 flex justify-between items-center">
               <div className="flex gap-2 items-center">
-                <div className="rounded-full w-10 h-10 bg-black"></div>
-                <div className="flex flex-col">
-                  <p className="text-xs text-white/60">Breathing App</p>
+            <div className="absolute z-10 top-4 left-4 flex-col items-sta ">
+                  <p className="text-xs text-white/60">LEARN</p>
                   <p className="text-xs text-white/60">
-                    Get a good night&apos;s sleep.
+                   More about your pet
                   </p>
                 </div>
               </div>
               <button className="bg-white text-black px-3 py-1 rounded-full text-xs">
-                Get App
+                Click here
               </button>
             </div>
           </div>

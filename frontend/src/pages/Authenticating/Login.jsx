@@ -12,6 +12,8 @@ import {
 } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthstore"; 
+import axios from "axios";
+import config from "../../config";
 
 export default function LoginCard() {
   const navigate = useNavigate();
@@ -32,8 +34,21 @@ export default function LoginCard() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    await login(formData);  
+    // if (!email || !password) {
+    //   return toast.error("Please fill in all fields.");
+    // }
+    // }
+    // if (!/\S+@\S+\.\S+/.test(email)) {
+    //   return toast.error("Invalid email format.");
+    // }
+    // if (password.length < 6) {
+    //   return toast.error("Password must be at least 6 characters.");
+    // }
+    const success = await axios.post(`${config.baseURL}/api/auth/login`,formData);
+    if (success) {
     navigate("/home"); 
+    }
+
   };
 
   return (
