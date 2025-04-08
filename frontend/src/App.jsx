@@ -89,7 +89,8 @@ import AboutPets from "./pages/About/AboutPets";
 import { useAuthStore } from "./pages/store/useAuthstore";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
-import DogBreeds from "./pages/About/DogBreeds";
+import Breeds from "./pages/About/Breeds";
+import BreedDetailPage from "./pages/About/BreedDetailPage";
 
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
@@ -125,7 +126,8 @@ const App = () => {
         <Route path="/boardingshops" element={<BoardingShops />} />
         <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />
         <Route path="/aboutpets" element={<AboutPets />} />
-        <Route path="/breeds/:item" element={<DogBreeds />} />
+        <Route path="/breeds/:item" element={<Breeds />} />
+        <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
 
         <Route
           path="/"

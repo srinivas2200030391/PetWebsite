@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { IoChevronBack } from "react-icons/io5";
 import config from "../../config";
 
-const DogBreeds = ({ item }) => {
+const CatBreeds = ({ item }) => {
+  // const { item } = useParams();
   const navigate = useNavigate();
   const [animalData, setAnimalData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +18,6 @@ const DogBreeds = ({ item }) => {
   const fetchProductData = async () => {
     try {
       setLoading(true);
-      console.log("item", item);
       // capitalize first letter of item
       //const capitalizedItem = item.charAt(0).toUpperCase() + item.slice(1);
       const response = await axios.get(
@@ -53,11 +53,9 @@ const DogBreeds = ({ item }) => {
       </div>
     );
   }
-
-const handleBreedClick = (breed) => {
-  navigate(`/pet/breeds/${encodeURIComponent(breed.toLowerCase())}`);
-};
-
+  const handleBreedClick = (breed) => {
+    navigate(`/pet/breeds/${encodeURIComponent(breed.toLowerCase())}`);
+  };
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -102,4 +100,4 @@ const handleBreedClick = (breed) => {
   );
 };
 
-export default DogBreeds;
+export default CatBreeds;
