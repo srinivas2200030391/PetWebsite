@@ -7,26 +7,27 @@ const cards = [
     subtitle: "50+ Breeds",
     description: "Popular Dog Breeds",
     image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1",
-    href: "/dog-breeds/dog",
+    href: "/breeds/dog",
   },
   {
     title: "Cats",
     subtitle: "30+ Breeds",
     description: "Popular Cat Breeds",
-    image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba"
+    image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
+    href: "/breeds/cat",
   },
   {
     title: "Birds",
     subtitle: "25+ Species",
     description: "Popular Bird Species",
-    image: "https://images.unsplash.com/photo-1552728089-57bdde30beb3"
+    image: "https://images.unsplash.com/photo-1552728089-57bdde30beb3",
   },
   {
     title: "Fish",
     subtitle: "40+ Types",
     description: "Popular Aquatic Pets",
-    image: "https://images.unsplash.com/photo-1524704796725-9fc3044a58b2"
-  }
+    image: "https://images.unsplash.com/photo-1524704796725-9fc3044a58b2",
+  },
 ];
 
 export default function AboutPets() {

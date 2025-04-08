@@ -64,8 +64,7 @@
 //   );
 // }
 
-
-import  { useEffect } from "react";
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./pages/Footer";
@@ -90,8 +89,8 @@ import AboutPets from "./pages/About/AboutPets";
 import { useAuthStore } from "./pages/store/useAuthstore";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
-import DogBreeds from './pages/About/DogBreeds';
-
+import Breeds from "./pages/About/Breeds";
+import BreedDetailPage from "./pages/About/BreedDetailPage";
 
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
@@ -109,9 +108,10 @@ const App = () => {
 
   return (
     <div className="min-h-screen">
-      {authUser && <Navbar />}
+      {<Navbar />}
       <Routes>
-        <Route path="/home/*" element={authUser ? <Home /> : <Navigate to="/login" />} />
+        {/* <Route path="/home/*" element={authUser ? <Home /> : <Navigate to="/login" />} /> */}
+        <Route path="/home/*" element={<Home />} />
         <Route path="/custombutton" element={<CustomButton />} />
         <Route path="/petshop" element={<Petshop />} />
         <Route path="/products" element={<Products />} />
@@ -126,15 +126,31 @@ const App = () => {
         <Route path="/boardingshops" element={<BoardingShops />} />
         <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />
         <Route path="/aboutpets" element={<AboutPets />} />
-        <Route path="/dog-breeds/:item" element={<DogBreeds />} />
+        <Route path="/breeds/:item" element={<Breeds />} />
+        <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
 
-      <Route path="/" element={!authUser ? <Intro /> : <Navigate to="/home" />} />
-        <Route path="/intro" element={!authUser ? <Intro /> : <Navigate to="/home" />} />
-        <Route path="/login" element={!authUser ? <Login /> : <Navigate to="/home" />} />
-        <Route path="/signup" element={!authUser ? <Signup /> : <Navigate to="/home" />} />
+        <Route
+          path="/"
+          element={!authUser ? <Intro /> : <Navigate to="/home" />}
+        />
+        <Route
+          path="/intro"
+          element={!authUser ? <Intro /> : <Navigate to="/home" />}
+        />
+        <Route
+          path="/login"
+          element={!authUser ? <Login /> : <Navigate to="/home" />}
+        />
+        <Route
+          path="/signup"
+          element={!authUser ? <Signup /> : <Navigate to="/home" />}
+        />
 
-        <Route path="*" element={<Navigate to={authUser ? "/home" : "/login"} />} />
-
+        <Route path="*" element={<Navigate to={"/home"} />} />
+        {/* <Route
+          path="*"
+          element={<Navigate to={authUser ? "/home" : "/login"} />}
+        /> */}
       </Routes>
       <Toaster />
       {authUser && <Footer />}
@@ -150,4 +166,4 @@ export default function AppWrapper() {
   );
 }
 
-//Disable authentication 
+//Disable authentication

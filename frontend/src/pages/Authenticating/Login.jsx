@@ -46,6 +46,7 @@ export default function LoginCard() {
     // }
     const success = await axios.post(`${config.baseURL}/api/auth/login`,formData);
     if (success) {
+      console.log(success.data.data[0]);
     navigate("/home"); 
     }
 
