@@ -21,12 +21,14 @@ const cards = [
     subtitle: "25+ Species",
     description: "Popular Bird Species",
     image: "https://images.unsplash.com/photo-1552728089-57bdde30beb3",
+        href: "/breeds/bird",
   },
   {
     title: "Fish",
     subtitle: "40+ Types",
     description: "Popular Aquatic Pets",
     image: "https://images.unsplash.com/photo-1524704796725-9fc3044a58b2",
+    href:"/breeds/fish"
   },
 ];
 
