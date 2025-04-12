@@ -12,7 +12,11 @@ const userController = {
   },
   CreateUser: async (req, res) => {
     try {
-      const newUser = await User.create(req.body);
+      const ourUser = req.body;
+      ourUser.address = [];
+      ourUser.userType = "Client";
+      ourUser.phone = "9999999999";
+      const newUser = await User.create(ourUser);
       res.status(201).json(newUser);
     } catch (error) {
       res.status(500).json({ error: error.message });
