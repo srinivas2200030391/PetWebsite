@@ -5,6 +5,8 @@ import Cart from "./Cart";
 import salesimg from '../assets/salesimg.jpg';
 import boardingimg from '../assets/boardingimg.jpeg';
 import matingimg from '../assets/matingimg.jpeg';
+import serviceimg from '../assets/serviceimg.jpg';
+import aboutimg from '../assets/aboutimg.jpg';
 
 const Home = () => {
   const [setCartCount] = useState(0);
@@ -86,7 +88,7 @@ const HomeDashboard = () => {
               <img
                 alt="Card background"
                 className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-                src="https://heroui.com/images/card-example-6.jpeg"
+                src={serviceimg}
                 style={{ aspectRatio: '16/9' }}
               />
                <div className="justify-center before:bg-white/10 border-white/20 border-1 overflow-hidden py-2 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex items-center px-4 backdrop-blur-sm">
@@ -101,7 +103,7 @@ const HomeDashboard = () => {
               <img
                 alt="Relaxing app background"
                 className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-                src="https://th.bing.com/th/id/OIP.So4l2emDpPInq3Cb2lWddgHaE8?w=274&h=183&c=7&r=0&o=5&dpr=2&pid=1.7"
+                src={aboutimg}
                 style={{ aspectRatio: '16/9' }}
               />
              <div className="justify-center before:bg-white/10 border-white/20 border-1 overflow-hidden py-2 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex items-center px-4 backdrop-blur-sm">
