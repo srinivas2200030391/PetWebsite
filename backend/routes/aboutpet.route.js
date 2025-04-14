@@ -8,8 +8,7 @@ router.get("/dog", aboutPet.getAllDogs);
 router.get("/getallaboutpet", aboutPet.getAllAboutPet);
 router.get("/cat", aboutPet.getAllCats);
 router.get("/bird", aboutPet.getAllBirds);
-router.get("/getdogbreeds", aboutPet.getDogBreeds);
-router.get("/getcatbreeds", aboutPet.getCatBreeds);
+router.get("/getbreeds/:item", aboutPet.getBreeds);
 router.get("/getpetbybreed/:breed", aboutPet.getPetByBreed);
 
 export default router;
