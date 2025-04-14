@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import config from "../../config"
 
 
-export const useAuthStore = create((set,get) =>({
+export const useAuthStore = create((set) =>({
     authUser : null,
     isSigningUp:false,
     isLoggingIn:false,

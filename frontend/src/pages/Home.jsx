@@ -1,11 +1,13 @@
-import  { useState } from "react";
+import { useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import Carsoule from "../components/Carsoule";
-import PetStore from "./petshop/PetStore";
 import Cart from "./Cart";
+import salesimg from '../assets/salesimg.jpg';
+import boardingimg from '../assets/boardingimg.jpeg';
+import matingimg from '../assets/matingimg.jpeg';
 
 const Home = () => {
-  const [ setCartCount] = useState(0);
+  const [setCartCount] = useState(0);
   const userId = 1; // Assuming this is the user ID you want to use
 
   const updateCartCount = (newCount) => {
@@ -14,43 +16,9 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main content with navigation */}
       <div className="container mx-auto px-4">
-        {/* Navigation tabs for Store and Cart */}
-        {/*<div className="flex justify-center my-6">
-          <div className="flex space-x-4 bg-white rounded-lg shadow-sm p-1">
-            <Link
-              to="/home"
-              className="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
-              Home
-            </Link>
-            <Link
-              to="/home/store"
-              className="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
-              Store
-            </Link>
-            <Link
-              to="/home/cart"
-              className="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors relative">
-              Cart
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          </div>
-        </div>*/}
-
-        {/* Routes for Store and Cart components */}
         <Routes>
           <Route path="/" element={<HomeDashboard />} />
-          <Route
-            path="/store"
-            element={
-              <PetStore userId={userId} updateCartCount={updateCartCount} />
-            }
-          />
           <Route
             path="/cart"
             element={<Cart userId={userId} updateCartCount={updateCartCount} />}
@@ -67,100 +35,81 @@ const HomeDashboard = () => {
     <div className="flex flex-col gap-10 py-8 pt-20">
       <Carsoule />
       <div className="flex items-center justify-center">
-        <div className="max-w-[900px] gap-2 grid grid-cols-12 grid-rows-2 px-8">
-          <Link to="/Petshop" className="col-span-12 sm:col-span-4 h-[300px]">
-            <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-md">
-            <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
-                <p className="text-xs text-white uppercase font-bold">
-                  get your pet
-                </p>
-                <h4 className="text-white  font-medium text-lg ">
-                  make a new family member
-                </h4>
-              </div>
+        <div className="max-w-[900px] gap-5 grid grid-cols-12 grid-rows-2 px-8">
+          <Link to="/Petshop" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
+            <div className="h-[250px] sm:h-[300px] relative rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
               <img
                 alt="Card background"
                 className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-                src="https://th.bing.com/th/id/OIP.vwvnhsGDlYUe0aAGkmZ01QHaE9?w=201&h=180&c=7&r=0&o=5&dpr=2&pid=1.7"
+                src={salesimg}
+                style={{ aspectRatio: '16/9' }}
               />
-            </div>
-          </Link>
-          <Link to="/boardingshopfilter" className="col-span-12 sm:col-span-4 h-[300px]">
-            <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-md">
-            <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
-                <p className="text-xs text-white/60 uppercase font-bold">
-                  Boarding
-                </p>
-                <h4 className="text-white font-medium text-lg">
-                  Contribute to the planet
-                </h4>
-              </div>
-              <img
-                alt="Card background"
-                className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-                src="https://th.bing.com/th/id/OIP.xYSNjDohKFLQ772jMNKyJwHaH5?w=141&h=180&c=7&r=0&o=5&dpr=2&pid=1.7"
-              />
-            </div>
-          </Link>
-          <Link to="" className="col-span-12 sm:col-span-4 h-[300px]">
-          <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-md">
-            <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
-              <p className="text-xs text-white/60 uppercase font-bold bg-">
-                Mating
-              </p>
-              <h4 className="text-white font-medium text-lg">
-                Find your pet&apos;s soulmate
-              </h4>
-            </div>
-            <img
-              alt="Card background"
-              className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-              src="https://th.bing.com/th/id/OIP.lwQpnNeH45lJijCQPCh5zwHaFW?w=244&h=180&c=7&r=0&o=5&dpr=2&pid=1.7"
-            />
-          </div>
-          </Link>
-          <Link to="" className="col-span-12 sm:col-span-4 h-[300px]">
-          <div className="w-full h-[300px] col-span-12 sm:col-span-5 relative rounded-lg overflow-hidden shadow-md">
-          <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
-              <p className="text-xs text-white/60 uppercase font-bold">Services</p>
-              <h4 className="text-white  font-medium text-2xl">more for your pet</h4>
-            </div>
-            <img
-              alt="Card background"
-              className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-              src="https://heroui.com/images/card-example-6.jpeg"
-            />
-          </div>
-          </Link> 
-          <Link to="/aboutpets" className="h-[300px] col-span-4 sm:col-span-7">
-          <div className="w-full h-[300px] col-span-4 sm:col-span-7 relative rounded-lg overflow-hidden shadow-md">
-          <div className="absolute z-10 top-4 left-4 flex-col items-start bg-black/40 p-4 rounded-lg">
-          <p className="text-xs text-white uppercase font-bold">
-                Know about your pet
-              </p>
-              <h4 className="text-white font-medium text-xl">
-                Checkout Here
-              </h4>
-            </div>
-            <img
-              alt="Relaxing app background"
-              className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-              src="https://th.bing.com/th/id/OIP.So4l2emDpPInq3Cb2lWddgHaE8?w=274&h=183&c=7&r=0&o=5&dpr=2&pid=1.7"
-            />
-            <div className="absolute bg-black/40 bottom-0 z-10 border-t border-gray-600 w-full p-4 flex justify-between items-center">
-              <div className="flex gap-2 items-center">
-            <div className="absolute z-10 top-4 left-4 flex-col items-sta ">
-                  <p className="text-xs text-white/60">LEARN</p>
-                  <p className="text-xs text-white/60">
-                   More about your pet
+                <div className="justify-center before:bg-white/10 border-white/20 border-1 overflow-hidden py-2 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex items-center px-4 backdrop-blur-sm">
+                  <p className="text-white uppercase font-black tracking-wide text-sm leading-relaxed font-[' Winky Rough']">
+                    Pet Store
                   </p>
                 </div>
-              </div>
-              <button className="bg-white text-black px-3 py-1 rounded-full text-xs">
-                Click here
-              </button>
             </div>
-          </div>
+          </Link>
+          <Link to="/boardingshopfilter" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
+            <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
+              <img
+                alt="Card background"
+                className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
+                src={boardingimg}
+                style={{ aspectRatio: '1/1' }}
+              />
+              <div className="justify-center before:bg-white/10 border-white/20 border-1 overflow-hidden py-2 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex items-center px-4 backdrop-blur-sm">
+                  <p className="text-white uppercase font-black tracking-wide text-sm leading-relaxed font-[' Winky Rough']">
+                    Boarding
+                  </p>
+                </div>
+            </div>
+          </Link>
+          <Link to="" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
+            <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
+              <img
+                alt="Card background"
+                className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
+                src={matingimg} 
+                style={{ aspectRatio: '4/3' }}
+              />
+              <div className="justify-center before:bg-white/10 border-white/20 border-1 overflow-hidden py-2 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex items-center px-4 backdrop-blur-sm">
+                  <p className="text-white uppercase font-black tracking-wide text-sm leading-relaxed font-[' Winky Rough']">
+                    Match fixing 
+                  </p>
+                </div>
+            </div>
+          </Link>
+          <Link to="" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
+            <div className="w-full h-[300px] col-span-12 sm:col-span-5 relative rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
+              <img
+                alt="Card background"
+                className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
+                src="https://heroui.com/images/card-example-6.jpeg"
+                style={{ aspectRatio: '16/9' }}
+              />
+               <div className="justify-center before:bg-white/10 border-white/20 border-1 overflow-hidden py-2 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex items-center px-4 backdrop-blur-sm">
+                  <p className="text-white uppercase font-black tracking-wide text-sm leading-relaxed font-[' Winky Rough']">
+                    Pet Services
+                  </p>
+                </div>
+            </div>
+          </Link>
+          <Link to="/aboutpets" className="h-[300px] col-span-4 sm:col-span-7 transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
+            <div className="w-full h-[300px] col-span-4 sm:col-span-7 relative rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
+              <img
+                alt="Relaxing app background"
+                className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
+                src="https://th.bing.com/th/id/OIP.So4l2emDpPInq3Cb2lWddgHaE8?w=274&h=183&c=7&r=0&o=5&dpr=2&pid=1.7"
+                style={{ aspectRatio: '16/9' }}
+              />
+             <div className="justify-center before:bg-white/10 border-white/20 border-1 overflow-hidden py-2 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex items-center px-4 backdrop-blur-sm">
+                  <p className="text-white uppercase font-black tracking-wide text-sm leading-relaxed font-[' Winky Rough']">
+                    Know about your pet
+                  </p>
+                </div>
+            </div>
           </Link>
         </div>
       </div>
