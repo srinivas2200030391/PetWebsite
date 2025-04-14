@@ -1,7 +1,9 @@
 import { Carousel } from "@material-tailwind/react";
 import {Link} from "react-router-dom";
 import { useEffect } from "react";
-
+import slideimg from "../assets/slideimg.jpg";
+import slideimg2 from "../assets/slideimg2.jpeg";
+import slideimg3 from "../assets/slideimg3.jpeg";
 export default function CarouselEx() {
   useEffect(() => {
     const interval = setInterval(() => {
@@ -11,7 +13,7 @@ export default function CarouselEx() {
   }, []); 
 
   return (
-    <div className="h-[50vh]">
+<div className="h-[50vh] max-h-[600px]">
       <Carousel
         className="rounded-xl h-full w-full"
         autoplay={true}
@@ -32,20 +34,23 @@ export default function CarouselEx() {
         )}
       >
         <img
-          src="https://image.shutterstock.com/image-photo/group-pets-isolated-on-white-260nw-227674867.jpg"
+          src={slideimg}
           alt="image 1"
           className="h-full w-full object-cover"
+          loading="lazy"
         />
         <img
-          src="https://th.bing.com/th/id/OIP.3tcNKFSZcOAT6nnb2OHrxQHaEK?w=329&h=185&c=7&r=0&o=5&dpr=2&pid=1.7"
+          src={slideimg2}
           alt="image 2"
           className="h-full w-full object-cover"
+          loading="lazy"
         />
         <Link to="">
         <img
-          src="https://th.bing.com/th/id/OIP.81eSKy3-I9F1_7DocXHg_wHaCa?w=301&h=180&c=7&r=0&o=5&dpr=2&pid=1.7"
+          src={slideimg3}
           alt="image 3"
           className="h-full w-full object-cover"
+          loading="lazy"
         />
         </Link>
       </Carousel>
