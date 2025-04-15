@@ -12,6 +12,7 @@ import userRoutes from "./routes/user.route.js";
 import hospitalCardRoute from "./routes/hospitalcard.route.js";
 import vendorRoute from "./routes/vendor.route.js"; // Assuming you have a vendor route
 // import boardingRoute from "./routes/boarding.route.js"
+import paymentRoute from "./routes/paymentRoutes.js"; // Assuming you have a payment route
 
 const app = express();
 dotenv.config();
@@ -35,12 +36,13 @@ app.use("/api/aboutpet", aboutPetRoute);
 app.use("/api/hospital", hospitalRoute);
 app.use("/api/hospitalcard", hospitalCardRoute);
 app.use("/api/vendor", vendorRoute); // Assuming you have a vendor route
+app.use("/api/payment",paymentRoute)
 
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ₹{PORT}`);
   connectDB();
 });
 
@@ -71,6 +73,6 @@ app.listen(PORT, () => {
 
 // // Start the server
 // server.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
+//   console.log(`Server running on port ₹{PORT}`);
 //   connectdb();  // Connect to the database
 // });

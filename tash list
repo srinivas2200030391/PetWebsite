@@ -1,0 +1,223 @@
+[33mcommit 0a4506dd1099cdb3dc2d6d8af7cd73ed42fb33ea[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Merge: c925c4d e6a7df0
+Author: Srinivas Kommirisetty <116977437+srinivas2200030391@users.noreply.github.com>
+Date:   Mon Apr 14 22:12:00 2025 +0530
+
+    Merge branch 'MadRohTech:main' into main
+
+[33mcommit e6a7df07a65fa7ba8484e9e447f8035bf17b5131[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Mon Apr 14 21:53:53 2025 +0530
+
+    frontend commit
+
+[33mcommit 7e979f3099d79571a1a8d909601d8f9fabdf2861[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Mon Apr 14 16:39:03 2025 +0530
+
+    frontend commit
+
+[33mcommit 3e358fa957b34481b3da5aa87d5730fe3ed1f5cb[m
+Merge: 3a4f948 c00db7b
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Mon Apr 14 11:15:12 2025 +0530
+
+    Merge branch 'main' of https://github.com/MadRohTech/PetWebsite
+
+[33mcommit c925c4d7294aadb286624e4566e00ed584ebef4a[m
+Merge: 3a4f948 c00db7b
+Author: Srinivas Kommirisetty <116977437+srinivas2200030391@users.noreply.github.com>
+Date:   Sat Apr 12 21:08:24 2025 +0530
+
+    Merge branch 'MadRohTech:main' into main
+
+[33mcommit c00db7b281d2ea78448228023cd969e4809fd1c7[m[33m ([m[1;31mupstream/main[m[33m)[m
+Author: Srinivas <vasus4990@gmail.com>
+Date:   Sat Apr 12 21:07:44 2025 +0530
+
+    aboutpet optimized
+
+[33mcommit 3a4f9481673aba5badf5a0ec07fd00e2f9927126[m
+Merge: bfe6056 89230b3
+Author: MadRohTech <madrohtech@gmail.com>
+Date:   Tue Apr 8 21:29:49 2025 +0530
+
+    Merge pull request #3 from srinivas2200030391/main
+    
+    Breed Details done
+
+[33mcommit 89230b3cc1a0962a3b2b02d56b77b6ca4f326a58[m
+Author: Srinivas <vasus4990@gmail.com>
+Date:   Tue Apr 8 21:16:03 2025 +0530
+
+    breed details done
+
+[33mcommit 1ab864fad64832608d6b897cd5510191eeeeca72[m
+Author: Srinivas <vasus4990@gmail.com>
+Date:   Tue Apr 8 19:30:19 2025 +0530
+
+    login done
+
+[33mcommit bfe6056cc401d5cad9ca6e10e2c40e4544b69249[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Tue Apr 8 18:32:50 2025 +0530
+
+    login error
+
+[33mcommit a49c1818da9d63be737a260d6bbb6d468b4b2b18[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Mon Apr 7 22:04:49 2025 +0530
+
+    frontend commit
+
+[33mcommit 428a6ac7e30b28b503ca52b61805163eaebe507e[m
+Merge: 45dbba7 72eac90
+Author: MadRohTech <madrohtech@gmail.com>
+Date:   Mon Apr 7 21:58:57 2025 +0530
+
+    Merge pull request #2 from srinivas2200030391/main
+    
+    Backend changed about pet,hospital and hospital card
+
+[33mcommit 72eac90cc31b035ae041899524e7f38e8630c507[m
+Author: Srinivas <vasus4990@gmail.com>
+Date:   Mon Apr 7 21:30:36 2025 +0530
+
+    Added config.js
+
+[33mcommit 2495e9e8958fe0c0c0112d0ddd331e6a190ded3b[m
+Author: Srinivas <vasus4990@gmail.com>
+Date:   Mon Apr 7 21:28:23 2025 +0530
+
+    Changed .gitignore
+
+[33mcommit 7d4d362cadff0d084f49157d0899e40b199b7507[m
+Author: Srinivas <vasus4990@gmail.com>
+Date:   Mon Apr 7 21:23:26 2025 +0530
+
+    Backend checking done
+
+[33mcommit 45dbba7e72f6b310e0f2d48401b73b3544c8504d[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Tue Apr 1 19:39:54 2025 +0530
+
+    files commit
+
+[33mcommit ff7fff1ade047066162f4b2ff6f3b2c2d280c80b[m
+Author: renu-aayush-maddi <2200032294@kluniversity.in>
+Date:   Tue Apr 1 17:10:13 2025 +0530
+
+    Backend changed Signup login zustand integrated
+
+[33mcommit 094f59cf3bac8be10164ecae6f1271d8df68ce9e[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Mon Mar 31 19:28:11 2025 +0530
+
+    overview commit
+
+[33mcommit 66d88b9d3267fd47b8bbb529b58dc6612580db13[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Fri Mar 28 23:06:53 2025 +0530
+
+    frontend commit
+
+[33mcommit a37c04d8fe7648634ab9bc898a1e1afb9bb51fb9[m
+Merge: 7894268 702b9bb
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Fri Mar 28 22:59:07 2025 +0530
+
+    cards commit
+
+[33mcommit 7894268763e967543841b46a61e438038b7f3f82[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Fri Mar 28 22:50:27 2025 +0530
+
+    frontend commit
+
+[33mcommit 702b9bbd9c577a789b89d6fb02275fe99dd5a6c8[m
+Author: Srinivas <vasus4990@gmail.com>
+Date:   Thu Mar 20 19:49:52 2025 +0530
+
+    Pet store done
+
+[33mcommit bd45e626b9a6b6486bb09b1f301e8274281ba614[m
+Author: SHANMUKH SAI <saishanmuk28@gmail.com>
+Date:   Wed Mar 19 19:31:06 2025 +0530
+
+    BackendFilesAdded-Pet Curd
+
+[33mcommit 910edbb8e43cd100cc40f35bf5a3d9b6345c0774[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Wed Mar 19 19:22:14 2025 +0530
+
+    Boardingshop commit
+
+[33mcommit 8630c5f688b4e4a1fa866ab38eba39a0f0b44b72[m
+Author: renu-aayush-maddi <2200032294@kluniversity.in>
+Date:   Wed Mar 19 13:25:04 2025 +0530
+
+    Cart Backend Added
+
+[33mcommit 54fc327fbcc16ea8e461f0ea11b1ba0087f26f24[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Tue Mar 18 20:19:44 2025 +0530
+
+    cart commit
+
+[33mcommit b3480056a789141f41861c99fb79d9bc5b5976a0[m
+Merge: 01f1050 447459b
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Sun Mar 16 22:27:49 2025 +0530
+
+    Merge branch 'main' of https://github.com/MadRohTech/PetWebsite
+
+[33mcommit 01f1050cb37b9b6fa63c7a76c97c1d12a35981dd[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Sun Mar 16 22:27:20 2025 +0530
+
+    frontend commit
+
+[33mcommit 447459b0130bcf81ce6d5aa137bc2dd0e363c775[m
+Merge: 093e402 cb56ed6
+Author: MadRohTech <madrohtech@gmail.com>
+Date:   Sun Mar 16 21:44:12 2025 +0530
+
+    Merge pull request #1 from srinivas2200030391/main
+    
+    Zustand done
+
+[33mcommit cb56ed6752afcce584e6b950e0d1d039513bfcdb[m
+Author: Srinivas <vasus4990@gmail.com>
+Date:   Sat Mar 15 19:31:12 2025 +0530
+
+    Zustand done
+
+[33mcommit 093e4021ed7a43431194fe7cf9111522182bf4da[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Fri Mar 14 17:07:20 2025 +0530
+
+    3rd commit
+
+[33mcommit f5366c75ab7e54407127e8918da273cad1a5daf6[m
+Author: chethanreddyc <chethanreddy0503@gmail.com>
+Date:   Wed Mar 12 21:41:38 2025 +0530
+
+    first commit
+
+[33mcommit 3e214d6b2998961a0b44f7361638fec9dee057be[m
+Author: MADHAV <saimadhavchikatipalli@gmail.com>
+Date:   Wed Mar 12 11:45:05 2025 +0530
+
+    Added .gitignore
+
+[33mcommit b7732dbe39fe85030ba3200d7f804f5a548bdc1f[m
+Author: MADHAV <saimadhavchikatipalli@gmail.com>
+Date:   Wed Mar 12 11:42:28 2025 +0530
+
+    Initialized backend with Node.js and Express
+
+[33mcommit 96d6bb17a16125c9f610517bcc89c0c4272e6914[m
+Author: MADHAV <saimadhavchikatipalli@gmail.com>
+Date:   Wed Mar 12 11:40:25 2025 +0530
+
+    Initialized frontend with React
