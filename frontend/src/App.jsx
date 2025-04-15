@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./pages/Footer";
-import Intro from "./pages/HomeCards";
+import Intro from "./pages/Intro";
 import Login from "./pages/Authenticating/Login";
 import Signup from "./pages/Authenticating/Signup";
 import Home from "./pages/Home";
@@ -25,6 +25,7 @@ import { Toaster } from "react-hot-toast";
 import Breeds from "./pages/About/Breeds";
 import BreedDetailPage from "./pages/About/BreedDetailPage";
 import { ProductProvider } from './context/ProductContext';
+import PetServices from './pages/Services/PetServices';
 
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
@@ -62,6 +63,9 @@ const App = () => {
           <Route path="/aboutpets" element={<AboutPets />} />
           <Route path="/breeds/:item" element={<Breeds />} />
           <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
+          <Route path="/petservices" element={<PetServices />} />
+
+          {/* Nested Routes */}
 
           <Route
             path="/"

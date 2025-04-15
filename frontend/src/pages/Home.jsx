@@ -10,8 +10,7 @@ import aboutimg from '../assets/aboutimg.jpg';
 
 const Home = () => {
   const [setCartCount] = useState(0);
-  const userId = 1; // Assuming this is the user ID you want to use
-
+  const userId = 1; 
   const updateCartCount = (newCount) => {
     setCartCount(newCount);
   };
@@ -83,7 +82,7 @@ const HomeDashboard = () => {
                 </div>
             </div>
           </Link>
-          <Link to="" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
+          <Link to="/petservices" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
             <div className="w-full h-[300px] col-span-12 sm:col-span-5 relative rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
               <img
                 alt="Card background"

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { IoChevronBack } from "react-icons/io5";
 import config from "../../config";
 
 const Breeds = () => {
@@ -57,22 +56,10 @@ const Breeds = () => {
     navigate(`/pet/breeds/${encodeURIComponent(breed.toLowerCase())}`);
   };
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between mt-20 px-4 py-6 shadow-sm fixed top-0 w-full bg-white z-50">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-gray-100">
-          <IoChevronBack size={25} className="text-indigo-600" />
-        </button>
-        <h1 className="text-2xl font-bold text-indigo-600">
-          {item?.toUpperCase()} BREEDS
-        </h1>
-        <div className="w-10" />
-      </div>
+    <div className="flex flex-col items-center justify-center bg-white">
 
       {/* Content */}
-      <div className="container mx-auto px-4 mt-52">
+      <div className="container mx-auto px-4 mt-28 mb-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {animalData.map((breed, index) => (
             <div
