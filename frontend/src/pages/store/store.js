@@ -48,7 +48,7 @@ export const useStore = create((set, get) => ({
   products: [],
   selectedCategory: "All",
   loading: false,
-
+  setLoading: (isLoading) => set({ loading: isLoading }),
   // Auth actions
   login: (userData) => {
     const authData = {
