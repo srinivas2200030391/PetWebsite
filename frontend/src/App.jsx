@@ -25,6 +25,7 @@ import Breeds from "./pages/About/Breeds";
 import BreedDetailPage from "./pages/About/BreedDetailPage";
 import { ProductProvider } from './context/ProductContext';
 import PetServices from './pages/Services/PetServices';
+import Grooming from './pages/Services/GroomingPage';
 
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
@@ -62,6 +63,7 @@ const App = () => {
           <Route path="/breeds/:item" element={<Breeds />} />
           <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
           <Route path="/petservices" element={<PetServices />} />
+          <Route path="/grooming" element={<Grooming />} />
 
           {/* Nested Routes */}
 

@@ -1,6 +1,5 @@
-
-import Productscard from './Productscard'
 import { useState } from 'react'
+import GrooomingShop from './GroomingShops'
 import {
   Dialog,
   DialogBackdrop,
@@ -71,7 +70,6 @@ export default function Example() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [ setSelectedFilters] = useState({})
   
-    
   const handleFilterChange = (sectionId, value, checked) => {
     setSelectedFilters(prev => ({
       ...prev,
@@ -188,7 +186,8 @@ export default function Example() {
 
         <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-baseline justify-between border-b border-gray-200 pb-6 pt-24">
-            <h1 className="text-4xl uppercase font-extrabold tracking-tighter text-gray-900">Pets Store</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900">Boarding...</h1>
+
             <div className="flex items-center">
               <Menu as="div" className="relative inline-block text-left">
                 <div>
@@ -313,7 +312,7 @@ export default function Example() {
                 ))}
               </form>
               <div className="lg:col-span-3">
-                <Productscard />
+                <GrooomingShop />
               </div>
             </div>
           </section>
