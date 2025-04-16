@@ -8,7 +8,7 @@ import Signup from "./pages/Authenticating/Signup";
 import Home from "./pages/Home";
 import Petshop from "./pages/petshop/Petshop";
 import ProductOverview from "./pages/petshop/ProductOverView";
-import MatingPage from "./pages/Mating/MatingPage";
+import MatingPage from "./pages/Mating/MatingPetsList";
 import MatingPets from "./pages/Mating/MatingPets";
 import Form from "./components/AppointmentFrom";
 import PetSaleForm from "./components/PetSaleForm";
