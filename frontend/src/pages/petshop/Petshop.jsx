@@ -14,7 +14,6 @@ import {
 } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from '@heroicons/react/20/solid'
-import ProductGrid from './ProductGrid'
 
 const sortOptions = [
   { name: 'Most Popular', href: '#', current: true },
@@ -313,7 +312,6 @@ export default function Example() {
                 ))}
               </form>
               <div className="lg:col-span-3">
-                <ProductGrid />
               </div>
             </div>
           </section>

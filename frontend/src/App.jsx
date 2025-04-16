@@ -9,7 +9,6 @@ import Home from "./pages/Home";
 import Petshop from "./pages/petshop/Petshop";
 import ProductOverview from "./pages/petshop/ProductOverView";
 import MatingPage from "./pages/Mating/MatingPage";
-import MatingPageFilter from "./pages/Mating/MatingPageFilter";
 import MatingPets from "./pages/Mating/MatingPets";
 import Form from "./components/AppointmentFrom";
 import PetSaleForm from "./components/PetSaleForm";
@@ -52,7 +51,6 @@ const App = () => {
           <Route path="/petshop" element={<Petshop />} />
           <Route path="/productoverview" element={<ProductOverview />} />
           <Route path="/matingpage" element={<MatingPage />} />
-          <Route path="/matingpagefilter" element={<MatingPageFilter />} />
           <Route path="/matingpets" element={<MatingPets />} />
           <Route path="/form" element={<Form />} />
           <Route path="/petsaleform" element={<PetSaleForm />} />

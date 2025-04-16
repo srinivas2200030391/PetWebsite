@@ -67,7 +67,7 @@ const HomeDashboard = () => {
                 </div>
             </div>
           </Link>
-          <Link to="" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
+          <Link to="/matingpage" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
             <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
               <img
                 alt="Card background"
