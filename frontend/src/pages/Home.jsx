@@ -3,10 +3,10 @@ import { Routes, Route, Link } from "react-router-dom";
 import Carsoule from "../components/Carsoule";
 import Cart from "./Cart";
 import salesimg from '../assets/salesimg.jpg';
-import boardingimg from '../assets/boardingimg.jpeg';
 import matingimg from '../assets/matingimg.jpeg';
 import serviceimg from '../assets/serviceimg.jpg';
 import aboutimg from '../assets/aboutimg.jpg';
+import veternaryimg from '../assets/veternaryimg.png'
 
 const Home = () => {
   const [setCartCount] = useState(0);
@@ -52,22 +52,22 @@ const HomeDashboard = () => {
                 </div>
             </div>
           </Link>
-          <Link to="/boardingshopfilter" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
+          <Link to="/healthcare" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
             <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
               <img
                 alt="Card background"
                 className="z-0 w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-                src={boardingimg}
+                src={veternaryimg}
                 style={{ aspectRatio: '1/1' }}
               />
               <div className="justify-center before:bg-white/10 border-white/20 border-1 overflow-hidden py-2 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex items-center px-4 backdrop-blur-sm">
                   <p className="text-white uppercase font-black tracking-wide text-sm leading-relaxed font-[' Winky Rough']">
-                    Boarding
+                    Health Care
                   </p>
                 </div>
             </div>
           </Link>
-          <Link to="" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
+          <Link to="/matingpage" className="col-span-12 sm:col-span-4 h-[300px] transform transition duration-300 hover:scale-[1.02] hover:-translate-y-1">
             <div className="col-span-12 sm:col-span-4 h-[300px] relative rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
               <img
                 alt="Card background"

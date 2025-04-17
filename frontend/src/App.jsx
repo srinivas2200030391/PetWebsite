@@ -9,8 +9,7 @@ import Home from "./pages/Home";
 import Petshop from "./pages/petshop/Petshop";
 import ProductOverview from "./pages/petshop/ProductOverView";
 import MatingPage from "./pages/Mating/MatingPage";
-import MatingPageFilter from "./pages/Mating/MatingPageFilter";
-import MatingPets from "./pages/Mating/MatingPets";
+import MatingPetsList from "./pages/Mating/MatingPetsList";
 import Form from "./components/AppointmentFrom";
 import PetSaleForm from "./components/PetSaleForm";
 import MatingForm from "./components/MatingForm";
@@ -26,7 +25,10 @@ import Breeds from "./pages/About/Breeds";
 import BreedDetailPage from "./pages/About/BreedDetailPage";
 import { ProductProvider } from './context/ProductContext';
 import PetServices from './pages/Services/PetServices';
-
+import Grooming from './pages/Services/GroomingPage';
+import HealthCarepage from "./pages/Health_Care/HealthCarepage";
+import Vets from './pages/Health_Care/Vets';
+import PetDetail from "./pages/petshop/PetDetail";
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
 
@@ -52,11 +54,10 @@ const App = () => {
           <Route path="/petshop" element={<Petshop />} />
           <Route path="/productoverview" element={<ProductOverview />} />
           <Route path="/matingpage" element={<MatingPage />} />
-          <Route path="/matingpagefilter" element={<MatingPageFilter />} />
-          <Route path="/matingpets" element={<MatingPets />} />
           <Route path="/form" element={<Form />} />
           <Route path="/petsaleform" element={<PetSaleForm />} />
           <Route path="/matingform" element={<MatingForm />} />
+          <Route path="/pet/:petId" element={<PetDetail />} />
           <Route path="/boardingpage" element={<BoardingPage />} />
           <Route path="/boardingshops" element={<BoardingShops />} />
           <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />
@@ -64,7 +65,10 @@ const App = () => {
           <Route path="/breeds/:item" element={<Breeds />} />
           <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
           <Route path="/petservices" element={<PetServices />} />
-
+          <Route path="/grooming" element={<Grooming />} />
+          <Route path="/matingpetslist" element={<MatingPetsList />} /> 
+          <Route path="/healthcare" element={<HealthCarepage />} />
+          <Route path="/vets" element={<Vets />} />
           {/* Nested Routes */}
 
           <Route

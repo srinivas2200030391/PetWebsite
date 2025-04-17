@@ -187,7 +187,7 @@ function NavList() {
         color="blue-gray"
         className="font-medium">
         <ListItem className="flex items-center gap-2 py-2 pr-4">
-          Settings
+          Orders
         </ListItem>
       </Typography>
       <Typography
@@ -197,7 +197,7 @@ function NavList() {
         color="blue-gray"
         className="font-medium">
         <ListItem className="flex items-center gap-2 py-2 pr-4">
-          Orders
+          My Pet
         </ListItem>
       </Typography>
       

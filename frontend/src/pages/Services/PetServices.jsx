@@ -1,21 +1,27 @@
 import { Card, CardHeader, CardBody, Image } from "@heroui/react";
 import { motion } from "framer-motion";
 import groomingimg from '../../assets/groomingimg.webp'
-import veternaryimg from '../../assets/veternaryimg.png'
 import trainingimg from '../../assets/trainingimg.jpg'
+import boardingimg from '../../assets/boardingimg.jpeg'
 import petwalkingimg from '../../assets/petwalkingimg.jpg'
+import { useNavigate } from "react-router-dom";
 
 export default function PetServices() {
+
+  const navigate = useNavigate();
+
   const services = [
     {
       title: "Pet Grooming",
       description: "Professional grooming services",
-      imageUrl: groomingimg
+      imageUrl: groomingimg,
+      href: "/grooming",
     },
     {
-      title: "Veterinary Care",
-      description: "Expert medical care",
-      imageUrl: veternaryimg
+      title: "Pet Boarding",
+      description: "Safe and comfortable boarding",
+      imageUrl: boardingimg,
+      href: "/boardingshopfilter",
     },
     {
       title: "Pet Training",
@@ -42,6 +48,8 @@ export default function PetServices() {
               delay: index * 0.1,
               ease: "easeOut"
             }}
+            onClick={() => navigate(service.href)} // Add onClick handler
+            className="cursor-pointer" // Add cursor pointer style
           >
             <Card className="transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
               <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">

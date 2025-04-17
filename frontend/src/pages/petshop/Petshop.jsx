@@ -1,5 +1,6 @@
-
-import { useState } from 'react'
+import Productscard from './Productscard'
+import { useState, useEffect, useCallback } from 'react'
+import axios from 'axios'
 import {
   Dialog,
   DialogBackdrop,
@@ -14,7 +15,6 @@ import {
 } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from '@heroicons/react/20/solid'
-import ProductGrid from './ProductGrid'
 
 const sortOptions = [
   { name: 'Most Popular', href: '#', current: true },
@@ -69,9 +69,61 @@ function classNames(...classes) {
 
 export default function Example() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-  const [ setSelectedFilters] = useState({})
+  const [selectedFilters, setSelectedFilters] = useState({})
+  const [pets, setPets] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [currentSort, setCurrentSort] = useState('Most Popular')
+  const [selectedPet, setSelectedPet] = useState(null)
+  const [showDetails, setShowDetails] = useState(false)
+
   
-    
+const handleCardClick = async (petId) => {
+  try {
+    const res = await axios.get(`http://localhost:8000/api/aboutpet/pet/${petId}`);
+    setSelectedPet(res.data);
+    setShowDetails(true);
+  } catch (err) {
+    console.error("Failed to fetch pet details", err);
+  }
+};
+
+
+  const fetchPets = useCallback(async () => {
+    setLoading(true)
+    try {
+      // Build query parameters based on selectedFilters
+      const queryParams = new URLSearchParams()
+
+      // Add filter parameters
+      Object.entries(selectedFilters).forEach(([category, values]) => {
+        Object.entries(values).forEach(([value, isChecked]) => {
+          if (isChecked) {
+            queryParams.append(category, value)
+          }
+        })
+      })
+
+      // Add sort parameter
+      if (currentSort) {
+        queryParams.append('sort', currentSort.toLowerCase().replace(/ /g, '_'))
+      }
+
+      const response = await axios.get(`http://localhost:8000/api/aboutpet/all?${queryParams}`)
+      setPets(response.data)
+      setError(null)
+    } catch (err) {
+      console.error('Error fetching pets:', err)
+      setError('Failed to load pets. Please try again later.')
+    } finally {
+      setLoading(false)
+    }
+  }, [selectedFilters, currentSort])
+
+  useEffect(() => {
+    fetchPets()
+  }, [fetchPets])
+
   const handleFilterChange = (sectionId, value, checked) => {
     setSelectedFilters(prev => ({
       ...prev,
@@ -81,6 +133,16 @@ export default function Example() {
       }
     }))
   }
+
+  const handleSortChange = (sortOption) => {
+    setCurrentSort(sortOption.name)
+
+    // Update current status in sortOptions
+    sortOptions.forEach(option => {
+      option.current = (option.name === sortOption.name)
+    })
+  }
+
   return (
     <div className="bg-white">
       <div>
@@ -210,6 +272,10 @@ export default function Example() {
                       <MenuItem key={option.name}>
                         <a
                           href={option.href}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleSortChange(option)
+                          }}
                           className={classNames(
                             option.current ? 'font-medium text-gray-900' : 'text-gray-500',
                             'block px-4 py-2 text-sm data-[focus]:bg-gray-100 data-[focus]:outline-none',
@@ -243,9 +309,9 @@ export default function Example() {
               Products
             </h2>
 
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
-              {/* Filters */}
-              <form className="hidden lg:block">
+            <div className="grid grid-cols-1  gap-x-8 gap-y-10 lg:grid-cols-8 ">
+              {/* Filters - Add sticky positioning */}
+              <form className="hidden lg:block lg:col-span-2 max-w-[200px] sticky top-24 h-fit">
                 <h3 className="sr-only">Categories</h3>
                 <ul role="list" className="space-y-4 border-b border-gray-200 pb-6 text-sm font-medium text-gray-900">
                   {subCategories.map((category) => (
@@ -273,6 +339,7 @@ export default function Example() {
                             <div className="flex h-5 shrink-0 items-center">
                               <div className="group grid size-4 grid-cols-1">
                                 <input
+                                  onChange={(e) => handleFilterChange(section.id, option.value, e.target.checked)}
                                   defaultValue={option.value}
                                   defaultChecked={option.checked}
                                   id={`filter-${section.id}-${optionIdx}`}
@@ -312,8 +379,26 @@ export default function Example() {
                   </Disclosure>
                 ))}
               </form>
-              <div className="lg:col-span-3">
-                <ProductGrid />
+
+              {/* Products - Add scrollable container */}
+              <div className="lg:col-span-6">
+                <div className="h-[calc(100vh-200px)] overflow-y-auto pr-4">
+                  {loading ? (
+                    <div className="flex justify-center items-center h-64">
+                      <p className="text-gray-500">Loading pets...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="flex justify-center items-center h-64">
+                      <p className="text-red-500">{error}</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                      {pets.map((pet) => (
+                        <Productscard key={pet._id} pet={pet} />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </section>
