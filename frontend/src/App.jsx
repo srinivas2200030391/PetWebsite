@@ -8,8 +8,8 @@ import Signup from "./pages/Authenticating/Signup";
 import Home from "./pages/Home";
 import Petshop from "./pages/petshop/Petshop";
 import ProductOverview from "./pages/petshop/ProductOverView";
-import MatingPage from "./pages/Mating/MatingPetsList";
-import MatingPets from "./pages/Mating/MatingPets";
+import MatingPage from "./pages/Mating/MatingPage";
+import MatingPetsList from "./pages/Mating/MatingPetsList";
 import Form from "./components/AppointmentFrom";
 import PetSaleForm from "./components/PetSaleForm";
 import MatingForm from "./components/MatingForm";
@@ -26,7 +26,8 @@ import BreedDetailPage from "./pages/About/BreedDetailPage";
 import { ProductProvider } from './context/ProductContext';
 import PetServices from './pages/Services/PetServices';
 import Grooming from './pages/Services/GroomingPage';
-
+import HealthCarepage from "./pages/Health_Care/HealthCarepage";
+import Vets from './pages/Health_Care/Vets';
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
 
@@ -52,7 +53,6 @@ const App = () => {
           <Route path="/petshop" element={<Petshop />} />
           <Route path="/productoverview" element={<ProductOverview />} />
           <Route path="/matingpage" element={<MatingPage />} />
-          <Route path="/matingpets" element={<MatingPets />} />
           <Route path="/form" element={<Form />} />
           <Route path="/petsaleform" element={<PetSaleForm />} />
           <Route path="/matingform" element={<MatingForm />} />
@@ -64,7 +64,9 @@ const App = () => {
           <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
           <Route path="/petservices" element={<PetServices />} />
           <Route path="/grooming" element={<Grooming />} />
-
+          <Route path="/matingpetslist" element={<MatingPetsList />} /> 
+          <Route path="/healthcare" element={<HealthCarepage />} />
+          <Route path="/vets" element={<Vets />} />
           {/* Nested Routes */}
 
           <Route

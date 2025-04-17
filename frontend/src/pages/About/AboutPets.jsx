@@ -40,6 +40,9 @@ const cards = [
 export default function AboutPets() {
   const navigate = useNavigate();
   
+  const handleCardClick = (href) => {
+    navigate(href);
+  };
 
   return (
     <div className="mt-20 flex flex-col items-center justify-center bg-white">
@@ -55,6 +58,8 @@ export default function AboutPets() {
                delay: index * 0.1,
                ease: "easeOut"
              }}
+              onClick={() => handleCardClick(card.href)}
+              className="cursor-pointer"
            >
               <Card 
                 className="w-full transform transition-all duration-300 hover:scale-105 

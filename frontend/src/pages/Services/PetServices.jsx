@@ -1,8 +1,8 @@
 import { Card, CardHeader, CardBody, Image } from "@heroui/react";
 import { motion } from "framer-motion";
 import groomingimg from '../../assets/groomingimg.webp'
-import veternaryimg from '../../assets/veternaryimg.png'
 import trainingimg from '../../assets/trainingimg.jpg'
+import boardingimg from '../../assets/boardingimg.jpeg'
 import petwalkingimg from '../../assets/petwalkingimg.jpg'
 import { useNavigate } from "react-router-dom";
 
@@ -18,9 +18,10 @@ export default function PetServices() {
       href: "/grooming",
     },
     {
-      title: "Veterinary Care",
-      description: "Expert medical care",
-      imageUrl: veternaryimg
+      title: "Pet Boarding",
+      description: "Safe and comfortable boarding",
+      imageUrl: boardingimg,
+      href: "/boardingshopfilter",
     },
     {
       title: "Pet Training",
