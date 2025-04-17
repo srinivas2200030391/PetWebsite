@@ -28,6 +28,7 @@ import PetServices from './pages/Services/PetServices';
 import Grooming from './pages/Services/GroomingPage';
 import HealthCarepage from "./pages/Health_Care/HealthCarepage";
 import Vets from './pages/Health_Care/Vets';
+import PetDetail from "./pages/petshop/PetDetail";
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
 
@@ -56,6 +57,7 @@ const App = () => {
           <Route path="/form" element={<Form />} />
           <Route path="/petsaleform" element={<PetSaleForm />} />
           <Route path="/matingform" element={<MatingForm />} />
+          <Route path="/pet/:petId" element={<PetDetail />} />
           <Route path="/boardingpage" element={<BoardingPage />} />
           <Route path="/boardingshops" element={<BoardingShops />} />
           <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />

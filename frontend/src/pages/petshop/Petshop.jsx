@@ -74,6 +74,20 @@ export default function Example() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentSort, setCurrentSort] = useState('Most Popular')
+  const [selectedPet, setSelectedPet] = useState(null)
+  const [showDetails, setShowDetails] = useState(false)
+
+  
+const handleCardClick = async (petId) => {
+  try {
+    const res = await axios.get(`http://localhost:8000/api/aboutpet/pet/${petId}`);
+    setSelectedPet(res.data);
+    setShowDetails(true);
+  } catch (err) {
+    console.error("Failed to fetch pet details", err);
+  }
+};
+
 
   const fetchPets = useCallback(async () => {
     setLoading(true)
