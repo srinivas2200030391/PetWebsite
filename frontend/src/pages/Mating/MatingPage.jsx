@@ -1,6 +1,5 @@
-'use client'
-import MatingPets from "./MatingPets"
 import { useState } from 'react'
+import MatingPetsList from './MatingPetsList'
 import {
   Dialog,
   DialogBackdrop,
@@ -245,9 +244,9 @@ export default function Example() {
               Products
             </h2>
 
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-5">
               {/* Filters */}
-              <form className="hidden lg:block">
+              <form className="hidden lg:block lg:col-span-1">
                 <h3 className="sr-only">Categories</h3>
                 <ul role="list" className="space-y-4 border-b border-gray-200 pb-6 text-sm font-medium text-gray-900">
                   {subCategories.map((category) => (
@@ -314,8 +313,10 @@ export default function Example() {
                   </Disclosure>
                 ))}
               </form>
-              <div className="lg:col-span-3">
-                <MatingPets />
+              
+              {/* Content area */}
+              <div className="lg:col-span-4 ">
+                <MatingPetsList />
               </div>
             </div>
           </section>

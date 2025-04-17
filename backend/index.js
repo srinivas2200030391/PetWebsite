@@ -6,13 +6,15 @@ import cookieparser from "cookie-parser";
 import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
 import cartRoute from "./routes/cart.route.js";
-import aboutPetRoute from "./routes/aboutpet.route.js";
+// import aboutPetRoute from "./routes/aboutpet.route.js";
 import hospitalRoute from "./routes/hospital.route.js";
 import userRoutes from "./routes/user.route.js";
 import hospitalCardRoute from "./routes/hospitalcard.route.js";
 import vendorRoute from "./routes/vendor.route.js"; // Assuming you have a vendor route
 // import boardingRoute from "./routes/boarding.route.js"
 import paymentRoute from "./routes/paymentRoutes.js"; // Assuming you have a payment route
+import userMatingPetRoute from "./routes/userMatingPet.route.js";
+import aboutPetRoute from "./routes/aboutpet.route.js";
 
 const app = express();
 dotenv.config();
@@ -37,12 +39,14 @@ app.use("/api/hospital", hospitalRoute);
 app.use("/api/hospitalcard", hospitalCardRoute);
 app.use("/api/vendor", vendorRoute); // Assuming you have a vendor route
 app.use("/api/payment",paymentRoute)
+app.use("/api/matingpets", userMatingPetRoute);
+app.use("/api/aboutpet", aboutPetRoute);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
 app.listen(PORT, () => {
-  console.log(`Server running on port ₹{PORT}`);
+  console.log(`Server running on port ${PORT}`);
   connectDB();
 });
 

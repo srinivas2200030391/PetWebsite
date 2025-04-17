@@ -4,6 +4,7 @@ import {DatePicker} from "@heroui/react";
 import { Link } from 'react-router-dom'
 
 
+
 const BoardingShop = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const placements = ["outside-left"];
