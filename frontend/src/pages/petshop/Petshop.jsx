@@ -295,9 +295,9 @@ export default function Example() {
               Products
             </h2>
 
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
-              {/* Filters */}
-              <form className="hidden lg:block">
+            <div className="grid grid-cols-1  gap-x-8 gap-y-10 lg:grid-cols-8 ">
+              {/* Filters - Add sticky positioning */}
+              <form className="hidden lg:block lg:col-span-2 max-w-[200px] sticky top-24 h-fit">
                 <h3 className="sr-only">Categories</h3>
                 <ul role="list" className="space-y-4 border-b border-gray-200 pb-6 text-sm font-medium text-gray-900">
                   {subCategories.map((category) => (
@@ -365,24 +365,26 @@ export default function Example() {
                   </Disclosure>
                 ))}
               </form>
-              <div className="lg:col-span-3">
-                {loading ? (
-                  <div className="flex justify-center items-center h-64">
-                    <p className="text-gray-500">Loading pets...</p>
-                  </div>
-                ) : error ? (
-                  <div className="flex justify-center items-center h-64">
-                    <p className="text-red-500">{error}</p>
-                  </div>
-                ) : (
-                  <div className="h-[70vh] overflow-y-auto pr-2">
-                  <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
-                    {pets.map(pet => (
-                      <Productscard key={pet._id} pet={pet} />
-                    ))}
-                  </div>
-                  </div>
-                )}
+
+              {/* Products - Add scrollable container */}
+              <div className="lg:col-span-6">
+                <div className="h-[calc(100vh-200px)] overflow-y-auto pr-4">
+                  {loading ? (
+                    <div className="flex justify-center items-center h-64">
+                      <p className="text-gray-500">Loading pets...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="flex justify-center items-center h-64">
+                      <p className="text-red-500">{error}</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                      {pets.map((pet) => (
+                        <Productscard key={pet._id} pet={pet} />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </section>

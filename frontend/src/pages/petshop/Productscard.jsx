@@ -1,5 +1,5 @@
 import { ShoppingCartOutlined, HeartOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Avatar, Card, Tag } from 'antd';
+import {   Card, Tag } from 'antd';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -17,7 +17,7 @@ const cardVariants = {
       duration: 0.5,
       ease: "easeOut"
     }
-  }
+  } 
 };
 
 const contentVariants = {
@@ -61,7 +61,7 @@ const PetCard = ({ pet }) => {
 
   return (
     <Link 
-      to={`/pet/${pet._id}/details`} 
+      to={`/petoverview/${pet._id}/details`} 
       className="block w-full h-full no-underline hover:no-underline"
       state={{ pet }}
     >
@@ -108,7 +108,6 @@ const PetCard = ({ pet }) => {
         >
           <motion.div variants={contentVariants}>
             <Meta
-              avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${pet.name}`} />}
               title={
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-medium truncate">{pet.name}</span>
