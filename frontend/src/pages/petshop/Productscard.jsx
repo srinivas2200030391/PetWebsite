@@ -140,7 +140,11 @@
 
 
 import { ShoppingCartOutlined, HeartOutlined, InfoCircleOutlined } from '@ant-design/icons';
+<<<<<<< HEAD
 import { Card, Tag } from 'antd';
+=======
+import {   Avatar, Card, Tag } from 'antd';
+>>>>>>> 4d9dedfa5ecd8de946230c8699e2b16a27076ee2
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 

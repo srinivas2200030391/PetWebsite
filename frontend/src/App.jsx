@@ -29,6 +29,7 @@ import Grooming from './pages/Services/GroomingPage';
 import HealthCarepage from "./pages/Health_Care/HealthCarepage";
 import Vets from './pages/Health_Care/Vets';
 import PetDetail from "./pages/petshop/PetDetail";
+import NewBoardingRequest from "./pages/boarding/NewBoardingRequest";
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
 
@@ -61,6 +62,7 @@ const App = () => {
           <Route path="/boardingpage" element={<BoardingPage />} />
           <Route path="/boardingshops" element={<BoardingShops />} />
           <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />
+          <Route path="/newboardingrequest" element={<NewBoardingRequest/>} />
           <Route path="/aboutpets" element={<AboutPets />} />
           <Route path="/breeds/:item" element={<Breeds />} />
           <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
