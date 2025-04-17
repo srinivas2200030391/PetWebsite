@@ -15,6 +15,8 @@ import vendorRoute from "./routes/vendor.route.js"; // Assuming you have a vendo
 import paymentRoute from "./routes/paymentRoutes.js"; // Assuming you have a payment route
 import userMatingPetRoute from "./routes/userMatingPet.route.js";
 import aboutPetRoute from "./routes/aboutpet.route.js";
+import myPetRoutes from "./routes/mypet.route.js"; // Assuming you have a mypet route
+import petHealthRoutes from "./routes/petHealthRoutes.js"; // Assuming you have a pet health route
 
 const app = express();
 dotenv.config();
@@ -38,9 +40,11 @@ app.use("/api/aboutpet", aboutPetRoute);
 app.use("/api/hospital", hospitalRoute);
 app.use("/api/hospitalcard", hospitalCardRoute);
 app.use("/api/vendor", vendorRoute); // Assuming you have a vendor route
-app.use("/api/payment",paymentRoute)
+app.use("/api/payment", paymentRoute);
 app.use("/api/matingpets", userMatingPetRoute);
 app.use("/api/aboutpet", aboutPetRoute);
+app.use("/api/mypet", myPetRoutes);
+app.use("/api/pethealth", petHealthRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
