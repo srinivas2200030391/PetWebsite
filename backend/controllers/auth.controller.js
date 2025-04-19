@@ -49,30 +49,49 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { email, password } = req.body;
-    console.log("Login attempt with email:", email);
-    console.log("Password length:", password ? password.length : "No password provided");
+    console.log("User login attempt with email:", email);
+    console.log(
+      "Password length:",
+      password ? password.length : "No password provided"
+    );
 
     if (!email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const user = await User.find({ email: email });
+    const user = await User.findOne({ email });
 
-    if (user.length === 0) {
-      return res.status(401).json({ message: "User not found, my love 💔" });
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
     }
 
-    console.log("Login Successful for", user[0].fullname); // Log before sending response
-    return res.status(200).json({ message: "Login successful 💕", data: user });
+    const isMatch = await bcrypt.compare(password, user.password);
 
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = generatetoken(user._id, res);
+
+    console.log("User login successful for:", user.fullname);
+
+    return res.status(200).json({
+      message: "Login successful",
+      data: {
+        id: user._id,
+        name: user.fullname,
+        email: user.email,
+        token: token,
+      },
+    });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("User login error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 export const logout = (req, res) => {
   try {
@@ -120,14 +139,15 @@ export const updateprofile = async (req, res) => {
 
 export const checkauth = async (req, res) => {
   try {
-      // User is already verified by protectroute middleware
-      const user = await User.findById(req.user.id).select("-password");
-      if (!user) {
-          return res.status(401).json({ message: "User not found" });
-      }
-      res.status(200).json(user);
+    // User is added to req.vendor by the protectroute middleware
+    if (!req.user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    // Return the vendor data directly
+    res.status(200).json(req.user);
   } catch (error) {
-      console.error("Check auth error:", error);
-      res.status(500).json({ message: "Server error" });
+    console.error("Check auth error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

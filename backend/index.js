@@ -18,6 +18,7 @@ import aboutPetRoute from "./routes/aboutpet.route.js";
 import myPetRoutes from "./routes/mypet.route.js"; // Assuming you have a mypet route
 import petHealthRoutes from "./routes/petHealthRoutes.js"; // Assuming you have a pet health route
 import cageRoutes from "./routes/cage.route.js"; // Assuming you have a cage route
+import BoardingRoute from "./routes/boardingrequest.route.js"; // Assuming you have a boarding route
 
 const app = express();
 dotenv.config();
@@ -47,6 +48,7 @@ app.use("/api/aboutpet", aboutPetRoute);
 app.use("/api/mypet", myPetRoutes);
 app.use("/api/pethealth", petHealthRoutes);
 app.use("/api/cages", cageRoutes);
+app.use("/api/bookings", BoardingRoute);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
@@ -62,6 +64,7 @@ app.listen(PORT, () => {
 // import authRoutes from "./routes/auth.route.js";
 // import connectdb from "./lib/db.js";
 // import express from "express"
+//import Boarding from "./models/boarding.model";
 
 // const app = express();
 
