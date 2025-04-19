@@ -17,6 +17,7 @@ import userMatingPetRoute from "./routes/userMatingPet.route.js";
 import aboutPetRoute from "./routes/aboutpet.route.js";
 import myPetRoutes from "./routes/mypet.route.js"; // Assuming you have a mypet route
 import petHealthRoutes from "./routes/petHealthRoutes.js"; // Assuming you have a pet health route
+import cageRoutes from "./routes/cage.route.js"; // Assuming you have a cage route
 
 const app = express();
 dotenv.config();
@@ -45,6 +46,7 @@ app.use("/api/matingpets", userMatingPetRoute);
 app.use("/api/aboutpet", aboutPetRoute);
 app.use("/api/mypet", myPetRoutes);
 app.use("/api/pethealth", petHealthRoutes);
+app.use("/api/cages", cageRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
