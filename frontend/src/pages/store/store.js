@@ -63,6 +63,11 @@ export const useStore = create((set, get) => ({
 
   logout: () => {
     localStorage.removeItem("authData");
+    localStorage.removeItem("user");
+    // Clear cookies manually as well
+    document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    console.log("Cookies cleared manually");
+
     set({
       user: null,
       token: null,
