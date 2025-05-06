@@ -40,15 +40,32 @@ export default function NewBoardingRequest() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState([]);
   const { vendorId } = useParams();
+
+  // New state variables for My Requests feature
+  const [openRequestsModal, setOpenRequestsModal] = useState(false);
+  const [userBookings, setUserBookings] = useState([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [newEndDate, setNewEndDate] = useState("");
+  const [extendedAmount, setExtendedAmount] = useState(0);
 
   useEffect(() => {
     fetchAvailableCages();
+    // Get user from localStorage on component mount
+    const userData = JSON.parse(localStorage.getItem("user"));
+    setUser(userData.data);
   }, []);
 
   useEffect(() => {
     calculateTotalAmount();
   }, [startDate, endDate, selectedCage]);
+
+  useEffect(() => {
+    calculateExtendedAmount();
+  }, [newEndDate, selectedBooking]);
 
   const fetchAvailableCages = async () => {
     setIsLoading(true);
@@ -67,6 +84,35 @@ export default function NewBoardingRequest() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchUserBookings = async () => {
+    setIsLoadingBookings(true);
+    try {
+      console.log("user", user);
+
+      const response = await axios.get(
+        `${config.baseURL}/api/bookings/user/${user.id}`
+      );
+      setUserBookings(response.data);
+    } catch (error) {
+      console.error("Error fetching user bookings:", error);
+      alert("Failed to load your booking requests.");
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  const handleOpenRequestsModal = () => {
+    fetchUserBookings();
+    setOpenRequestsModal(true);
+  };
+
+  const handleCloseRequestsModal = () => {
+    setOpenRequestsModal(false);
+    setSelectedBooking(null);
+    setEditMode(false);
+    setNewEndDate("");
   };
 
   const handleOpenDialog = (cage) => {
@@ -103,6 +149,39 @@ export default function NewBoardingRequest() {
     setTotalAmount(total);
   };
 
+  const calculateExtendedAmount = () => {
+    if (!newEndDate || !selectedBooking) return;
+
+    const originalEnd = new Date(selectedBooking.endDate);
+    const newEnd = new Date(newEndDate);
+
+    // Check if dates are valid
+    if (isNaN(originalEnd.getTime()) || isNaN(newEnd.getTime())) return;
+
+    // Calculate number of additional days
+    const diffTime = Math.abs(newEnd - originalEnd);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Calculate extended amount (if new date is after original end date)
+    if (newEnd > originalEnd) {
+      const additionalDays = diffDays;
+      const rate =
+        selectedBooking.totalAmount /
+        getDuration(selectedBooking.startDate, selectedBooking.endDate);
+      const additional = additionalDays * rate;
+      setExtendedAmount(additional);
+    } else {
+      setExtendedAmount(0);
+    }
+  };
+
+  const getDuration = (start, end) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffTime = Math.abs(endDate - startDate);
+    return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+  };
+
   const handleSubmitBooking = async () => {
     // Validate form
     if (!startDate || !endDate || !petName) {
@@ -123,12 +202,14 @@ export default function NewBoardingRequest() {
       // Create booking object based on input
       const bookingData = {
         cageId: selectedCage._id,
+        customer: user.id,
         startDate,
         endDate,
         petName,
         specialInstructions,
         totalAmount,
       };
+      console.log(bookingData);
 
       // Submit booking to API
       await axios.post(`${config.baseURL}/api/bookings`, bookingData);
@@ -145,12 +226,66 @@ export default function NewBoardingRequest() {
     }
   };
 
+  const handleExtendBooking = (booking) => {
+    setSelectedBooking(booking);
+    setNewEndDate(booking.endDate.split("T")[0]); // Set current end date as default
+    setEditMode(true);
+  };
+
+  const handleSubmitExtension = async () => {
+    if (!newEndDate) {
+      alert("Please select a new end date");
+      return;
+    }
+
+    const originalEnd = new Date(selectedBooking.endDate);
+    const newEnd = new Date(newEndDate);
+
+    if (newEnd <= originalEnd) {
+      alert("New end date must be after the current end date");
+      return;
+    }
+
+    try {
+      // Create extension data
+      const extensionData = {
+        bookingId: selectedBooking._id,
+        newEndDate: newEndDate,
+        additionalAmount: extendedAmount,
+      };
+
+      // Submit extension to API
+      await axios.put(
+        `${config.baseURL}/api/extendbookings/${selectedBooking._id}`,
+        extensionData
+      );
+
+      // Show success message
+      alert("Booking extended successfully!");
+
+      // Refresh bookings and reset edit mode
+      fetchUserBookings();
+      setEditMode(false);
+      setSelectedBooking(null);
+      setNewEndDate("");
+    } catch (error) {
+      console.error("Error extending booking:", error);
+      alert("Failed to extend booking. Please try again.");
+    }
+  };
+
   // Helper function to display placeholder if no image available
   const getCageImage = (cage) => {
     return (
       cage.imageUrl ||
       "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1471&q=80"
     );
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
 
   if (isLoading) {
@@ -170,12 +305,11 @@ export default function NewBoardingRequest() {
   }
 
   return (
-  <div className="container mx-auto py-8 px-4 pt-20">
-    <div className="max-w-2xl mx-auto bg-gradient-to-r from-orange-100 to-orange-900 py-2 mb-8 rounded-2xl shadow-md">
-      <Typography variant="h2" className="text-center mb-2 uppercase text-black">
+    <div className="container mx-auto py-8 px-4">
+      <Typography variant="h2" className="text-center mb-8">
         Available Boarding Options
       </Typography>
-    </div>
+
       {availableCages.length === 0 ? (
         <div className="text-center py-8">
           <Typography variant="h5" color="blue-gray">
@@ -384,6 +518,199 @@ export default function NewBoardingRequest() {
           <Button color="green" onClick={handleSubmitBooking}>
             Confirm Booking
           </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* My Requests Modal */}
+      <Dialog
+        open={openRequestsModal}
+        handler={handleCloseRequestsModal}
+        size="lg">
+        <DialogHeader>
+          <Typography variant="h4">My Booking Requests</Typography>
+        </DialogHeader>
+        <DialogBody divider className="overflow-y-auto max-h-96">
+          {isLoadingBookings ? (
+            <div className="flex justify-center items-center h-32">
+              <Typography>Loading your bookings...</Typography>
+            </div>
+          ) : userBookings.length === 0 ? (
+            <div className="text-center py-8">
+              <Typography color="gray">
+                You have no booking requests yet.
+              </Typography>
+            </div>
+          ) : editMode && selectedBooking ? (
+            <div className="space-y-6">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <Typography variant="h6" color="blue-gray" className="mb-4">
+                  Extend Booking for {selectedBooking.petName}
+                </Typography>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="mb-1 font-medium">
+                      Current Start Date
+                    </Typography>
+                    <Input
+                      type="date"
+                      value={selectedBooking.startDate.split("T")[0]}
+                      disabled
+                    />
+                  </div>
+                  <div>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="mb-1 font-medium">
+                      Current End Date
+                    </Typography>
+                    <Input
+                      type="date"
+                      value={selectedBooking.endDate.split("T")[0]}
+                      disabled
+                    />
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <Typography
+                    variant="small"
+                    color="blue-gray"
+                    className="mb-1 font-medium">
+                    New End Date
+                  </Typography>
+                  <Input
+                    type="date"
+                    value={newEndDate}
+                    onChange={(e) => setNewEndDate(e.target.value)}
+                    min={selectedBooking.endDate.split("T")[0]}
+                    required
+                  />
+                </div>
+                {newEndDate &&
+                  new Date(newEndDate) > new Date(selectedBooking.endDate) && (
+                    <div className="bg-gray-50 p-4 rounded-lg mt-4">
+                      <Typography
+                        variant="h6"
+                        color="blue-gray"
+                        className="mb-2">
+                        Extension Summary
+                      </Typography>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <Typography color="gray">
+                            Original End Date:
+                          </Typography>
+                          <Typography color="blue-gray" className="font-medium">
+                            {formatDate(selectedBooking.endDate)}
+                          </Typography>
+                        </div>
+                        <div className="flex justify-between">
+                          <Typography color="gray">New End Date:</Typography>
+                          <Typography color="blue-gray" className="font-medium">
+                            {formatDate(newEndDate)}
+                          </Typography>
+                        </div>
+                        <div className="flex justify-between">
+                          <Typography color="gray">Additional Days:</Typography>
+                          <Typography color="blue-gray" className="font-medium">
+                            {Math.ceil(
+                              Math.abs(
+                                new Date(newEndDate) -
+                                  new Date(selectedBooking.endDate)
+                              ) /
+                                (1000 * 60 * 60 * 24)
+                            )}
+                          </Typography>
+                        </div>
+                        <div className="border-t pt-2 mt-2">
+                          <div className="flex justify-between">
+                            <Typography
+                              color="blue-gray"
+                              className="font-semibold">
+                              Additional Amount:
+                            </Typography>
+                            <Typography color="blue-gray" className="font-bold">
+                              ${extendedAmount.toFixed(2)}
+                            </Typography>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {userBookings.map((booking) => (
+                <Card key={booking._id} className="overflow-hidden">
+                  <CardBody className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <Typography
+                          variant="h5"
+                          color="blue-gray"
+                          className="mb-2">
+                          {booking.petName}
+                        </Typography>
+                        <Typography color="gray" className="mb-1">
+                          <span className="font-medium">Booking ID:</span>{" "}
+                          {booking._id}
+                        </Typography>
+                        <Typography color="gray" className="mb-1">
+                          <span className="font-medium">Dates:</span>{" "}
+                          {formatDate(booking.startDate)} to{" "}
+                          {formatDate(booking.endDate)}
+                        </Typography>
+                        <Typography color="gray" className="mb-1">
+                          <span className="font-medium">Total Amount:</span> $
+                          {booking.totalAmount}
+                        </Typography>
+                        {booking.specialInstructions && (
+                          <Typography color="gray" className="mb-1">
+                            <span className="font-medium">
+                              Special Instructions:
+                            </span>{" "}
+                            {booking.specialInstructions}
+                          </Typography>
+                        )}
+                      </div>
+                      <Button
+                        color="orange"
+                        size="sm"
+                        onClick={() => handleExtendBooking(booking)}>
+                        Extend
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter className="space-x-2">
+          {editMode ? (
+            <>
+              <Button
+                variant="outlined"
+                color="red"
+                onClick={() => setEditMode(false)}>
+                Cancel Extension
+              </Button>
+              <Button color="green" onClick={handleSubmitExtension}>
+                Submit Extension
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outlined"
+              color="blue-gray"
+              onClick={handleCloseRequestsModal}>
+              Close
+            </Button>
+          )}
         </DialogFooter>
       </Dialog>
     </div>

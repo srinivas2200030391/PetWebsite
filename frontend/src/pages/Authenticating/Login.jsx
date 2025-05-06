@@ -11,18 +11,22 @@ import {
   Button,
 } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/useAuthstore"; 
+import { useAuthStore } from "../store/useAuthstore";
+import { useStore } from "../store/store";
+import toast from "react-hot-toast";
 import axios from "axios";
 import config from "../../config";
 
 export default function LoginCard() {
   const navigate = useNavigate();
-  const { login, isLoggingIn } = useAuthStore(); 
+  const { isLoggingIn } = useAuthStore();
+  const login = useStore((state) => state.login);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -32,24 +36,25 @@ export default function LoginCard() {
     }));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    // if (!email || !password) {
-    //   return toast.error("Please fill in all fields.");
-    // }
-    // }
-    // if (!/\S+@\S+\.\S+/.test(email)) {
-    //   return toast.error("Invalid email format.");
-    // }
-    // if (password.length < 6) {
-    //   return toast.error("Password must be at least 6 characters.");
-    // }
-    const success = await axios.post(`${config.baseURL}/api/auth/login`,formData);
-    if (success) {
-      console.log(success.data.data[0]);
-    navigate("/home"); 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${config.baseURL}/api/auth/login`,
+        formData,
+        { withCredentials: true }
+      );
+      localStorage.setItem("user", JSON.stringify(res.data));
+      console.log("Login response:", res.data.data);
+      login(res.data.data); // Update the store with the user data
+      toast.success("User logged in successfully!");
+      navigate("/home");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
-
   };
 
   return (
@@ -58,15 +63,13 @@ export default function LoginCard() {
       style={{
         backgroundImage: `linear-gradient(to bottom, rgba(155, 143, 143, 0.8), rgba(255, 255, 255, 0.8)), 
         url('https://th.bing.com/th/id/OIP.nLlxitLDCgisRaAh44NfPgHaGX?w=220&h=189&c=7&r=0&o=5&dpr=2&pid=1.7')`,
-      }}
-    >
+      }}>
       <div className="flex justify-center items-center h-screen">
         <Card className="w-96 shadow-xl">
           <CardHeader
             variant="gradient"
             color="gray"
-            className="mb-4 grid h-28 place-items-center"
-          >
+            className="mb-4 grid h-28 place-items-center">
             <Typography variant="h3" color="white">
               Sign In
             </Typography>
@@ -104,8 +107,7 @@ export default function LoginCard() {
                 variant="gradient"
                 fullWidth
                 type="submit"
-                disabled={isLoggingIn}
-              >
+                disabled={isLoggingIn}>
                 {isLoggingIn ? "Logging in..." : "Login"}
               </Button>
               <Typography variant="small" className="mt-6 flex justify-center">
@@ -115,8 +117,7 @@ export default function LoginCard() {
                   to="/signup"
                   variant="small"
                   color="blue-gray"
-                  className="ml-1 font-bold"
-                >
+                  className="ml-1 font-bold">
                   Sign up
                 </Typography>
               </Typography>
