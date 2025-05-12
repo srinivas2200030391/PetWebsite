@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -15,6 +15,19 @@ import {
 import axios from "axios";
 import config from "./../../config";
 import { useParams } from "react-router-dom";
+import { motion } from "framer-motion";
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.5 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.8,
+      ease: [0, 0.71, 0.2, 1.01]
+    }
+  }
+};
 
 export default function NewBoardingRequest() {
   const [availableCages, setAvailableCages] = useState([]);
@@ -292,17 +305,10 @@ export default function NewBoardingRequest() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 mt-24">
-      {/* My Requests Button */}
-      <div className="flex justify-between items-center mb-8">
-        <Typography variant="h2">Available Boarding Options</Typography>
-        <Button
-          color="blue"
-          onClick={handleOpenRequestsModal}
-          className="ml-auto">
-          My Requests
-        </Button>
-      </div>
+    <div className="container mx-auto py-8 px-4">
+      <Typography variant="h2" className="text-center mb-8">
+        Available Boarding Options
+      </Typography>
 
       {availableCages.length === 0 ? (
         <div className="text-center py-8">
@@ -314,55 +320,66 @@ export default function NewBoardingRequest() {
           </Typography>
         </div>
       ) : (
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {availableCages.map((cage) => (
-            <Card key={cage._id} className="overflow-hidden">
-              <CardHeader
-                shadow={false}
-                floated={false}
-                className="h-48 bg-gray-100">
-                <img
-                  src={getCageImage(cage)}
-                  alt={`Cage ${cage.cageNumber}`}
-                  className="h-full w-full object-cover"
-                />
-              </CardHeader>
-              <CardBody className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <Typography variant="h5" color="blue-gray">
-                    Cage #{cage.cageNumber}
+          {availableCages.map((cage, index) => (
+            <motion.div
+              key={cage._id}
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+              transition={{
+                delay: index * 0.2, // Stagger effect for each card
+              }}
+            >
+              <Card className="overflow-hidden">
+                <CardHeader
+                  shadow={false}
+                  floated={false}
+                  className="h-48 bg-gray-100">
+                  <img
+                    src={getCageImage(cage)}
+                    alt={`Cage ${cage.cageNumber}`}
+                    className="h-full w-full object-cover"
+                  />
+                </CardHeader>
+                <CardBody className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Typography variant="h5" color="blue-gray">
+                      Cage #{cage.cageNumber}
+                    </Typography>
+                    <Typography
+                      color="blue-gray"
+                      className="flex items-center gap-1.5 font-bold">
+                      ${cage.dailyRate}
+                      <Typography
+                        as="span"
+                        color="blue-gray"
+                        className="text-sm font-normal">
+                        /day
+                      </Typography>
+                    </Typography>
+                  </div>
+                  <Typography color="gray" className="mb-3 font-normal">
+                    Dimensions: {cage.dimensions}
                   </Typography>
                   <Typography
+                    variant="small"
                     color="blue-gray"
-                    className="flex items-center gap-1.5 font-bold">
-                    ${cage.dailyRate}
-                    <Typography
-                      as="span"
-                      color="blue-gray"
-                      className="text-sm font-normal">
-                      /day
-                    </Typography>
+                    className="font-semibold opacity-75">
+                    Status: {cage.status}
                   </Typography>
-                </div>
-                <Typography color="gray" className="mb-3 font-normal">
-                  Dimensions: {cage.dimensions}
-                </Typography>
-                <Typography
-                  variant="small"
-                  color="blue-gray"
-                  className="font-semibold opacity-75">
-                  Status: {cage.status}
-                </Typography>
-                <div className="mt-4 pt-2">
-                  <Button
-                    fullWidth
-                    color="orange"
-                    onClick={() => handleOpenDialog(cage)}>
-                    Book Now
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
+                  <div className="mt-4 pt-2">
+                    <Button
+                      fullWidth
+                      color="orange"
+                      onClick={() => handleOpenDialog(cage)}>
+                      Book Now
+                    </Button>
+                  </div>
+                </CardBody>
+              </Card>
+            </motion.div>
           ))}
         </div>
       )}
