@@ -1,3 +1,4 @@
+import AboutPet from "../models/aboutpet.model.js";
 import User from "../models/user.model.js";
 
 
@@ -33,5 +34,52 @@ const userController = {
       res.status(500).json({ error: error.message });
     }
   },
+  updateWishList: async (req, res) => {
+    // wish list is id and update in an array of wishlist
+    try {
+      const { userId, wishListId } = req.body;
+      console.log("userId and wishListId:", userId, wishListId); // Debugging line
+      
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      // check if the wishlist is present in the aboutpet model
+      const wish = await AboutPet.findById(wishListId);
+      if (!wish) {
+        return res.status(404).json({ message: "Wishlist not found" });
+      }
+      // check if the wishlist is already present in the user
+      const isPresent = user.wishlist.some(
+        (item) => item === wishListId
+      );
+      if (isPresent) {
+        // remove the wishlist from the user
+        user.wishlist = user.wishlist.filter(
+          (item) => item !== wishListId
+        );
+      } else {
+        // add the wishlist to the user
+        user.wishlist.push(wishListId);
+      }
+      // save the user
+      await user.save();
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+  getAllWishList: async (req, res) => {
+    try {
+      const user =
+        await User.findById(req.params.id).populate("wishlist");
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.status(200).json(user.wishlist);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 };
 export default userController;

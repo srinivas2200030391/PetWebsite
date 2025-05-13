@@ -15,6 +15,8 @@ export const getAllAboutPets = async (req, res) => {
 export const getAboutPetById = async (req, res) => {
   try {
     const { petId } = req.params;
+    console.log("Pet ID parameter:", petId); // Log the petId parameter
+    
     const pet = await AboutPet.findById(petId);
     if (!pet) return res.status(404).json({ message: "Pet not found" });
     res.status(200).json(pet);
@@ -133,5 +135,17 @@ export const aboutPet = {
       res.status(500).json(error.message);
     }
   },
+  getAboutPetById : async (req, res) => {
+    try {
+      const { petId } = req.params;
+      console.log("Pet ID parameter:", petId); // Log the petId parameter
+      
+      const pet = await AboutPet.findById(petId);
+      if (!pet) return res.status(404).json({ message: "Pet not found" });
+      res.status(200).json(pet);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
 };
 

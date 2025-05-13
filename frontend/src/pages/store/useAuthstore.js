@@ -16,9 +16,9 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       set({ ischeckingAuth: true });
-      //const userData = localStorage.getItem("vendor");
-      //console.log("User data from localStorage:", userData);
-      const res = await axios.get("http://localhost:8000/api/auth/check", {
+      // const userData = localStorage.getItem("user");
+      // console.log("User data from localStorage:", userData);
+      const res = await axios.get(`${config.baseURL}/api/auth/check`, {
         withCredentials: true,
         // authorization: `Bearer ${userData.token}`,
       });
@@ -58,7 +58,7 @@ export const useAuthStore = create((set, get) => ({
     console.log("Starting logout process");
     try {
       localStorage.removeItem("user");
-
+      localStorage.removeItem("authData")
       set({ authUser: null });
       console.log("Auth user state cleared");
 

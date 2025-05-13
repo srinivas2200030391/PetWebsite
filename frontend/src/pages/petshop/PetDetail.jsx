@@ -13,7 +13,7 @@ export default function PetDetail() {
     const fetchPet = async () => {
       try {
         const res = await axios.get(
-          `${config.baseURL} /api/aboutpet/pet/${petId}`
+          `${config.baseURL}/api/aboutpet/pet/${petId}`
         );
         setPet(res.data);
       } catch (err) {

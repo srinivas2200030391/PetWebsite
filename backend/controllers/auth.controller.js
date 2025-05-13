@@ -143,7 +143,6 @@ export const checkauth = async (req, res) => {
     if (!req.user) {
       return res.status(401).json({ message: "User not found" });
     }
-
     // Return the vendor data directly
     res.status(200).json(req.user);
   } catch (error) {
