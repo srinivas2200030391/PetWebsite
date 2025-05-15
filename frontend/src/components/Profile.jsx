@@ -108,6 +108,29 @@ export default function ProfileMenu() {
             </Typography>
           </MenuItem>
         </Link>
+        <Link to="/home/payments">
+          <MenuItem className="flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width={16}
+              height={16}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#90A4AE"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+           >
+              <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+              <circle cx="7" cy="16" r="1" />
+              <circle cx="11" cy="16" r="1" />
+            </svg>
+            <Typography variant="small" className="font-medium">
+              My Payments
+            </Typography>
+          </MenuItem>
+        </Link>
         <a href="/home/cart">
           <MenuItem className="flex items-center gap-2 -translate-x-[0.3rem] ">
             <svg

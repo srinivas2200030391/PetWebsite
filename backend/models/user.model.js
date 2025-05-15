@@ -43,6 +43,10 @@ const userSchema = mongoose.Schema(
       type: [String],
       default: [],
     },
+    payments: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );

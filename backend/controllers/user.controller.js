@@ -50,8 +50,8 @@ const userController = {
         return res.status(404).json({ message: "Wishlist not found" });
       }
       // check if the wishlist is already present in the user
-      const isPresent = user.wishlist.some(
-        (item) => item === wishListId
+      const isPresent = user.wishlist.includes(
+       wishListId
       );
       if (isPresent) {
         // remove the wishlist from the user
@@ -62,6 +62,8 @@ const userController = {
         // add the wishlist to the user
         user.wishlist.push(wishListId);
       }
+      console.log(user.wishlist);
+      
       // save the user
       await user.save();
       res.status(200).json(user);

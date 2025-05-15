@@ -1,20 +1,23 @@
 import express from "express";
 import paymentController from "../controllers/paymentController.js";
+
 const router = express.Router();
 
-// Create a new order
-router.post("/create-order", paymentController.createOrder);
+// Create a new order (Payment initiation)
+router.post("/create", paymentController.createOrder);
 
-// Verify payment
-router.post("/verify-payment", paymentController.verifyPayment);
+// Verify payment after completion
+router.post("/verify", paymentController.verifyPayment);
 
-// Get payment details
-router.get("/payment-details/:paymentId", paymentController.getPaymentDetails);
+// Get all payments (Admin route)
+router.get("/", paymentController.getAllPayments);
 
-// Get all payments
-router.get("/all-payments", paymentController.getAllPayments);
-
-// Refund payment
+// Refund a payment
 router.post("/refund", paymentController.refundPayment);
+
+router.get("/getallpayments/:userId", paymentController.getPayments);
+
+// Get payment details by payment ID
+router.get("/:paymentId", paymentController.getPaymentDetails);
 
 export default router;
