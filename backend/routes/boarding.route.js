@@ -1,14 +1,19 @@
 import express from "express";
-import brodingController from "../controllers/boarding.controller.js";
+import boardingController from "../controllers/boarding.controller.js";
 
 const router = express.Router();
 
-router.post("/createbroading", brodingController.createBroding);
-router.get("/getallbroading", brodingController.getAllBroding);
-router.put("/updatebroadingdetails", brodingController.updateBroding);
-router.get("/getBreedRate", brodingController.getBrodingRate);
-router.put("/AddBreedRate", brodingController.addBrodingRate);
-router.delete("/deleteBreed", brodingController.deleteBroding);
-router.put("/EditBreed", brodingController.editBreed);
+// Base CRUD operations
+router.post("/", boardingController.createBoarding);
+router.get("/", boardingController.getAllBoarding);
+router.get("/:id", boardingController.getBoardingById);
+router.put("/:id", boardingController.updateBoarding);
+router.delete("/:id", boardingController.deleteBoarding);
+
+// Additional specialized routes
+router.get("/rates", boardingController.getBoardingRates);
+router.put("/:id/rates", boardingController.addBoardingRate);
+router.put("/:id/rates/:rateId", boardingController.editBoardingRate);
+router.delete("/:id/rates/:rateId", boardingController.deleteBoardingRate);
 
 export default router;

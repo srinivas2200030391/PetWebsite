@@ -21,7 +21,7 @@ export default function PetServices() {
       title: "Pet Boarding",
       description: "Safe and comfortable boarding",
       imageUrl: boardingimg,
-      href: "/boardingshopfilter",
+      href: "/boarding",
     },
     {
       title: "Pet Training",

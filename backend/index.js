@@ -18,7 +18,7 @@ import aboutPetRoute from "./routes/aboutpet.route.js";
 import myPetRoutes from "./routes/mypet.route.js"; // Assuming you have a mypet route
 import petHealthRoutes from "./routes/petHealthRoutes.js"; // Assuming you have a pet health route
 import cageRoutes from "./routes/cage.route.js"; // Assuming you have a cage route
-import BoardingRoute from "./routes/boardingrequest.route.js"; // Assuming you have a boarding route
+import BoardingRoute from "./routes/boarding.route.js"; // Assuming you have a boarding route
 
 const app = express();
 dotenv.config();
@@ -31,11 +31,12 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieparser());
 
 app.use("/api/cart", cartRoute);
-// app.use("/api/boarding",boardingRoute);
+app.use("/api/boarding",BoardingRoute);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/aboutpet", aboutPetRoute);
@@ -48,7 +49,7 @@ app.use("/api/aboutpet", aboutPetRoute);
 app.use("/api/mypet", myPetRoutes);
 app.use("/api/pethealth", petHealthRoutes);
 app.use("/api/cages", cageRoutes);
-app.use("/api/bookings", BoardingRoute);
+// app.use("/api/bookings", BoardingRoute);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
