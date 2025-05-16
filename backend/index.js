@@ -43,7 +43,7 @@ app.use("/api/aboutpet", aboutPetRoute);
 app.use("/api/hospital", hospitalRoute);
 app.use("/api/hospitalcard", hospitalCardRoute);
 app.use("/api/vendor", vendorRoute); // Assuming you have a vendor route
-app.use("/api/payment", paymentRoute);
+app.use("/api/payments", paymentRoute);
 app.use("/api/matingpets", userMatingPetRoute);
 app.use("/api/aboutpet", aboutPetRoute);
 app.use("/api/mypet", myPetRoutes);

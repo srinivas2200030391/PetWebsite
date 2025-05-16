@@ -22,6 +22,7 @@ import {
   HeartIcon,
 } from "@heroicons/react/20/solid";
 import config from "../../config";
+import toast from "react-hot-toast";
 
 // Updated sort options with multiple sorting criteria
 const sortOptions = [
@@ -154,9 +155,22 @@ const ImageCarousel = ({ images }) => {
 };
 
 // Pet Details Modal
-const PetDetailsModal = ({ pet, isOpen, onClose, wishlist }) => {
+
+const PetDetailsModal = ({
+  pet,
+  isOpen,
+  onClose,
+  wishlist,
+  userId,
+  payments,
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Early check moved outside of the component body
   if (!pet) return null;
+
   const isWishlisted = wishlist.includes(pet._id);
+  const paymentStatus = payments.includes(pet._id);
 
   const sampleImages = pet.images || [
     pet.imageUrl,
@@ -164,6 +178,33 @@ const PetDetailsModal = ({ pet, isOpen, onClose, wishlist }) => {
     "https://placehold.co/600x400?text=Pet+Image+3",
     "https://placehold.co/600x400?text=Pet+Image+4",
   ];
+
+  const handlePayment = async () => {
+    try {
+      setIsLoading(true);
+      const resp = await axios.post(`${config.baseURL}/api/payments/create`, {
+        amount: pet.price,
+        currency: "INR",
+        receipt: `rcpt_${pet._id.slice(-6)}_${Date.now().toString().slice(-6)}`,
+        notes: "Pet adoption payment",
+        userId,
+        petId: pet._id,
+      });
+
+      if (resp?.data?.success) {
+        toast.success(
+          "💖 Payment initiated, darling! Complete it to see all the juicy details!"
+        );
+      } else {
+        toast.error("😢 Payment failed, love. Wanna try again?");
+      }
+    } catch (error) {
+      console.error("Payment failed:", error);
+      toast.error("💔 Oopsie! Something went wrong, sugar.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
@@ -247,11 +288,134 @@ const PetDetailsModal = ({ pet, isOpen, onClose, wishlist }) => {
                     <p className="text-gray-700">{pet.characteristics}</p>
                   </div>
                 )}
+                {paymentStatus && (
+                  <div className="mt-8 space-y-4 border-t pt-6">
+                    <h4 className="text-lg font-semibold text-indigo-700">
+                      Exclusive Pet Details 💎
+                    </h4>
 
+                    {pet.videos?.length > 0 && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-500">
+                          Videos
+                        </h5>
+                        <ul className="list-disc ml-5 text-blue-600 underline">
+                          {pet.videos.map((video, idx) => (
+                            <li key={idx}>
+                              <a
+                                href={video}
+                                target="_blank"
+                                rel="noopener noreferrer">
+                                Watch Video {idx + 1} 🎥
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {pet.breedLineage && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-500">
+                          Breed Lineage
+                        </h5>
+                        <p className="text-base text-gray-700">
+                          {pet.breedLineage}
+                        </p>
+                      </div>
+                    )}
+
+                    {pet.vaccinationDetails && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-500">
+                          Vaccination Details
+                        </h5>
+                        <p className="text-base text-gray-700">
+                          {pet.vaccinationDetails}
+                        </p>
+                      </div>
+                    )}
+
+                    {pet.vaccinationProof && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-500">
+                          Vaccination Proof
+                        </h5>
+                        <a
+                          href={pet.vaccinationProof}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline">
+                          View Proof 📄
+                        </a>
+                      </div>
+                    )}
+
+                    {pet.location && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-500">
+                          Location
+                        </h5>
+                        <p className="text-base text-gray-700">
+                          {pet.location}
+                        </p>
+                      </div>
+                    )}
+
+                    {pet.breederName && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-500">
+                          Breeder's Name
+                        </h5>
+                        <p className="text-base text-gray-700">
+                          {pet.breederName}
+                        </p>
+                      </div>
+                    )}
+
+                    {pet.phoneNumber && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-500">
+                          Contact Number
+                        </h5>
+                        <p className="text-base text-gray-700">
+                          {pet.phoneNumber}
+                        </p>
+                      </div>
+                    )}
+
+                    {pet.shopAddress && (
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-500">
+                          Shop Address
+                        </h5>
+                        <p className="text-base text-gray-700">
+                          {pet.shopAddress}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Payment button */}
                 <div className="mt-8 flex space-x-4">
-                  <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md">
-                    Adopt Now
-                  </button>
+                  {!paymentStatus ? (
+                    <button
+                      onClick={handlePayment}
+                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md"
+                      disabled={isLoading}>
+                      {isLoading
+                        ? "Processing..."
+                        : "Pay Now To View All Details"}
+                    </button>
+                  ) : (
+                    <button
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
+                      disabled>
+                      Payment Successful
+                    </button>
+                  )}
+
                   <button className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 p-2 rounded-md">
                     <HeartIcon
                       className={`h-6 w-6 transition-colors duration-200 ${
@@ -337,7 +501,7 @@ export default function PetStore() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentSort, setCurrentSort] = useState(sortOptions[0]);
-  const [wishList, setWishList] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [userData, setUserData] = useState([]);
 
   // Add state for pet details modal
@@ -378,13 +542,6 @@ export default function PetStore() {
 
       setFilteredPets(response.data);
 
-      if (userData?._id) {
-        const resp = await axios.get(
-          `${config.baseURL}/api/user/getallwishlist/${userData._id}`
-        );
-        setWishlist(resp.data);
-      }
-
       setError(null);
     } catch (err) {
       console.error("Error fetching pets:", err);
@@ -399,7 +556,7 @@ export default function PetStore() {
     const userdata = JSON.parse(localStorage.getItem("user"));
 
     if (userdata && userdata.data) {
-      setUserData(userdata.data); // setUserData is async 💕
+      setUserData(userdata.data); // setUserData is async
       console.log("Logged in as", userdata.data);
     } else {
       console.log("No user found");
@@ -408,22 +565,27 @@ export default function PetStore() {
 
   // 2. Fetch pets AFTER userData is available
   useEffect(() => {
-    if (!userData?.id) return; // Wait until userData is ready, my love 💖
-
-    fetchPets();
+    if (userData?._id) {
+      fetchPets();
+    }
   }, [userData]); // This will trigger once userData is set 🌟
 
   // Fetch user's wishlist
   useEffect(() => {
     const fetchWishlist = async () => {
-      if (!userData?.id) return; // Make sure we wait for the user ID
+      if (!userData?._id) return; // Make sure we wait for the user ID
 
       try {
         const response = await axios.get(
-          `${config.baseURL}/api/user/getallwishlist/${userData.id}`
+          `${config.baseURL}/api/user/getallwishlist/${userData._id}`
         );
         setWishlist(response.data);
         console.log("Wishlist fetched", response.data);
+        const resp = await axios.get(
+          `${config.baseURL}/api/payments/getallpayments/${userData._id}`
+        );
+        setPayments(resp.data);
+        console.log("Payments fetched", resp.data);
       } catch (err) {
         console.error("Error fetching wishlist:", err);
       }
@@ -480,7 +642,7 @@ export default function PetStore() {
     try {
       console.log("Adding to wishlist:", petId);
 
-      const userId = userData.id;
+      const userId = userData._id;
       await axios.put(`${config.baseURL}/api/user/updatewishlist`, {
         userId,
         wishListId: petId,
@@ -833,6 +995,7 @@ export default function PetStore() {
                           onViewDetails={handleViewDetails}
                           onAddToWishlist={handleAddToWishlist}
                           wishlist={wishlist}
+                          payments={payments}
                         />
                       ))}
                       {/* Pet Details Modal */}
@@ -841,6 +1004,8 @@ export default function PetStore() {
                         isOpen={isDetailsModalOpen}
                         onClose={() => setIsDetailsModalOpen(false)}
                         wishlist={wishlist}
+                        userId={userData._id}
+                        payments={payments}
                       />
                     </div>
                   )}

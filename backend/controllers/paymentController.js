@@ -1,32 +1,86 @@
 import razorpayInstance from "../config/razorpayConfig.js";
 import crypto from "crypto";
+import Payment from "../models/userPayment.model.js"; // Import the Payment model
+import User from "../models/user.model.js"; // Import the User model
+import AboutPet from "../models/aboutpet.model.js"; // Import the AboutPet model
 
-// Create a new order
 const paymentController = {
+  // Create a new order
   createOrder: async (req, res) => {
     try {
-      const { amount, currency = "INR", receipt, notes } = req.body;
-      console.log("Creating order with amount:", amount, "currency:", currency);
-      
-      if (!amount) {
+      const { amount, currency = "INR", receipt, userId, petId } = req.body;
+      console.log("Request Body:", req.body); // Log the request body for debugging
+      // Validate input
+      if (!amount || !userId) {
         return res.status(400).json({
           success: false,
-          message: "Amount is required",
+          message: "Amount and userId are required",
         });
       }
 
+      // Ensure amount is valid
+      const amountInPaise = parseInt(amount) * 100; // Convert to paise
+      if (isNaN(amountInPaise)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid amount format",
+        });
+      }
+
+      // Set options for Razorpay order creation
       const options = {
-        amount: parseInt(amount) * 100, // amount in smallest currency unit (paise for INR)
+        amount: amountInPaise, // Convert amount to paise
         currency,
-        receipt: receipt || `receipt_order_₹{Date.now()}`,
-        notes,
+        receipt: receipt || `receipt_order_${Date.now()}`,
       };
-      
+      console.log("Razorpay Order Options:", options); // Log Razorpay order options
+
+      //console.log("Razorpay Order Options:", options);
+
+      // Create order on Razorpay
       const order = await razorpayInstance.orders.create(options);
+      //console.log("Razorpay Order Response:", order); // Log Razorpay order response
+
+      // Create and save payment record in the database
+      const paymentRecord = new Payment({
+        userId, // Link payment to the user
+        petId, // Link payment to the pet
+        razorpayPaymentId: null, // Placeholder for the payment ID
+        razorpayOrderId: order.id, // Store the Razorpay order ID
+        razorpaySignature: null, // Placeholder for signature
+        amount: amount, // Store amount
+        status: "Pending", // Set initial status to Pending
+        paymentMethod: "UPI", // Default payment method (you can update this later)
+      });
+      console.log("Payment Record:", paymentRecord); // Log payment record before saving
+
+      await paymentRecord.save();
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      // check if the wishlist is present in the aboutpet model
+      const pet = await AboutPet.findById(petId);
+      if (!pet) {
+        return res.status(404).json({ message: "Payments not found" });
+      }
+      // check if the wishlist is already present in the user
+      const isPresent = user.payments.some((item) => item === petId);
+      if (isPresent) {
+        // remove the wishlist from the user
+        user.payments = user.payments.filter((item) => item !== petId);
+      } else {
+        // add the wishlist to the user
+        user.payments.push(petId);
+      }
+      // save the user
+      await user.save();
 
       res.status(200).json({
         success: true,
         order,
+        paymentRecord, // Send back the payment record
       });
     } catch (error) {
       console.error("Error creating order:", error);
@@ -51,7 +105,7 @@ const paymentController = {
         });
       }
 
-      // Creating the hmac object
+      // Creating the hmac object for signature verification
       const generated_signature = crypto
         .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
         .update(razorpay_order_id + "|" + razorpay_payment_id)
@@ -59,14 +113,23 @@ const paymentController = {
 
       // Comparing the signatures
       if (generated_signature === razorpay_signature) {
-        // Payment is successful
-        // You can update your database here (e.g., mark order as paid)
+        // Payment is successful, update payment record in the database
+        const payment = await Payment.findOneAndUpdate(
+          { razorpayOrderId: razorpay_order_id }, // Find by Razorpay Order ID
+          {
+            razorpayPaymentId: razorpay_payment_id, // Save the Razorpay Payment ID
+            razorpaySignature: razorpay_signature, // Save the signature
+            status: "Completed", // Mark payment as completed
+          },
+          { new: true }
+        );
+
         res.status(200).json({
           success: true,
           message: "Payment verified successfully",
+          payment, // Send back the updated payment record
         });
       } else {
-        // Payment verification failed
         res.status(400).json({
           success: false,
           message: "Payment verification failed",
@@ -82,7 +145,7 @@ const paymentController = {
     }
   },
 
-  // Get payment details
+  // Get payment details by payment ID
   getPaymentDetails: async (req, res) => {
     try {
       const { paymentId } = req.params;
@@ -94,7 +157,14 @@ const paymentController = {
         });
       }
 
-      const payment = await razorpayInstance.payments.fetch(paymentId);
+      const payment = await Payment.findById(paymentId);
+
+      if (!payment) {
+        return res.status(404).json({
+          success: false,
+          message: "Payment not found",
+        });
+      }
 
       res.status(200).json({
         success: true,
@@ -110,10 +180,10 @@ const paymentController = {
     }
   },
 
-  // Get all payments
+  // Get all payments (for admin, if needed)
   getAllPayments: async (req, res) => {
     try {
-      const payments = await razorpayInstance.payments.all();
+      const payments = await Payment.find();
 
       res.status(200).json({
         success: true,
@@ -141,13 +211,26 @@ const paymentController = {
         });
       }
 
+      const payment = await Payment.findById(paymentId);
+
+      if (!payment || payment.status !== "Completed") {
+        return res.status(400).json({
+          success: false,
+          message: "Payment not found or already refunded",
+        });
+      }
+
+      // Refund options
       const refundOptions = {
-        payment_id: paymentId,
-        amount: amount ? amount * 100 : undefined, // Optional: partial refund if specified
+        payment_id: payment.razorpayPaymentId,
+        amount: amount ? amount * 100 : undefined, // Partial refund if specified
         notes, // Optional: notes for the refund
       };
 
       const refund = await razorpayInstance.payments.refund(refundOptions);
+
+      // Update payment status to "Refunded"
+      await Payment.findByIdAndUpdate(paymentId, { status: "Refunded" });
 
       res.status(200).json({
         success: true,
@@ -160,6 +243,19 @@ const paymentController = {
         message: "Error refunding payment",
         error: error.message,
       });
+    }
+  },
+
+  // get status based on user id and pet id
+  getPayments: async (req, res) => {
+    try {
+      const user = await User.findById(req.params.userId).populate("payments");
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.status(200).json(user.payments);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
   },
 };

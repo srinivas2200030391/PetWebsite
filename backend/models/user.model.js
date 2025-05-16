@@ -43,6 +43,14 @@ const userSchema = mongoose.Schema(
       type: [String],
       default: [],
     },
+    payments: {
+      type: [String],
+      default: [],
+    },
+    otp: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
