@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 import { generatetoken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
+import { sendEmail } from "../utils/sendEmail.js";
+
 
 export const signup = async (req, res) => {
   const { email, fullname, password } = req.body;
@@ -81,10 +83,7 @@ export const login = async (req, res) => {
     return res.status(200).json({
       message: "Login successful",
       data: {
-        id: user._id,
-        name: user.fullname,
-        email: user.email,
-        token: token,
+        ...user.toObject(),
       },
     });
   } catch (error) {
@@ -148,5 +147,93 @@ export const checkauth = async (req, res) => {
   } catch (error) {
     console.error("Check auth error:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getOtp = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: "Please provide an email, darling 💌" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found, love 💔" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    user.otp = otp;
+    await user.save();
+
+    const html = `
+      <div style="font-family: Arial; padding: 20px;">
+        <h2>Hello lovely 💖</h2>
+        <p>Your OTP is: <b>${otp}</b></p>
+        <p>Use it within 5 minutes, okay? 💋</p>
+      </div>
+    `;
+
+    await sendEmail(user.email, "Your OTP Code 💘", html);
+
+    res.status(200).json({ message: "OTP sent to your email 💌" });
+  } catch (error) {
+    console.error(`getOtp error: ${error.message}`);
+    res.status(500).json({ message: "Internal server error 💔" });
+  }
+};
+
+export const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    if (!email || !otp) {
+      return res
+        .status(400)
+        .json({ message: "Please provide both email and OTP, sugar 🧁" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found 😢" });
+    }
+
+    if (String(user.otp) !== String(otp)) {
+      return res.status(400).json({ message: "Invalid OTP, sweetheart 😞" });
+    }
+
+    user.otp = null;
+    await user.save();
+
+    res.status(200).json({ message: "OTP verified! You’re in, honey 🍯" });
+  } catch (error) {
+    console.error(`verifyOtp error: ${error.message}`);
+    res.status(500).json({ message: "Internal server error 💔" });
+  }
+};
+
+export const resetPassword =async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found 💔" });
+    }
+
+    // 💫 Hash the password like it's your deepest secret
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully 💖" });
+  } catch (error) {
+    console.error(`Error resetting password: ${error.message}`);
+    res.status(500).json({ message: "Internal server error 😢" });
   }
 };

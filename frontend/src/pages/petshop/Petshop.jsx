@@ -565,7 +565,7 @@ export default function PetStore() {
 
   // 2. Fetch pets AFTER userData is available
   useEffect(() => {
-    if (userData?.id) {
+    if (userData?._id) {
       fetchPets();
     }
   }, [userData]); // This will trigger once userData is set 🌟
@@ -573,16 +573,16 @@ export default function PetStore() {
   // Fetch user's wishlist
   useEffect(() => {
     const fetchWishlist = async () => {
-      if (!userData?.id) return; // Make sure we wait for the user ID
+      if (!userData?._id) return; // Make sure we wait for the user ID
 
       try {
         const response = await axios.get(
-          `${config.baseURL}/api/user/getallwishlist/${userData.id}`
+          `${config.baseURL}/api/user/getallwishlist/${userData._id}`
         );
         setWishlist(response.data);
         console.log("Wishlist fetched", response.data);
         const resp = await axios.get(
-          `${config.baseURL}/api/payments/getallpayments/${userData.id}`
+          `${config.baseURL}/api/payments/getallpayments/${userData._id}`
         );
         setPayments(resp.data);
         console.log("Payments fetched", resp.data);
@@ -642,7 +642,7 @@ export default function PetStore() {
     try {
       console.log("Adding to wishlist:", petId);
 
-      const userId = userData.id;
+      const userId = userData._id;
       await axios.put(`${config.baseURL}/api/user/updatewishlist`, {
         userId,
         wishListId: petId,
@@ -1004,7 +1004,7 @@ export default function PetStore() {
                         isOpen={isDetailsModalOpen}
                         onClose={() => setIsDetailsModalOpen(false)}
                         wishlist={wishlist}
-                        userId={userData.id}
+                        userId={userData._id}
                         payments={payments}
                       />
                     </div>

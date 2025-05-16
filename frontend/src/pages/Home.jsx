@@ -9,6 +9,7 @@ import aboutimg from "../assets/aboutimg.jpg";
 import veternaryimg from "../assets/veternaryimg.png";
 import WishList from "./wishlist/WishList";
 import Payments from "./payments/payments";
+import EditProfile from "./profile/EditProfile";
 
 const Home = () => {
   const [setCartCount] = useState(0);
@@ -28,6 +29,7 @@ const Home = () => {
           />
           <Route path="/wishlist" element={<WishList />} />
           <Route path="/payments" element={<Payments/>} />
+          <Route path="/editprofile" element={<EditProfile/>} />
 
         </Routes>
       </div>

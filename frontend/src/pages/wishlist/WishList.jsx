@@ -448,11 +448,11 @@ export default function PetStore() {
   // Fetch user's wishlist
   useEffect(() => {
     const fetchWishlist = async () => {
-      if (!userData?.id) return; // Make sure we wait for the user ID
+      if (!userData?._id) return; // Make sure we wait for the user ID
 
       try {
         const response = await axios.get(
-          `${config.baseURL}/api/user/getallwishlist/${userData.id}`
+          `${config.baseURL}/api/user/getallwishlist/${userData._id}`
         );
         setWishlist(response.data);
 
@@ -474,7 +474,7 @@ export default function PetStore() {
         console.log("Wishlist fetched", response.data);
 
         const resp = await axios.get(
-          `${config.baseURL}/api/payments/getallpayments/${userData.id}`
+          `${config.baseURL}/api/payments/getallpayments/${userData._id}`
         );
         setPayments(resp.data);
         console.log("Payments fetched", resp.data);
@@ -492,7 +492,7 @@ export default function PetStore() {
     try {
       console.log("Adding to wishlist:", petId);
 
-      const userId = userData.id;
+      const userId = userData._id;
       await axios.put(`${config.baseURL}/api/user/updatewishlist`, {
         userId,
         wishListId: petId,
@@ -603,7 +603,7 @@ export default function PetStore() {
                           onClose={() => setIsDetailsModalOpen(false)}
                           wishlist={wishlist}
                                 payments={payments}
-                                userId = {userData.id}
+                                userId = {userData._id}
                         />
                       </div>
                     )}
