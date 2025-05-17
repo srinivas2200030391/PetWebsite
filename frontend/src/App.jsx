@@ -13,9 +13,11 @@ import MatingPetsList from "./pages/Mating/MatingPetsList";
 import Form from "./components/AppointmentFrom";
 import PetSaleForm from "./components/PetSaleForm";
 import MatingForm from "./components/MatingForm";
-import BoardingPage from "./pages/boarding/BoardingPage";
+// import BoardingPage from "./pages/boarding/BoardingPage";
 import BoardingShops from "./pages/boarding/BoardingShops";
-import BoardingShopFilter from "./pages/boarding/BoardingShopFilter";
+import BoardingShopEntry from "./pages/boarding/BoardingShopEntry";
+import BoardingCenterDetail from "./pages/boarding/BoardingCenterDetail";
+import AddBoardingShop from "./pages/boarding/AddBoardingShop";
 import CustomButton from "./components/CustomButton";
 import AboutPets from "./pages/About/AboutPets";
 import { useAuthStore } from "./pages/store/useAuthstore";
@@ -30,6 +32,10 @@ import HealthCarepage from "./pages/Health_Care/HealthCarepage";
 import Vets from './pages/Health_Care/Vets';
 import PetDetail from "./pages/petshop/PetDetail";
 import NewBoardingRequest from "./pages/boarding/NewBoardingRequest";
+import MyPets from "./pages/My_Pet/MyPet";
+import PetDetails from './pages/My_Pet/PetDetails';
+import PetHealth from './pages/My_Pet/PetHealth';
+
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
 
@@ -59,10 +65,25 @@ const App = () => {
           <Route path="/petsaleform" element={<PetSaleForm />} />
           <Route path="/matingform" element={<MatingForm />} />
           <Route path="/pet/:petId" element={<PetDetail />} />
-          <Route path="/boardingpage" element={<BoardingPage />} />
+          <Route path="/my-pets" element={<MyPets />} />
+          <Route path="/my-pets/:petId" element={<PetDetails />} />
+          <Route path="/pet-health/:petId" element={<PetHealth />} />
+          
+          {/* Boarding Routes */}
+          {/* Main boarding landing page */}
+          <Route path="/boarding" element={<BoardingShopEntry />} />
+          
+          {/* For backward compatibility and redirection */}
+          <Route path="/boardingpage" element={<Navigate to="/boarding" />} />
           <Route path="/boardingshops" element={<BoardingShops />} />
-          <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />
-          <Route path="/newboardingrequest" element={<NewBoardingRequest/>} />
+          <Route path="/boardingshopfilter" element={<Navigate to="/boarding" />} />
+          
+          {/* New routes */}
+          <Route path="/boardingcenter/:boardingId" element={<BoardingCenterDetail />} />
+          <Route path="/newboardingrequest" element={<NewBoardingRequest />} />
+          <Route path="/newboardingrequest/:vendorId" element={<NewBoardingRequest />} />
+          <Route path="/add-boarding" element={<AddBoardingShop />} />
+          
           <Route path="/aboutpets" element={<AboutPets />} />
           <Route path="/breeds/:item" element={<Breeds />} />
           <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
@@ -71,8 +92,8 @@ const App = () => {
           <Route path="/matingpetslist" element={<MatingPetsList />} /> 
           <Route path="/healthcare" element={<HealthCarepage />} />
           <Route path="/vets" element={<Vets />} />
-          {/* Nested Routes */}
-
+          
+          {/* Auth Routes */}
           <Route
             path="/"
             element={!authUser ? <Intro /> : <Navigate to="/home" />}
@@ -91,10 +112,6 @@ const App = () => {
           />
 
           <Route path="*" element={<Navigate to={"/home"} />} />
-          {/* <Route
-            path="*"
-            element={<Navigate to={authUser ? "/home" : "/login"} />}
-          /> */}
         </Routes>
         <Toaster />
         {authUser && <Footer />}

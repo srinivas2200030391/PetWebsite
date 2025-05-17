@@ -8,4 +8,5 @@ router.get("/get/:id", userController.getUser);
 router.get("/getall", userController.getAllUsers);
 router.put("/updatewishlist", userController.updateWishList);
 router.get("/getallwishlist/:id", userController.getAllWishList);
+router.put("/updateprofile", userController.updateprofile);
 export default router;

@@ -1,5 +1,6 @@
 import AboutPet from "../models/aboutpet.model.js";
 import User from "../models/user.model.js";
+import { updateprofile } from "./auth.controller.js";
 
 
 const userController = {
@@ -79,6 +80,25 @@ const userController = {
         return res.status(404).json({ message: "User not found" });
       }
       res.status(200).json(user.wishlist);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  updateprofile: async (req, res) => {
+    try {
+      const user = req.body;
+      console.log("user in update profile", user);
+      const userId = user._id;
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        user,
+        { new: true }
+      );
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.status(200).json(updatedUser);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

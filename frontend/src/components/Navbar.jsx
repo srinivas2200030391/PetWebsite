@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Navbar,
@@ -192,7 +193,7 @@ function NavList() {
       </Typography>
       <Typography
         as="a"
-        href="#"
+        href="/my-pets"
         variant="small"
         color="blue-gray"
         className="font-medium">
