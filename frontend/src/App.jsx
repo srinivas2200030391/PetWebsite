@@ -32,6 +32,9 @@ import HealthCarepage from "./pages/Health_Care/HealthCarepage";
 import Vets from './pages/Health_Care/Vets';
 import PetDetail from "./pages/petshop/PetDetail";
 import NewBoardingRequest from "./pages/boarding/NewBoardingRequest";
+import MyPets from "./pages/My_Pet/MyPet";
+import PetDetails from './pages/My_Pet/PetDetails';
+import PetHealth from './pages/My_Pet/PetHealth';
 
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
@@ -62,6 +65,9 @@ const App = () => {
           <Route path="/petsaleform" element={<PetSaleForm />} />
           <Route path="/matingform" element={<MatingForm />} />
           <Route path="/pet/:petId" element={<PetDetail />} />
+          <Route path="/my-pets" element={<MyPets />} />
+          <Route path="/my-pets/:petId" element={<PetDetails />} />
+          <Route path="/pet-health/:petId" element={<PetHealth />} />
           
           {/* Boarding Routes */}
           {/* Main boarding landing page */}
