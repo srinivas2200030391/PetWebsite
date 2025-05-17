@@ -23,6 +23,78 @@ import {
 } from "@heroicons/react/20/solid";
 import config from "../../config";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
+
+// Animation variants
+const pageTransition = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.5 },
+  },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+const itemAnimation = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 10,
+    },
+  },
+};
+
+const modalAnimation = {
+  hidden: {
+    opacity: 0,
+    scale: 0.8,
+    y: 20,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      scale: { type: "spring", bounce: 0.5 },
+      ease: "easeOut",
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.8,
+    y: 20,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
+const backdropAnimation = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.3 },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.3 },
+  },
+};
 
 // Updated sort options with multiple sorting criteria
 const sortOptions = [
@@ -208,234 +280,264 @@ const PetDetailsModal = ({
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <DialogBackdrop className="fixed inset-0 bg-black/30" />
+      <motion.div
+        variants={backdropAnimation}
+        initial="hidden"
+        animate="visible"
+        exit="exit">
+        <DialogBackdrop className="fixed inset-0 bg-black/30" />
+      </motion.div>
+
       <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4">
-          <DialogPanel className="mx-auto w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">{pet.name}</h3>
-              <button
-                onClick={onClose}
-                className="p-1 rounded-full hover:bg-gray-100">
-                <XMarkIcon className="h-6 w-6 text-gray-400" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <ImageCarousel images={sampleImages} />
+          <motion.div
+            variants={modalAnimation}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="w-full max-w-2xl">
+            <DialogPanel className="mx-auto rounded-xl bg-white p-6 shadow-xl">
+              <div className="flex justify-between items-center mb-4">
+                <motion.h3
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-2xl font-bold text-gray-900">
+                  {pet.name}
+                </motion.h3>
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-full hover:bg-gray-100">
+                  <XMarkIcon className="h-6 w-6 text-gray-400" />
+                </button>
               </div>
-              <div>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Breed</h4>
-                    <p className="text-base font-medium">{pet.breed}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Age</h4>
-                    <p className="text-base font-medium">{pet.age} years old</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">
-                      Gender
-                    </h4>
-                    <p className="text-base font-medium">{pet.gender}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">
-                      Weight
-                    </h4>
-                    <p className="text-base font-medium">{pet.weight}</p>
-                  </div>
-                  {pet.height && (
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <ImageCarousel images={sampleImages} />
+                </div>
+                <div>
+                  <div className="space-y-4">
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">
-                        Height
+                        Breed
                       </h4>
-                      <p className="text-base font-medium">{pet.height}</p>
+                      <p className="text-base font-medium">{pet.breed}</p>
                     </div>
-                  )}
-                  {pet.lifeSpan && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Age</h4>
+                      <p className="text-base font-medium">
+                        {pet.age} years old
+                      </p>
+                    </div>
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">
-                        Lifespan
+                        Gender
                       </h4>
-                      <p className="text-base font-medium">{pet.lifeSpan}</p>
+                      <p className="text-base font-medium">{pet.gender}</p>
                     </div>
-                  )}
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Price</h4>
-                    <p className="text-xl font-bold text-indigo-600">
-                      ${pet.price}
-                    </p>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">
+                        Weight
+                      </h4>
+                      <p className="text-base font-medium">{pet.weight}</p>
+                    </div>
+                    {pet.height && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500">
+                          Height
+                        </h4>
+                        <p className="text-base font-medium">{pet.height}</p>
+                      </div>
+                    )}
+                    {pet.lifeSpan && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500">
+                          Lifespan
+                        </h4>
+                        <p className="text-base font-medium">{pet.lifeSpan}</p>
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">
+                        Price
+                      </h4>
+                      <p className="text-xl font-bold text-indigo-600">
+                        ${pet.price}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="mt-6">
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">
-                    Details
-                  </h4>
-                  <p className="text-gray-700">
-                    {pet.details || "No details available for this pet."}
-                  </p>
-                </div>
-
-                {pet.characteristics && (
                   <div className="mt-6">
                     <h4 className="text-sm font-medium text-gray-500 mb-2">
-                      Characteristics
+                      Details
                     </h4>
-                    <p className="text-gray-700">{pet.characteristics}</p>
+                    <p className="text-gray-700">
+                      {pet.details || "No details available for this pet."}
+                    </p>
                   </div>
-                )}
-                {paymentStatus && (
-                  <div className="mt-8 space-y-4 border-t pt-6">
-                    <h4 className="text-lg font-semibold text-indigo-700">
-                      Exclusive Pet Details 💎
-                    </h4>
 
-                    {pet.videos?.length > 0 && (
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Videos
-                        </h5>
-                        <ul className="list-disc ml-5 text-blue-600 underline">
-                          {pet.videos.map((video, idx) => (
-                            <li key={idx}>
-                              <a
-                                href={video}
-                                target="_blank"
-                                rel="noopener noreferrer">
-                                Watch Video {idx + 1} 🎥
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                  {pet.characteristics && (
+                    <div className="mt-6">
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">
+                        Characteristics
+                      </h4>
+                      <p className="text-gray-700">{pet.characteristics}</p>
+                    </div>
+                  )}
+                  {paymentStatus && (
+                    <div className="mt-8 space-y-4 border-t pt-6">
+                      <h4 className="text-lg font-semibold text-indigo-700">
+                        Exclusive Pet Details 💎
+                      </h4>
 
-                    {pet.breedLineage && (
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Breed Lineage
-                        </h5>
-                        <p className="text-base text-gray-700">
-                          {pet.breedLineage}
-                        </p>
-                      </div>
-                    )}
+                      {pet.videos?.length > 0 && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Videos
+                          </h5>
+                          <ul className="list-disc ml-5 text-blue-600 underline">
+                            {pet.videos.map((video, idx) => (
+                              <li key={idx}>
+                                <a
+                                  href={video}
+                                  target="_blank"
+                                  rel="noopener noreferrer">
+                                  Watch Video {idx + 1} 🎥
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
 
-                    {pet.vaccinationDetails && (
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Vaccination Details
-                        </h5>
-                        <p className="text-base text-gray-700">
-                          {pet.vaccinationDetails}
-                        </p>
-                      </div>
-                    )}
+                      {pet.breedLineage && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Breed Lineage
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.breedLineage}
+                          </p>
+                        </div>
+                      )}
 
-                    {pet.vaccinationProof && (
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Vaccination Proof
-                        </h5>
-                        <a
-                          href={pet.vaccinationProof}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline">
-                          View Proof 📄
-                        </a>
-                      </div>
-                    )}
+                      {pet.vaccinationDetails && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Vaccination Details
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.vaccinationDetails}
+                          </p>
+                        </div>
+                      )}
 
-                    {pet.location && (
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Location
-                        </h5>
-                        <p className="text-base text-gray-700">
-                          {pet.location}
-                        </p>
-                      </div>
-                    )}
+                      {pet.vaccinationProof && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Vaccination Proof
+                          </h5>
+                          <a
+                            href={pet.vaccinationProof}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline">
+                            View Proof 📄
+                          </a>
+                        </div>
+                      )}
 
-                    {pet.breederName && (
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Breeder's Name
-                        </h5>
-                        <p className="text-base text-gray-700">
-                          {pet.breederName}
-                        </p>
-                      </div>
-                    )}
+                      {pet.location && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Location
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.location}
+                          </p>
+                        </div>
+                      )}
 
-                    {pet.phoneNumber && (
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Contact Number
-                        </h5>
-                        <p className="text-base text-gray-700">
-                          {pet.phoneNumber}
-                        </p>
-                      </div>
-                    )}
+                      {pet.breederName && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Breeder's Name
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.breederName}
+                          </p>
+                        </div>
+                      )}
 
-                    {pet.shopAddress && (
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Shop Address
-                        </h5>
-                        <p className="text-base text-gray-700">
-                          {pet.shopAddress}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      {pet.phoneNumber && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Contact Number
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.phoneNumber}
+                          </p>
+                        </div>
+                      )}
 
-                {/* Payment button */}
-                <div className="mt-8 flex space-x-4">
-                  {!paymentStatus ? (
-                    <button
-                      onClick={handlePayment}
-                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md"
-                      disabled={isLoading}>
-                      {isLoading
-                        ? "Processing..."
-                        : "Pay Now To View All Details"}
-                    </button>
-                  ) : (
-                    <button
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
-                      disabled>
-                      Payment Successful
-                    </button>
+                      {pet.shopAddress && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Shop Address
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.shopAddress}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   )}
 
-                  <button className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 p-2 rounded-md">
-                    <HeartIcon
-                      className={`h-6 w-6 transition-colors duration-200 ${
-                        isWishlisted
-                          ? "text-red-500"
-                          : "text-gray-400 hover:text-red-500"
-                      }`}
-                    />
-                  </button>
+                  {/* Payment button */}
+                  <div className="mt-8 flex space-x-4">
+                    {!paymentStatus ? (
+                      <button
+                        onClick={handlePayment}
+                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md"
+                        disabled={isLoading}>
+                        {isLoading
+                          ? "Processing..."
+                          : "Pay Now To View All Details"}
+                      </button>
+                    ) : (
+                      <button
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
+                        disabled>
+                        Payment Successful
+                      </button>
+                    )}
+
+                    <button className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 p-2 rounded-md">
+                      <HeartIcon
+                        className={`h-6 w-6 transition-colors duration-200 ${
+                          isWishlisted
+                            ? "text-red-500"
+                            : "text-gray-400 hover:text-red-500"
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </DialogPanel>
+              </motion.div>
+            </DialogPanel>
+          </motion.div>
         </div>
       </div>
     </Dialog>
   );
 };
 
-// Pet Card Component with Limited Information
+// Pet Card Component with Limited Information and Animations
 const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
   const isWishlisted = wishlist.includes(pet._id);
 
@@ -447,48 +549,58 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
   ];
 
   return (
-    <div className="group relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
-      <div className="cursor-pointer" onClick={() => onViewDetails(pet)}>
-        <ImageCarousel images={sampleImages} />
+    <motion.div
+      variants={itemAnimation}
+      whileHover={{
+        scale: 1.02,
+        transition: { duration: 0.2 },
+      }}
+      whileTap={{ scale: 0.98 }}
+      className="h-full">
+      <div
+        className="group relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white transform transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
+        <div className="cursor-pointer" onClick={() => onViewDetails(pet)}>
+          <ImageCarousel images={sampleImages} />
 
-        <div className="p-4">
-          <div className="flex justify-between items-start">
-            <h3 className="text-lg font-semibold text-gray-900">{pet.name}</h3>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToWishlist(pet._id);
-              }}
-              className="p-1 rounded-full hover:bg-gray-100"
-              aria-label="Add to wishlist">
-              <HeartIcon
-                className={`h-6 w-6 transition-colors duration-200 ${
-                  isWishlisted
-                    ? "text-red-500"
-                    : "text-gray-400 hover:text-red-500"
-                }`}
-              />
-            </button>
-          </div>
+          <div className="p-4">
+            <div className="flex justify-between items-start">
+              <h3 className="text-lg font-semibold text-gray-900">{pet.name}</h3>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToWishlist(pet._id);
+                }}
+                className="p-1 rounded-full hover:bg-gray-100"
+                aria-label="Add to wishlist">
+                <HeartIcon
+                  className={`h-6 w-6 transition-colors duration-200 ${
+                    isWishlisted
+                      ? "text-red-500"
+                      : "text-gray-400 hover:text-red-500"
+                  }`}
+                />
+              </button>
+            </div>
 
-          <p className="mt-1 text-sm text-gray-500">{pet.breed}</p>
-          <p className="mt-1 text-sm text-gray-500">{pet.age} years old</p>
+            <p className="mt-1 text-sm text-gray-500">{pet.breed}</p>
+            <p className="mt-1 text-sm text-gray-500">{pet.age} years old</p>
 
-          <div className="mt-2 flex justify-between items-center">
-            <p className="text-lg font-medium text-gray-900">${pet.price}</p>
-            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-              Available
-            </span>
+            <div className="mt-2 flex justify-between items-center">
+              <p className="text-lg font-medium text-gray-900">${pet.price}</p>
+              <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                Available
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <button
-        onClick={() => onViewDetails(pet)}
-        className="block w-[calc(100%-2rem)] mx-auto mb-4 mt-2 bg-indigo-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">
-        View Details
-      </button>
-    </div>
+        <button
+          onClick={() => onViewDetails(pet)}
+          className="block w-[calc(100%-2rem)] mx-auto mb-4 mt-2 bg-indigo-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">
+          View Details
+        </button>
+      </div>
+    </motion.div>
   );
 };
 
@@ -679,7 +791,11 @@ export default function PetStore() {
   };
 
   return (
-    <div className="bg-white">
+    <motion.div
+      variants={pageTransition}
+      initial="hidden"
+      animate="visible"
+      className="bg-white">
       <div>
         {/* Mobile filter dialog */}
         <Dialog
@@ -971,10 +1087,19 @@ export default function PetStore() {
 
               {/* Products - Add scrollable container */}
               <div className="lg:col-span-6">
-                <div className="h-[calc(100vh-200px)] overflow-y-auto pr-4">
+                <motion.div
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                  className="h-[calc(100vh-200px)] overflow-y-auto pr-4">
                   {loading ? (
                     <div className="flex justify-center items-center h-64">
-                      <p className="text-gray-500">Loading pets...</p>
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-gray-500">
+                        Loading pets...
+                      </motion.p>
                     </div>
                   ) : error ? (
                     <div className="flex justify-center items-center h-64">
@@ -1009,12 +1134,12 @@ export default function PetStore() {
                       />
                     </div>
                   )}
-                </div>
+                </motion.div>
               </div>
             </div>
           </section>
         </main>
       </div>
-    </div>
+    </motion.div>
   );
 }
