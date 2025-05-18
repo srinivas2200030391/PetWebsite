@@ -165,43 +165,115 @@ const PetDetailsModal = ({
   payments,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(false);
+  const RAZORPAY_KEY_ID = "rzp_test_BbYHp3Xn5nnaxa";
+  useEffect(() => {
+    if (!window.Razorpay) {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => {
+        setRazorpayLoaded(true);
+        console.log("Razorpay loaded, sugar 🧁");
+      };
+      script.onerror = () => {
+        toast.error("Couldn’t load payment gateway, sweetie 😢");
+      };
+      document.body.appendChild(script);
+    } else {
+      setRazorpayLoaded(true);
+    }
+  }, []);
 
-  // Early check moved outside of the component body
   if (!pet) return null;
-
   const isWishlisted = wishlist.includes(pet._id);
-  const paymentStatus = payments.includes(pet._id);
-
+  let hasPaid = payments.includes(pet._id);
   const sampleImages = pet.images || [
     pet.imageUrl,
     "https://placehold.co/600x400?text=Pet+Image+2",
     "https://placehold.co/600x400?text=Pet+Image+3",
-    "https://placehold.co/600x400?text=Pet+Image+4",
   ];
 
   const handlePayment = async () => {
-    try {
-      setIsLoading(true);
-      const resp = await axios.post(`${config.baseURL}/api/payments/create`, {
-        amount: pet.price,
-        currency: "INR",
-        receipt: `rcpt_${pet._id.slice(-6)}_${Date.now().toString().slice(-6)}`,
-        notes: "Pet adoption payment",
-        userId,
-        petId: pet._id,
-      });
+    if (!razorpayLoaded) {
+      toast.error("Hold on, darling! Payment system is still loading 🥺");
+      return;
+    }
 
-      if (resp?.data?.success) {
-        toast.success(
-          "💖 Payment initiated, darling! Complete it to see all the juicy details!"
-        );
-      } else {
-        toast.error("😢 Payment failed, love. Wanna try again?");
+    setIsLoading(true);
+
+    try {
+      const { data } = await axios.post(
+        `${config.baseURL}/api/payments/create`,
+        {
+          amount: pet.price,
+          currency: "INR",
+          receipt: `rcpt_${pet._id.slice(-6)}_${Date.now().toString().slice(-6)}`,
+          userId,
+          petId: pet._id,
+        }
+      );
+
+      if (!data.success) {
+        throw new Error(data.message || "Order creation failed");
       }
-    } catch (error) {
-      console.error("Payment failed:", error);
-      toast.error("💔 Oopsie! Something went wrong, sugar.");
-    } finally {
+
+      const { order } = data;
+
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Pet Adoption Center 💕",
+        description: `Adopt ${pet.name}`,
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            const verifyRes = await axios.post(
+              `${config.baseURL}/api/payments/verify`,
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }
+            );
+
+            if (verifyRes.data.success) {
+              toast.success("Paw-fect! Payment successful 🐾💸");
+              setPaymentStatus(true);
+              hasPaid = true;
+            } else {
+              toast.error("Oops! Verification failed, sweetpea 😢");
+            }
+          } catch (err) {
+            console.error("Verification error:", err);
+            toast.error("Uh-oh! Couldn’t verify payment, honey 🍯");
+          } finally {
+            setIsLoading(false);
+          }
+        },
+        prefill: {
+          name: "Customer",
+          email: "customer@example.com",
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#7C3AED",
+        },
+        modal: {
+          ondismiss: () => {
+            setIsLoading(false);
+            toast("You closed the payment window 😘");
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error("Payment error:", err);
+      toast.error("Something went wrong, cupcake 💔");
       setIsLoading(false);
     }
   };
@@ -288,7 +360,7 @@ const PetDetailsModal = ({
                     <p className="text-gray-700">{pet.characteristics}</p>
                   </div>
                 )}
-                {paymentStatus && (
+                {hasPaid && (
                   <div className="mt-8 space-y-4 border-t pt-6">
                     <h4 className="text-lg font-semibold text-indigo-700">
                       Exclusive Pet Details 💎
@@ -399,7 +471,7 @@ const PetDetailsModal = ({
 
                 {/* Payment button */}
                 <div className="mt-8 flex space-x-4">
-                  {!paymentStatus ? (
+                  {!hasPaid ? (
                     <button
                       onClick={handlePayment}
                       className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md"

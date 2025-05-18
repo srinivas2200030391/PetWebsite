@@ -49,8 +49,7 @@ const App = () => {
       <div className="min-h-screen">
         {<Navbar />}
         <Routes>
-          {/* <Route path="/home/*" element={authUser ? <Home /> : <Navigate to="/login" />} /> */}
-          <Route path="/home/*" element={<Home />} />
+          <Route path="/home/*" element={authUser ? <Home /> : <Navigate to="/login" />} />
           <Route path="/custombutton" element={<CustomButton />} />
           <Route path="/petshop" element={<Petshop />} />
           <Route path="/productoverview" element={<ProductOverview />} />
