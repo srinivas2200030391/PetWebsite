@@ -11,10 +11,11 @@ import {
   DialogFooter,
   Input,
   Textarea,
+  Spinner,
 } from "@material-tailwind/react";
 import axios from "axios";
 import config from "./../../config";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const cardVariants = {
@@ -30,6 +31,15 @@ const cardVariants = {
 };
 
 export default function NewBoardingRequest() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { vendorId: paramVendorId } = useParams();
+  const queryParams = new URLSearchParams(location.search);
+  const queryVendorId = queryParams.get("vendorId");
+  
+  // Use vendorId from params or query string
+  const vendorId = paramVendorId || queryVendorId;
+  
   const [availableCages, setAvailableCages] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedCage, setSelectedCage] = useState(null);
@@ -41,7 +51,6 @@ export default function NewBoardingRequest() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState([]);
-  const { vendorId } = useParams();
 
   // New state variables for My Requests feature
   const [openRequestsModal, setOpenRequestsModal] = useState(false);
@@ -52,12 +61,25 @@ export default function NewBoardingRequest() {
   const [newEndDate, setNewEndDate] = useState("");
   const [extendedAmount, setExtendedAmount] = useState(0);
 
+  const [vendorDetails, setVendorDetails] = useState(null);
+  const [isLoadingVendor, setIsLoadingVendor] = useState(true);
+
   useEffect(() => {
     fetchAvailableCages();
     // Get user from localStorage on component mount
     const userData = JSON.parse(localStorage.getItem("user"));
-    setUser(userData.data);
-  }, []);
+    if (userData?.data) {
+      setUser(userData.data);
+    } else {
+      // Handle case when user is not logged in
+      setError("Please login to make a booking request");
+    }
+    
+    // Fetch vendor details if vendorId is provided
+    if (vendorId) {
+      fetchVendorDetails();
+    }
+  }, [vendorId]);
 
   useEffect(() => {
     calculateTotalAmount();
@@ -182,6 +204,23 @@ export default function NewBoardingRequest() {
     return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
   };
 
+  const fetchVendorDetails = async () => {
+    setIsLoadingVendor(true);
+    try {
+      const response = await axios.get(`${config.baseURL}/api/vendor/${vendorId}`);
+      setVendorDetails(response.data);
+    } catch (error) {
+      console.error("Error fetching vendor details:", error);
+      // Set fallback vendor details in case of error
+      setVendorDetails({
+        _id: vendorId,
+        vendorShopName: "Pet Boarding Center",
+      });
+    } finally {
+      setIsLoadingVendor(false);
+    }
+  };
+
   const handleSubmitBooking = async () => {
     // Validate form
     if (!startDate || !endDate || !petName) {
@@ -199,30 +238,38 @@ export default function NewBoardingRequest() {
     }
 
     try {
-      // Create booking object based on input
+      // Prepare the booking data
       const bookingData = {
+        userId: user.id,
         cageId: selectedCage._id,
-        customer: user.id,
-        startDate,
-        endDate,
-        petName,
-        specialInstructions,
-        totalAmount,
+        petName: petName,
+        startDate: startDate,
+        endDate: endDate,
+        totalAmount: totalAmount,
+        specialInstructions: specialInstructions,
+        vendorId: vendorId, // Use the vendorId from params or query
       };
-      console.log(bookingData);
 
-      // Submit booking to API
-      await axios.post(`${config.baseURL}/api/bookings`, bookingData);
+      // Submit the booking request
+      const response = await axios.post(
+        `${config.baseURL}/api/bookings`,
+        bookingData
+      );
 
-      // Show success message
-      alert(`Booking successful! Your total is $${totalAmount}`);
-
-      // Close dialog and refresh cages
-      handleCloseDialog();
-      fetchAvailableCages();
+      if (response.status === 201 || response.status === 200) {
+        alert("Booking request submitted successfully!");
+        handleCloseDialog();
+        
+        // Redirect to vendor shop or boarding center page
+        if (vendorId) {
+          navigate(`/boardingcenter/${vendorId}`);
+        } else {
+          navigate("/boarding");
+        }
+      }
     } catch (error) {
-      console.error("Error creating booking:", error);
-      alert("Failed to create booking. Please try again.");
+      console.error("Error submitting booking:", error);
+      alert("Failed to submit booking. Please try again.");
     }
   };
 
@@ -305,10 +352,47 @@ export default function NewBoardingRequest() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <Typography variant="h2" className="text-center mb-8">
-        Available Boarding Options
-      </Typography>
+    <div className="container mx-auto px-4 py-8 pt-20">
+      {vendorId && (
+        <div className="mb-6">
+          {isLoadingVendor ? (
+            <div className="flex justify-center py-4">
+              <Spinner color="orange" className="h-8 w-8" />
+            </div>
+          ) : (
+            <div className="bg-orange-50 p-4 rounded-lg">
+              <Typography variant="h5" className="text-orange-800 mb-2">
+                Booking Request for: {vendorDetails?.vendorShopName}
+              </Typography>
+              <Button
+                variant="text"
+                size="sm"
+                color="orange"
+                onClick={() => navigate(`/boardingcenter/${vendorId}`)}
+                className="flex items-center gap-1"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="h-4 w-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Boarding Center
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex justify-between items-center mb-6">
+        <Typography variant="h4" className="font-bold">
+          {vendorId ? "Complete Your Booking Request" : "Available Boarding Options"}
+        </Typography>
+        <Button
+          color="orange"
+          size="sm"
+          onClick={handleOpenRequestsModal}
+        >
+          My Requests
+        </Button>
+      </div>
 
       {availableCages.length === 0 ? (
         <div className="text-center py-8">

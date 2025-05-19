@@ -13,9 +13,11 @@ import MatingPetsList from "./pages/Mating/MatingPetsList";
 import Form from "./components/AppointmentFrom";
 import PetSaleForm from "./components/PetSaleForm";
 import MatingForm from "./components/MatingForm";
-import BoardingPage from "./pages/boarding/BoardingPage";
+//import BoardingPage from "./pages/boarding/BoardingPage";
 import BoardingShops from "./pages/boarding/BoardingShops";
-import BoardingShopFilter from "./pages/boarding/BoardingShopFilter";
+import BoardingShopEntry from "./pages/boarding/BoardingShopEntry";
+import BoardingCenterDetail from "./pages/boarding/BoardingCenterDetail";
+import AddBoardingShop from "./pages/boarding/AddBoardingShop";
 import CustomButton from "./components/CustomButton";
 import AboutPets from "./pages/About/AboutPets";
 import { useAuthStore } from "./pages/store/useAuthstore";
@@ -95,14 +97,14 @@ const App = () => {
             }
           />
           <Route path="/pet/:petId" element={<PetDetail />} />
-          <Route
+          {/* <Route
             path="/boardingpage"
             element={
               <PrivateRoute>
                 <BoardingPage />
               </PrivateRoute>
             }
-          />
+          /> */}
           <Route
             path="/boardingshops"
             element={
@@ -111,14 +113,14 @@ const App = () => {
               </PrivateRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/boardingshopfilter"
             element={
               <PrivateRoute>
                 <BoardingShopFilter />
               </PrivateRoute>
             }
-          />
+          /> */}
           <Route
             path="/newboardingrequest"
             element={
@@ -127,6 +129,25 @@ const App = () => {
               </PrivateRoute>
             }
           />
+          {/* <Route path="/my-pets" element={<MyPets />} /> */}
+          {/* <Route path="/my-pets/:petId" element={<PetDetails />} />
+          <Route path="/pet-health/:petId" element={<PetHealth />} /> */}
+          
+          {/* Boarding Routes */}
+          {/* Main boarding landing page */}
+          <Route path="/boarding" element={<BoardingShopEntry />} />
+          
+          {/* For backward compatibility and redirection */}
+          <Route path="/boardingpage" element={<Navigate to="/boarding" />} />
+          <Route path="/boardingshops" element={<BoardingShops />} />
+          <Route path="/boardingshopfilter" element={<Navigate to="/boarding" />} />
+          
+          {/* New routes */}
+          <Route path="/boardingcenter/:boardingId" element={<BoardingCenterDetail />} />
+          <Route path="/newboardingrequest" element={<NewBoardingRequest />} />
+          <Route path="/newboardingrequest/:vendorId" element={<NewBoardingRequest />} />
+          <Route path="/add-boarding" element={<AddBoardingShop />} />
+          
           <Route path="/aboutpets" element={<AboutPets />} />
           <Route path="/breeds/:item" element={<Breeds />} />
           <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
@@ -137,9 +158,10 @@ const App = () => {
           <Route path="/vets" element={<Vets />} />
 
           {/* Public Routes */}
+          
+          {/* Auth Routes */}
           <Route
             path="/"
-            element={!authUser ? <Intro /> : <Navigate to="/home" />}
           />
           <Route
             path="/intro"

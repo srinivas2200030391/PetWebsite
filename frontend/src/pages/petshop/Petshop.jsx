@@ -23,8 +23,80 @@ import {
 } from "@heroicons/react/20/solid";
 import config from "../../config";
 import toast from "react-hot-toast";
-import PetCard from "../petshop/PetCard";
-import PetDetailsModal from "../petshop/PetDetailsModal";
+import { motion } from "framer-motion";
+import PetCard from "./PetCard";
+import PetDetailsModal from "./PetDetailsModal";
+
+// Animation variants
+const pageTransition = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.5 },
+  },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+const itemAnimation = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 10,
+    },
+  },
+};
+
+const modalAnimation = {
+  hidden: {
+    opacity: 0,
+    scale: 0.8,
+    y: 20,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      scale: { type: "spring", bounce: 0.5 },
+      ease: "easeOut",
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.8,
+    y: 20,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
+const backdropAnimation = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.3 },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.3 },
+  },
+};
 
 // Updated sort options with multiple sorting criteria
 const sortOptions = [
@@ -272,7 +344,11 @@ export default function PetStore() {
   };
 
   return (
-    <div className="bg-white">
+    <motion.div
+      variants={pageTransition}
+      initial="hidden"
+      animate="visible"
+      className="bg-white">
       <div>
         {/* Mobile filter dialog */}
         <Dialog
@@ -564,10 +640,19 @@ export default function PetStore() {
 
               {/* Products - Add scrollable container */}
               <div className="lg:col-span-6">
-                <div className="h-[calc(100vh-200px)] overflow-y-auto pr-4">
+                <motion.div
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                  className="h-[calc(100vh-200px)] overflow-y-auto pr-4">
                   {loading ? (
                     <div className="flex justify-center items-center h-64">
-                      <p className="text-gray-500">Loading pets...</p>
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-gray-500">
+                        Loading pets...
+                      </motion.p>
                     </div>
                   ) : error ? (
                     <div className="flex justify-center items-center h-64">
@@ -603,12 +688,12 @@ export default function PetStore() {
                       />
                     </div>
                   )}
-                </div>
+                </motion.div>
               </div>
             </div>
           </section>
         </main>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,63 +1,178 @@
-import mypet from "../models/mypet.js";
-import jwt from "jsonwebtoken";
-import Crtpto from "crypto-js";
+import Pet from '../models/mypet.model.js';
+import cloudinary from '../lib/cloudinary.js';
+
 const myPetController = {
-  createpet: async (req, res) => {
-    const userid = req.params.id;
-    const Mypet = req.body;
+  // Create new pet profile
+  createPet: async (req, res) => {
     try {
-      const newMypet = new mypet({
-        petname: Mypet.petname,
-        userid: userid,
-        password: Crtpto.AES.encrypt(
-          Mypet.password,
-          process.env.SECRET_KEY
-        ).toString(),
-        Bread: Mypet.bread,
-        category: Mypet.category,
-        Gender: Mypet.Gender,
-        quality: Mypet.quality,
+      console.log('Received data:', req.body);
+      const { userId, ...petData } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: "UserId is required"
+        });
+      }
+
+      // Handle image upload to cloudinary if there's an image
+      if (petData.profilePic && petData.profilePic.startsWith('data:')) {
+        const uploadResponse = await cloudinary.uploader.upload(petData.profilePic, {
+          folder: 'pet_profiles'
+        });
+        petData.profilePic = uploadResponse.secure_url;
+      }
+
+      // Create new pet document
+      const newPet = new Pet({
+        ...petData,
+        userId
       });
-      await newMypet.save();
-      res.status(201).json({ message: "Success" });
+
+      const savedPet = await newPet.save();
+      console.log('Saved pet:', savedPet);
+
+      res.status(201).json({
+        success: true,
+        message: "Pet profile created successfully",
+        data: savedPet
+      });
     } catch (error) {
-      res.status(500).json(error);
+      console.error('Error creating pet:', error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to create pet profile"
+      });
     }
   },
-  loginuser: async (req, res) => {
+
+  // Get all pets for a user
+  getUserPets: async (req, res) => {
     try {
-      const myPet = await mypet.findOne({ petname: req.body.petname });
-      if (!myPet) {
-        return res
-          .status(401)
-          .json({ message: "Wrong credentials provided a valid petname" });
+      const { userId } = req.params;
+      console.log('Fetching pets for userId:', userId);
+
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: "UserId is required"
+        });
       }
-      const decryptedpassword = Crtpto.AES.decrypt(
-        myPet.password,
-        process.env.SECRET_KEY
-      );
-      console.log(myPet._id);
-      const decryptedpass = decryptedpassword.toString(Crtpto.enc.Utf8);
-      if (decryptedpass !== req.body.password) {
-        return res.status(401).json("wrong password provided");
+
+      const pets = await Pet.find({ userId });
+      console.log('Found pets:', pets);
+
+      res.status(200).json({
+        success: true,
+        data: pets
+      });
+    } catch (error) {
+      console.error('Error fetching pets:', error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to fetch pets"
+      });
+    }
+  },
+
+  // Get single pet details
+  getPetById: async (req, res) => {
+    try {
+      const { petId } = req.params;
+      console.log('Fetching pet with ID:', petId);
+
+      const pet = await Pet.findById(petId);
+
+      if (!pet) {
+        return res.status(404).json({
+          success: false,
+          message: "Pet not found"
+        });
       }
-      const userToken = jwt.sign(
-        {
-          petname: myPet.petname,
-          userid: myPet.userid,
-          Bread: myPet.bread,
-          category: myPet.category,
-        },
-        process.env.SECRET_KEY_jWT,
-        { expiresIn: "3d" }
+
+      res.status(200).json({
+        success: true,
+        data: pet
+      });
+    } catch (error) {
+      console.error('Error fetching pet:', error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to fetch pet details"
+      });
+    }
+  },
+
+  // Update pet profile
+  updatePet: async (req, res) => {
+    try {
+      const { petId } = req.params;
+      const updates = req.body;
+      console.log('Updating pet:', petId, 'with data:', updates);
+
+      // Handle image update if new image is provided
+      if (updates.profilePic && updates.profilePic.startsWith('data:')) {
+        const uploadResponse = await cloudinary.uploader.upload(updates.profilePic, {
+          folder: 'pet_profiles'
+        });
+        updates.profilePic = uploadResponse.secure_url;
+      }
+
+      const updatedPet = await Pet.findByIdAndUpdate(
+        petId,
+        { $set: updates },
+        { new: true, runValidators: true }
       );
 
-      const { password, __v, createdAt, ...mypetData } = myPet._doc;
-      res.status(200).json({ ...mypetData, token: userToken,});
+      if (!updatedPet) {
+        return res.status(404).json({
+          success: false,
+          message: "Pet not found"
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Pet profile updated successfully",
+        data: updatedPet
+      });
     } catch (error) {
-      res.status(500).json(error.message);
+      console.error('Error updating pet:', error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to update pet profile"
+      });
     }
   },
+
+  // Delete pet profile
+  deletePet: async (req, res) => {
+    try {
+      const { petId } = req.params;
+      console.log('Deleting pet:', petId);
+
+      const deletedPet = await Pet.findByIdAndDelete(petId);
+
+      if (!deletedPet) {
+        return res.status(404).json({
+          success: false,
+          message: "Pet not found"
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Pet profile deleted successfully",
+        data: deletedPet
+      });
+    } catch (error) {
+      console.error('Error deleting pet:', error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to delete pet profile"
+      });
+    }
+  }
 };
 
 export default myPetController;

@@ -1,9 +1,21 @@
 import express from "express";
-const router = express.Router();
-//const { verifyAndAAuthorization } = require("../middleware/verifyToken");
 import myPetController from "../controllers/mypet.controller.js";
 
-router.post("/createpet/:id", myPetController.createpet);
-router.post("/petlogin", myPetController.loginuser);
+const router = express.Router();
+
+// Create new pet
+router.post("/create", myPetController.createPet);
+
+// Get all pets for a user
+router.get("/user/:userId", myPetController.getUserPets);
+
+// Get single pet details
+router.get("/pet/:petId", myPetController.getPetById);
+
+// Update pet profile
+router.put("/update/:petId", myPetController.updatePet);
+
+// Delete pet profile
+router.delete("/delete/:petId", myPetController.deletePet);
 
 export default router;
