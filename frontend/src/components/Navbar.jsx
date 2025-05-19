@@ -206,12 +206,13 @@ function NavList() {
 }
 
 import { useLocation } from "react-router-dom";
+import { useAuthStore } from "../pages/store/useAuthstore";
 
 export default function NavbarWithMegaMenu() {
   const location = useLocation();
   const [openNav, setOpenNav] = React.useState(false);
   const isAuthenticated = useStore((state) => state.isAuthenticated);
-  const logout = useStore((state) => state.logout);
+  const { logout } = useAuthStore();
 
   const handleSearch = (event) => {
     event.preventDefault();

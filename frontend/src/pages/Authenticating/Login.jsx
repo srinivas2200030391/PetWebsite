@@ -49,6 +49,7 @@ export default function LoginCard() {
       console.log("Login response:", res.data.data);
       login(res.data.data); // Update the store with the user data
       toast.success("User logged in successfully!");
+      location.reload();
       navigate("/home");
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");

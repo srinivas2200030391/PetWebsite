@@ -23,13 +23,15 @@ import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import Breeds from "./pages/About/Breeds";
 import BreedDetailPage from "./pages/About/BreedDetailPage";
-import { ProductProvider } from './context/ProductContext';
-import PetServices from './pages/Services/PetServices';
-import Grooming from './pages/Services/GroomingPage';
+import { ProductProvider } from "./context/ProductContext";
+import PetServices from "./pages/Services/PetServices";
+import Grooming from "./pages/Services/GroomingPage";
 import HealthCarepage from "./pages/Health_Care/HealthCarepage";
-import Vets from './pages/Health_Care/Vets';
+import Vets from "./pages/Health_Care/Vets";
 import PetDetail from "./pages/petshop/PetDetail";
 import NewBoardingRequest from "./pages/boarding/NewBoardingRequest";
+import PrivateRoute from "./components/PrivateRoute"; // 🍭 import it
+
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
 
@@ -47,31 +49,94 @@ const App = () => {
   return (
     <ProductProvider>
       <div className="min-h-screen">
-        {<Navbar />}
+        <Navbar />
         <Routes>
-          <Route path="/home/*" element={authUser ? <Home /> : <Navigate to="/login" />} />
+          <Route
+            path="/home*"
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
           <Route path="/custombutton" element={<CustomButton />} />
           <Route path="/petshop" element={<Petshop />} />
           <Route path="/productoverview" element={<ProductOverview />} />
-          <Route path="/matingpage" element={<MatingPage />} />
-          <Route path="/form" element={<Form />} />
-          <Route path="/petsaleform" element={<PetSaleForm />} />
-          <Route path="/matingform" element={<MatingForm />} />
+          <Route
+            path="/matingpage"
+            element={
+              <PrivateRoute>
+                <MatingPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/form"
+            element={
+              <PrivateRoute>
+                <Form />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/petsaleform"
+            element={
+              <PrivateRoute>
+                <PetSaleForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/matingform"
+            element={
+              <PrivateRoute>
+                <MatingForm />
+              </PrivateRoute>
+            }
+          />
           <Route path="/pet/:petId" element={<PetDetail />} />
-          <Route path="/boardingpage" element={<BoardingPage />} />
-          <Route path="/boardingshops" element={<BoardingShops />} />
-          <Route path="/boardingshopfilter" element={<BoardingShopFilter />} />
-          <Route path="/newboardingrequest" element={<NewBoardingRequest/>} />
+          <Route
+            path="/boardingpage"
+            element={
+              <PrivateRoute>
+                <BoardingPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/boardingshops"
+            element={
+              <PrivateRoute>
+                <BoardingShops />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/boardingshopfilter"
+            element={
+              <PrivateRoute>
+                <BoardingShopFilter />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/newboardingrequest"
+            element={
+              <PrivateRoute>
+                <NewBoardingRequest />
+              </PrivateRoute>
+            }
+          />
           <Route path="/aboutpets" element={<AboutPets />} />
           <Route path="/breeds/:item" element={<Breeds />} />
           <Route path="/pet/breeds/:item" element={<BreedDetailPage />} />
           <Route path="/petservices" element={<PetServices />} />
           <Route path="/grooming" element={<Grooming />} />
-          <Route path="/matingpetslist" element={<MatingPetsList />} /> 
+          <Route path="/matingpetslist" element={<MatingPetsList />} />
           <Route path="/healthcare" element={<HealthCarepage />} />
           <Route path="/vets" element={<Vets />} />
-          {/* Nested Routes */}
 
+          {/* Public Routes */}
           <Route
             path="/"
             element={!authUser ? <Intro /> : <Navigate to="/home" />}
@@ -90,10 +155,6 @@ const App = () => {
           />
 
           <Route path="*" element={<Navigate to={"/home"} />} />
-          {/* <Route
-            path="*"
-            element={<Navigate to={authUser ? "/home" : "/login"} />}
-          /> */}
         </Routes>
         <Toaster />
         {authUser && <Footer />}
@@ -109,4 +170,3 @@ export default function AppWrapper() {
     </BrowserRouter>
   );
 }
-
