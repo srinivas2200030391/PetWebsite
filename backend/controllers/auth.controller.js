@@ -95,6 +95,7 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
   try {
     // Need to match the exact same options used when setting the cookie
+    console.log("Logging out user:");
     res.cookie("jwt", "", {
       httpOnly: true,
       secure: process.env.NODE_ENV !== "development", // This is important

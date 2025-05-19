@@ -24,6 +24,8 @@ import {
 } from "@heroicons/react/20/solid";
 import config from "../../config";
 import { motion } from "framer-motion";
+import PetCard from "./PetCard";
+import PetDetailsModal from "./PetDetailsModal";
 
 // Animation variants
 const pageTransition = {
@@ -620,11 +622,17 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
     "https://placehold.co/600x400?text=Pet+Image+4",
   ];
 
-  return (    <motion.div
+  return (
+    <motion.div
       variants={itemAnimation}
+      whileHover={{
+        scale: 1.02,
+        transition: { duration: 0.2 },
+      }}
+      whileTap={{ scale: 0.98 }}
       className="h-full">
-    <div
-        className="group relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
+      <div
+        className="group relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white transform transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
         <div className="cursor-pointer" onClick={() => onViewDetails(pet)}>
           <ImageCarousel images={sampleImages} />
 
@@ -1188,6 +1196,7 @@ export default function PetStore() {
                         pet={selectedPet}
                         isOpen={isDetailsModalOpen}
                         onClose={() => setIsDetailsModalOpen(false)}
+                        onAddToWishlist={handleAddToWishlist}
                         wishlist={wishlist}
                         userId={userData._id}
                         payments={payments}

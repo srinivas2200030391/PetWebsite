@@ -23,7 +23,8 @@ const MyPet = () => {
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState('success');
     const storedUserData = localStorage.getItem('user');
-    const userId = storedUserData ? JSON.parse(storedUserData).data.id : null;
+    const parsedData = storedUserData ? JSON.parse(storedUserData) : null;
+    const userId = parsedData?.data?._id || null;
 
     useEffect(() => {
         if (!userId) {
@@ -36,10 +37,34 @@ const MyPet = () => {
 
     const fetchUserPets = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/api/mypet/user/${userId}`);
-            setPets(response.data.data);
+            const storedUserData = localStorage.getItem('user');
+            const parsedData = JSON.parse(storedUserData);
+            
+            // Add these debug logs
+            console.log('User data:', parsedData);
+            console.log('User ID:', parsedData.data._id);
+
+            const response = await axios.get(
+                `http://localhost:8000/api/mypet/user/${parsedData.data._id}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log('Pets response:', response.data);
+            
+            if (response.data.success) {
+                setPets(response.data.data);
+            } else {
+                setMessage(response.data.message || 'Failed to fetch pets');
+                setMessageType('error');
+            }
         } catch (error) {
-            console.error('Error fetching pets:', error);
+            console.error('Error fetching pets:', error.response || error);
+            setMessage(error.response?.data?.message || 'Error fetching pets');
+            setMessageType('error');
         }
     };
 
@@ -71,7 +96,7 @@ const MyPet = () => {
         try {
             const formData = {
                 ...petData,
-                userId: userId
+                userId: parsedData.data._id // Use the correct path to userId
             };
 
             if (isEditing) {
