@@ -19,7 +19,7 @@ import {
   Grid,
   Paper,
 } from "@mui/material";
-import config from "./../../config";
+import config from "../../config";
 import {
   Edit,
   Lock,
@@ -31,7 +31,7 @@ import {
   CreditCard,
 } from "lucide-react";
 
-export default function EditProfile() {
+export default function MyProfile() {
   // State for user data
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -422,7 +422,7 @@ export default function EditProfile() {
             startIcon={<Edit />}
             onClick={() => setUpdateDialogOpen(true)}
             className="px-6">
-            Update Details
+            Edit Details
           </Button>
 
           <Button
