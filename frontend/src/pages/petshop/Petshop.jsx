@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import {
   Dialog,
   DialogBackdrop,
@@ -22,7 +23,6 @@ import {
   HeartIcon,
 } from "@heroicons/react/20/solid";
 import config from "../../config";
-import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import PetCard from "./PetCard";
 import PetDetailsModal from "./PetDetailsModal";
@@ -156,6 +156,527 @@ const filters = [
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
+
+// Image Carousel Component for Pet Cards
+const ImageCarousel = ({ images }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Limit to 4 images maximum
+  const displayImages = images.slice(0, 4);
+
+  const nextImage = (e) => {
+    e.stopPropagation(); // Prevent event bubbling to parent elements
+    setCurrentIndex((prevIndex) =>
+      prevIndex === displayImages.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const prevImage = (e) => {
+    e.stopPropagation(); // Prevent event bubbling to parent elements
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? displayImages.length - 1 : prevIndex - 1
+    );
+  };
+
+  const selectImage = (index, e) => {
+    e.stopPropagation(); // Prevent event bubbling to parent elements
+    setCurrentIndex(index);
+  };
+
+  return (
+    <div className="relative w-full h-64 overflow-hidden rounded-lg">
+      {displayImages.map((image, index) => (
+        <div
+          key={index}
+          className={`absolute w-full h-full transition-opacity duration-300 ${
+            index === currentIndex ? "opacity-100" : "opacity-0"
+          }`}>
+          <img
+            src={image}
+            alt={`Pet image ${index + 1}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ))}
+
+      {displayImages.length > 1 && (
+        <>
+          <button
+            onClick={prevImage}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full">
+            ‹
+          </button>
+          <button
+            onClick={nextImage}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full">
+            ›
+          </button>
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-2">
+            {displayImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => selectImage(index, e)}
+                className={`w-2 h-2 rounded-full ${
+                  index === currentIndex ? "bg-white" : "bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// Pet Details Modal
+
+const PetDetailsModal = ({
+  pet,
+  isOpen,
+  onClose,
+  wishlist,
+  userId,
+  payments,
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(false);
+  const RAZORPAY_KEY_ID = "rzp_test_BbYHp3Xn5nnaxa";
+  useEffect(() => {
+    if (!window.Razorpay) {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => {
+        setRazorpayLoaded(true);
+        console.log("Razorpay loaded, sugar 🧁");
+      };
+      script.onerror = () => {
+        toast.error("Couldn’t load payment gateway, sweetie 😢");
+      };
+      document.body.appendChild(script);
+    } else {
+      setRazorpayLoaded(true);
+    }
+  }, []);
+
+  if (!pet) return null;
+  const isWishlisted = wishlist.includes(pet._id);
+  let hasPaid = payments.includes(pet._id);
+  const sampleImages = pet.images || [
+    pet.imageUrl,
+    "https://placehold.co/600x400?text=Pet+Image+2",
+    "https://placehold.co/600x400?text=Pet+Image+3",
+  ];
+
+  const handlePayment = async () => {
+    if (!razorpayLoaded) {
+      toast.error("Hold on, darling! Payment system is still loading 🥺");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { data } = await axios.post(
+        `${config.baseURL}/api/payments/create`,
+        {
+          amount: pet.price,
+          currency: "INR",
+          receipt: `rcpt_${pet._id.slice(-6)}_${Date.now().toString().slice(-6)}`,
+          userId,
+          petId: pet._id,
+        }
+      );
+
+      if (!data.success) {
+        throw new Error(data.message || "Order creation failed");
+      }
+
+      const { order } = data;
+
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Pet Adoption Center 💕",
+        description: `Adopt ${pet.name}`,
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            const verifyRes = await axios.post(
+              `${config.baseURL}/api/payments/verify`,
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }
+            );
+
+            if (verifyRes.data.success) {
+              toast.success("Paw-fect! Payment successful 🐾💸");
+              setPaymentStatus(true);
+              hasPaid = true;
+            } else {
+              toast.error("Oops! Verification failed, sweetpea 😢");
+            }
+          } catch (err) {
+            console.error("Verification error:", err);
+            toast.error("Uh-oh! Couldn’t verify payment, honey 🍯");
+          } finally {
+            setIsLoading(false);
+          }
+        },
+        prefill: {
+          name: "Customer",
+          email: "customer@example.com",
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#7C3AED",
+        },
+        modal: {
+          ondismiss: () => {
+            setIsLoading(false);
+            toast("You closed the payment window 😘");
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error("Payment error:", err);
+      toast.error("Something went wrong, cupcake 💔");
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <motion.div
+        variants={backdropAnimation}
+        initial="hidden"
+        animate="visible"
+        exit="exit">
+        <DialogBackdrop className="fixed inset-0 bg-black/30" />
+      </motion.div>
+
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4">
+          <motion.div
+            variants={modalAnimation}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="w-full max-w-2xl">
+            <DialogPanel className="mx-auto rounded-xl bg-white p-6 shadow-xl">
+              <div className="flex justify-between items-center mb-4">
+                <motion.h3
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-2xl font-bold text-gray-900">
+                  {pet.name}
+                </motion.h3>
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-full hover:bg-gray-100">
+                  <XMarkIcon className="h-6 w-6 text-gray-400" />
+                </button>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <ImageCarousel images={sampleImages} />
+                </div>
+                <div>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">
+                        Breed
+                      </h4>
+                      <p className="text-base font-medium">{pet.breed}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Age</h4>
+                      <p className="text-base font-medium">
+                        {pet.age} years old
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">
+                        Gender
+                      </h4>
+                      <p className="text-base font-medium">{pet.gender}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">
+                        Weight
+                      </h4>
+                      <p className="text-base font-medium">{pet.weight}</p>
+                    </div>
+                    {pet.height && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500">
+                          Height
+                        </h4>
+                        <p className="text-base font-medium">{pet.height}</p>
+                      </div>
+                    )}
+                    {pet.lifeSpan && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500">
+                          Lifespan
+                        </h4>
+                        <p className="text-base font-medium">{pet.lifeSpan}</p>
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">
+                        Price
+                      </h4>
+                      <p className="text-xl font-bold text-indigo-600">
+                        ${pet.price}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">
+                      Details
+                    </h4>
+                    <p className="text-gray-700">
+                      {pet.details || "No details available for this pet."}
+                    </p>
+                  </div>
+
+                {pet.characteristics && (
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">
+                      Characteristics
+                    </h4>
+                    <p className="text-gray-700">{pet.characteristics}</p>
+                  </div>
+                )}
+                {paymentStatus && (
+                  <div className="mt-8 space-y-4 border-t pt-6">
+                    <h4 className="text-lg font-semibold text-indigo-700">
+                      Exclusive Pet Details 💎
+                    </h4>
+
+                      {pet.videos?.length > 0 && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Videos
+                          </h5>
+                          <ul className="list-disc ml-5 text-blue-600 underline">
+                            {pet.videos.map((video, idx) => (
+                              <li key={idx}>
+                                <a
+                                  href={video}
+                                  target="_blank"
+                                  rel="noopener noreferrer">
+                                  Watch Video {idx + 1} 🎥
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {pet.breedLineage && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Breed Lineage
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.breedLineage}
+                          </p>
+                        </div>
+                      )}
+
+                      {pet.vaccinationDetails && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Vaccination Details
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.vaccinationDetails}
+                          </p>
+                        </div>
+                      )}
+
+                      {pet.vaccinationProof && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Vaccination Proof
+                          </h5>
+                          <a
+                            href={pet.vaccinationProof}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline">
+                            View Proof 📄
+                          </a>
+                        </div>
+                      )}
+
+                      {pet.location && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Location
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.location}
+                          </p>
+                        </div>
+                      )}
+
+                      {pet.breederName && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Breeder's Name
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.breederName}
+                          </p>
+                        </div>
+                      )}
+
+                      {pet.phoneNumber && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Contact Number
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.phoneNumber}
+                          </p>
+                        </div>
+                      )}
+
+                      {pet.shopAddress && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Shop Address
+                          </h5>
+                          <p className="text-base text-gray-700">
+                            {pet.shopAddress}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                {/* Payment button */}
+                <div className="mt-8 flex space-x-4">
+                  {!paymentStatus ? (
+                    <button
+                      onClick={handlePayment}
+                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md"
+                      disabled={isLoading}>
+                      {isLoading
+                        ? "Processing..."
+                        : "Pay Now To View All Details"}
+                    </button>
+                  ) : (
+                    <button
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
+                      disabled>
+                      Payment Successful
+                    </button>
+                  )}
+
+                    <button className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 p-2 rounded-md">
+                      <HeartIcon
+                        className={`h-6 w-6 transition-colors duration-200 ${
+                          isWishlisted
+                            ? "text-red-500"
+                            : "text-gray-400 hover:text-red-500"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </DialogPanel>
+          </motion.div>
+        </div>
+      </div>
+    </Dialog>
+  );
+};
+
+// Pet Card Component with Limited Information and Animations
+const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
+  const isWishlisted = wishlist.includes(pet._id);
+
+  const sampleImages = pet.images || [
+    pet.imageUrl,
+    "https://placehold.co/600x400?text=Pet+Image+2",
+    "https://placehold.co/600x400?text=Pet+Image+3",
+    "https://placehold.co/600x400?text=Pet+Image+4",
+  ];
+
+  return (
+    <motion.div
+      variants={itemAnimation}
+      whileHover={{
+        scale: 1.02,
+        transition: { duration: 0.2 },
+      }}
+      whileTap={{ scale: 0.98 }}
+      className="h-full">
+      <div
+        className="group relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white transform transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
+        <div className="cursor-pointer" onClick={() => onViewDetails(pet)}>
+          <ImageCarousel images={sampleImages} />
+
+          <div className="p-4">
+            <div className="flex justify-between items-start">
+              <h3 className="text-lg font-semibold text-gray-900">{pet.name}</h3>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToWishlist(pet._id);
+                }}
+                className="p-1 rounded-full hover:bg-gray-100"
+                aria-label="Add to wishlist">
+                <HeartIcon
+                  className={`h-6 w-6 transition-colors duration-200 ${
+                    isWishlisted
+                      ? "text-red-500"
+                      : "text-gray-400 hover:text-red-500"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <p className="mt-1 text-sm text-gray-500">{pet.breed}</p>
+            <p className="mt-1 text-sm text-gray-500">{pet.age} years old</p>
+
+            <div className="mt-2 flex justify-between items-center">
+              <p className="text-lg font-medium text-gray-900">${pet.price}</p>
+              <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                Available
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => onViewDetails(pet)}
+          className="block w-[calc(100%-2rem)] mx-auto mb-4 mt-2 bg-indigo-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">
+          View Details
+        </button>
+      </div>
+    </motion.div>
+  );
+};
 
 export default function PetStore() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -301,9 +822,7 @@ export default function PetStore() {
     sortOptions.forEach((option) => {
       option.current = option.value === sortOption.value;
     });
-  };
-
-  const handleAddToWishlist = async (petId) => {
+  };      const handleAddToWishlist = async (petId) => {
     try {
       console.log("Adding to wishlist:", petId);
 
@@ -314,18 +833,18 @@ export default function PetStore() {
       });
 
       // Update local wishlist state
-      setWishlist((prev) => [...prev, petId]);
-
-      // Show success message
-      alert("Pet added to wishlist!");
+      setWishlist((prev) => [...prev, petId]);      // Show success toast
+      toast.success("Pet added to wishlist! 🐾", {
+        duration: 3000
+      });
     } catch (err) {
       console.error("Error adding to wishlist:", err);
 
       // If unauthorized, prompt user to login
       if (err.response?.status === 401) {
-        alert("Please log in to add pets to your wishlist.");
+        toast.error("Please log in to add pets to your wishlist");
       } else {
-        alert("Failed to add pet to wishlist. Please try again.");
+        toast.error("Failed to add pet to wishlist. Please try again");
       }
     }
   };
@@ -532,9 +1051,7 @@ export default function PetStore() {
           <section aria-labelledby="products-heading" className="pb-24 pt-6">
             <h2 id="products-heading" className="sr-only">
               Available Pets
-            </h2>
-
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-8">
+            </h2>            <div className="grid grid-cols-1 gap-x-4 gap-y-10 lg:grid-cols-8">
               {/* Filters - Add sticky positioning */}
               <form className="hidden lg:block lg:col-span-2 max-w-[200px] sticky top-24 h-fit">
                 <h3 className="font-medium text-gray-900 mb-3">
@@ -636,15 +1153,13 @@ export default function PetStore() {
                     </DisclosurePanel>
                   </Disclosure>
                 ))}
-              </form>
-
-              {/* Products - Add scrollable container */}
+              </form>              {/* Products grid */}
               <div className="lg:col-span-6">
                 <motion.div
                   variants={staggerContainer}
                   initial="hidden"
                   animate="visible"
-                  className="h-[calc(100vh-200px)] overflow-y-auto pr-4">
+                  className="pr-4">
                   {loading ? (
                     <div className="flex justify-center items-center h-64">
                       <motion.p

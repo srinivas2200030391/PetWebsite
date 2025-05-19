@@ -3,3 +3,42 @@
 @tailwind utilities;
 @plugin "daisyui";
 
+/* Slider styles */
+.slider-container {
+  margin: 0 -15px;
+}
+
+.slider-container .slick-slide {
+  padding: 0 15px;
+}
+
+.slider-container .slick-center {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+.slider-container .slick-prev,
+.slider-container .slick-next {
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+}
+
+.slider-container .slick-prev {
+  left: -5px;
+}
+
+.slider-container .slick-next {
+  right: -5px;
+}
+
+.slider-container .slick-prev:before,
+.slider-container .slick-next:before {
+  font-size: 40px;
+  color: #666;
+}
+
+.slider-container .slick-list {
+  padding: 20px 0;
+}
+
