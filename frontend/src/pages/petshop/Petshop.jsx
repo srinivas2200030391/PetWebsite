@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import {
   Dialog,
   DialogBackdrop,
@@ -22,7 +23,6 @@ import {
   HeartIcon,
 } from "@heroicons/react/20/solid";
 import config from "../../config";
-import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
 // Animation variants
@@ -620,17 +620,11 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
     "https://placehold.co/600x400?text=Pet+Image+4",
   ];
 
-  return (
-    <motion.div
+  return (    <motion.div
       variants={itemAnimation}
-      whileHover={{
-        scale: 1.02,
-        transition: { duration: 0.2 },
-      }}
-      whileTap={{ scale: 0.98 }}
       className="h-full">
-      <div
-        className="group relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white transform transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
+    <div
+        className="group relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
         <div className="cursor-pointer" onClick={() => onViewDetails(pet)}>
           <ImageCarousel images={sampleImages} />
 
@@ -820,9 +814,7 @@ export default function PetStore() {
     sortOptions.forEach((option) => {
       option.current = option.value === sortOption.value;
     });
-  };
-
-  const handleAddToWishlist = async (petId) => {
+  };      const handleAddToWishlist = async (petId) => {
     try {
       console.log("Adding to wishlist:", petId);
 
@@ -833,18 +825,18 @@ export default function PetStore() {
       });
 
       // Update local wishlist state
-      setWishlist((prev) => [...prev, petId]);
-
-      // Show success message
-      alert("Pet added to wishlist!");
+      setWishlist((prev) => [...prev, petId]);      // Show success toast
+      toast.success("Pet added to wishlist! 🐾", {
+        duration: 3000
+      });
     } catch (err) {
       console.error("Error adding to wishlist:", err);
 
       // If unauthorized, prompt user to login
       if (err.response?.status === 401) {
-        alert("Please log in to add pets to your wishlist.");
+        toast.error("Please log in to add pets to your wishlist");
       } else {
-        alert("Failed to add pet to wishlist. Please try again.");
+        toast.error("Failed to add pet to wishlist. Please try again");
       }
     }
   };
@@ -1051,9 +1043,7 @@ export default function PetStore() {
           <section aria-labelledby="products-heading" className="pb-24 pt-6">
             <h2 id="products-heading" className="sr-only">
               Available Pets
-            </h2>
-
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-8">
+            </h2>            <div className="grid grid-cols-1 gap-x-4 gap-y-10 lg:grid-cols-8">
               {/* Filters - Add sticky positioning */}
               <form className="hidden lg:block lg:col-span-2 max-w-[200px] sticky top-24 h-fit">
                 <h3 className="font-medium text-gray-900 mb-3">
@@ -1155,15 +1145,13 @@ export default function PetStore() {
                     </DisclosurePanel>
                   </Disclosure>
                 ))}
-              </form>
-
-              {/* Products - Add scrollable container */}
+              </form>              {/* Products grid */}
               <div className="lg:col-span-6">
                 <motion.div
                   variants={staggerContainer}
                   initial="hidden"
                   animate="visible"
-                  className="h-[calc(100vh-200px)] overflow-y-auto pr-4">
+                  className="pr-4">
                   {loading ? (
                     <div className="flex justify-center items-center h-64">
                       <motion.p

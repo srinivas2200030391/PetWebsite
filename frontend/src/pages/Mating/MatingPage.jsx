@@ -937,9 +937,7 @@ export default function PetStore() {
           <section aria-labelledby="products-heading" className="pb-24 pt-6">
             <h2 id="products-heading" className="sr-only">
               Available Pets
-            </h2>
-
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-8">
+            </h2>            <div className="grid grid-cols-1 gap-x-4 gap-y-10 lg:grid-cols-8">
               {/* Filters - Add sticky positioning */}
               <form className="hidden lg:block lg:col-span-2 max-w-[200px] sticky top-24 h-fit">
                 <h3 className="font-medium text-gray-900 mb-3">
@@ -1041,11 +1039,9 @@ export default function PetStore() {
                     </DisclosurePanel>
                   </Disclosure>
                 ))}
-              </form>
-
-              {/* Products - Add scrollable container */}
+              </form>              {/* Products grid */}
               <div className="lg:col-span-6">
-                <div className="h-[calc(100vh-200px)] overflow-y-auto pr-4">
+                <div className="pr-4">
                   {loading ? (
                     <div className="flex justify-center items-center h-64">
                       <p className="text-gray-500">Loading pets...</p>
