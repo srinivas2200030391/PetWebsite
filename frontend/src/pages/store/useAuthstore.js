@@ -16,24 +16,25 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       set({ ischeckingAuth: true });
-      // const userData = localStorage.getItem("user");
-      // console.log("User data from localStorage:", userData);
+  
       const res = await axios.get(`${config.baseURL}/api/auth/check`, {
         withCredentials: true,
-        // authorization: `Bearer ${userData.token}`,
       });
-
+  
       if (res.data) {
         set({ authUser: res.data });
+        console.log("Auth check response:", res.data);
+      } else {
+        set({ authUser: null }); // 🔥 Let PrivateRoute handle redirect
       }
-      console.log("Auth check response:", res.data);
     } catch (error) {
-      set({ authUser: null });
+      set({ authUser: null }); // 💔 Again, let the component handle it
       console.error("Auth check error:", error.message);
     } finally {
       set({ ischeckingAuth: false });
     }
-  },
+  }
+  ,
 
   signup: async (data) => {
     set({ isSigningUp: true });
@@ -55,33 +56,32 @@ export const useAuthStore = create((set, get) => ({
   // In your logout function in the store
 
   logout: async () => {
-    console.log("Starting logout process");
+    console.log("Logging out");
     try {
       localStorage.removeItem("user");
-      localStorage.removeItem("authData")
+      localStorage.removeItem("authData");
       set({ authUser: null });
-      console.log("Auth user state cleared");
 
-      // Clear cookies manually as well
-      document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      console.log("Cookies cleared manually");
+      // Call backend to clear the HttpOnly cookie
+      await fetch(`${config.baseURL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include", // 💌 ensures cookies are sent
+      });
 
-      toast.success("Logged out successfully");
+      toast.success("Logged out, sweetness 🍓");
       window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error(error.response?.data?.message || "Logout failed");
+      toast.error("Logout failed, love 💔");
     }
   },
 
   login: async (data) => {
     try {
       set({ isLoggingIn: true });
-      const res = await axios.post(
-        `${config.baseURL}/api/auth/login`,
-        data,
-        { withCredentials: true }
-      );
+      const res = await axios.post(`${config.baseURL}/api/auth/login`, data, {
+        withCredentials: true,
+      });
       if (res.data) {
         set({ authUser: res.data });
         toast.success("Logged in successfully");
