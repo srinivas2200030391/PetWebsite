@@ -9,6 +9,7 @@ const AboutPetSchema = new mongoose.Schema({
   age: { type: String, required: true },
   gender: { type: String, required: true },
   price: { type: String, required: true },
+  discount: { type: String },
   category: { type: String, required: true },
   height: { type: String },
   weight: { type: String, required: true },

@@ -19,13 +19,11 @@ import {
   MinusIcon,
   PlusIcon,
   Squares2X2Icon,
-  HeartIcon,
 } from "@heroicons/react/20/solid";
 import config from "../../config";
-import toast from "react-hot-toast";
-import { motion } from "framer-motion";
 import PetCard from "./PetCard";
 import PetDetailsModal from "./PetDetailsModal";
+import { motion } from 'framer-motion';
 
 // Animation variants
 const pageTransition = {
