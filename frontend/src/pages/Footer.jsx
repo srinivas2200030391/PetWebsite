@@ -1,66 +1,65 @@
 import { Typography } from "@material-tailwind/react";
  
-const LINKS = [
-  {
-    title: "Product",
-    items: ["Overview", "Features", "Solutions", "Tutorials"],
-  },
+const SITEMAP = [
   {
     title: "Company",
-    items: ["About us", "Careers", "Press", "News"],
+    links: ["About Us", "Careers", "Our Team", "Projects"],
   },
   {
-    title: "Resource",
-    items: ["Blog", "Newsletter", "Events", "Help center"],
+    title: "Help Center",
+    links: ["Discord", "Twitter", "GitHub", "Contact Us"],
+  },
+  {
+    title: "Resources",
+    links: ["Blog", "Newsletter", "Free Products", "Affiliate Program"],
+  },
+  {
+    title: "Products",
+    links: ["Templates", "UI Kits", "Icons", "Mockups"],
   },
 ];
  
 const currentYear = new Date().getFullYear();
  
-export default function FooterWithSocialLinks() {
+export default function Footer() {
   return (
-    <footer className="relative w-full">
+    <footer className="relative w-full" style={{ backgroundColor: '#37474f' }}>
       <div className="mx-auto w-full max-w-7xl px-8">
-        <div className="grid grid-cols-1 justify-between gap-4 md:grid-cols-2">
-          <Typography variant="h5" className="mb-6">
-            The Pet Shop
-          </Typography>
-          <div className="grid grid-cols-3 justify-between gap-4">
-            {LINKS.map(({ title, items }) => (
-              <ul key={title}>
-                <Typography
-                  variant="small"
-                  color="blue-gray"
-                  className="mb-3 font-medium opacity-40"
-                >
-                  {title}
-                </Typography>
-                {items.map((link) => (
-                  <li key={link}>
-                    <Typography
-                      as="a"
+        <div className="mx-auto grid w-full grid-cols-1 gap-8 py-12 md:grid-cols-2 lg:grid-cols-4">
+          {SITEMAP.map(({ title, links }, key) => (
+            <div key={key} className="w-full">
+              <Typography
+                variant="small"
+                color="white"
+                className="mb-4 font-bold uppercase opacity-50"
+              >
+                {title}
+              </Typography>
+              <ul className="space-y-1">
+                {links.map((link, key) => ( 
+                  <Typography key={key} as="li" color="white" className="font-normal">
+                    <a
                       href="#"
-                      color="gray"
-                      className="py-1.5 font-normal transition-colors hover:text-blue-gray-900"
+                      className="inline-block py-1 pr-2 transition-transform hover:scale-105"
                     >
                       {link}
-                    </Typography>
-                  </li>
+                    </a>
+                  </Typography>
                 ))}
               </ul>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-        <div className="mt-12 flex w-full flex-col items-center justify-center border-t border-blue-gray-50 py-4 md:flex-row md:justify-between">
+        <div className="flex w-full flex-col items-center justify-center border-t border-blue-gray-50 py-4 md:flex-row md:justify-between">
           <Typography
             variant="small"
-            className="mb-4 text-center font-normal text-blue-gray-900 md:mb-0"
+            className="mb-4 text-center font-normal text-white md:mb-0"
           >
-            &copy; {currentYear} <a href="https://material-tailwind.com/">The Pet Shop</a>. All
+            &copy; {currentYear} <a href="https://material-tailwind.com/">VCH</a>. All
             Rights Reserved.
           </Typography>
-          <div className="flex gap-4 text-blue-gray-900 sm:justify-center">
-            <Typography as="a" href="#" className="opacity-80 transition-opacity hover:opacity-100">
+          <div className="flex gap-4 text-white sm:justify-center">
+            <Typography as="a" href="https://www.facebook.com/raju.chethan.10?mibextid=ZbWKwL" className="opacity-80 transition-opacity hover:opacity-100">
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fillRule="evenodd"
@@ -69,7 +68,7 @@ export default function FooterWithSocialLinks() {
                 />
               </svg>
             </Typography>
-            <Typography as="a" href="#" className="opacity-80 transition-opacity hover:opacity-100">
+            <Typography as="a" href="https://www.instagram.com/chethan_1303/profilecard/?igsh=ZHM3cGIzN3YwMHFv" className="opacity-80 transition-opacity hover:opacity-100">
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fillRule="evenodd"
@@ -78,12 +77,12 @@ export default function FooterWithSocialLinks() {
                 />
               </svg>
             </Typography>
-            <Typography as="a" href="#" className="opacity-80 transition-opacity hover:opacity-100">
+            <Typography as="a" href="https://x.com/Chethan_1303?t=8qT7tCuC2msHLIU1SeFiow&s=09" className="opacity-80 transition-opacity hover:opacity-100">
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
               </svg>
             </Typography>
-            <Typography as="a" href="#" className="opacity-80 transition-opacity hover:opacity-100">
+            <Typography as="a" href="https://github.com/Chethanreddyc" className="opacity-80 transition-opacity hover:opacity-100">
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fillRule="evenodd"

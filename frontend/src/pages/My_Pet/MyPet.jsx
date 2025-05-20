@@ -23,7 +23,8 @@ const MyPet = () => {
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState('success');
     const storedUserData = localStorage.getItem('user');
-    const userId = storedUserData ? JSON.parse(storedUserData).data.id : null;
+    const parsedData = storedUserData ? JSON.parse(storedUserData) : null;
+    const userId = parsedData?.data?._id || null;
 
     useEffect(() => {
         if (!userId) {
@@ -36,10 +37,34 @@ const MyPet = () => {
 
     const fetchUserPets = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/api/mypet/user/${userId}`);
-            setPets(response.data.data);
+            const storedUserData = localStorage.getItem('user');
+            const parsedData = JSON.parse(storedUserData);
+            
+            // Add these debug logs
+            console.log('User data:', parsedData);
+            console.log('User ID:', parsedData.data._id);
+
+            const response = await axios.get(
+                `http://localhost:8000/api/mypet/user/${parsedData.data._id}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log('Pets response:', response.data);
+            
+            if (response.data.success) {
+                setPets(response.data.data);
+            } else {
+                setMessage(response.data.message || 'Failed to fetch pets');
+                setMessageType('error');
+            }
         } catch (error) {
-            console.error('Error fetching pets:', error);
+            console.error('Error fetching pets:', error.response || error);
+            setMessage(error.response?.data?.message || 'Error fetching pets');
+            setMessageType('error');
         }
     };
 
@@ -71,7 +96,7 @@ const MyPet = () => {
         try {
             const formData = {
                 ...petData,
-                userId: userId
+                userId: parsedData.data._id // Use the correct path to userId
             };
 
             if (isEditing) {
@@ -147,7 +172,7 @@ const MyPet = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto mt-20 px-4 py-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-8">Create Pet Profile</h2>
 
             <div className="text-center mb-6">
@@ -158,7 +183,7 @@ const MyPet = () => {
                     }}
                     className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
                 >
-                    Register My Pet
+                    Add New Pet
                 </button>
             </div>
 

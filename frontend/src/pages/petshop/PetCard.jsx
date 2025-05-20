@@ -1,60 +1,147 @@
-import { HeartIcon } from "@heroicons/react/20/solid";
-import ImageCarousel from "./ImageCarousel";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { HeartOutlined, EyeOutlined } from "@ant-design/icons";
+import { Card, Button, Typography, Space, Rate } from "antd";
 
-// Pet Card Component with Limited Information
+const itemAnimation = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 10,
+    },
+  },
+};
+
+const { Meta } = Card;
+const { Text, Title } = Typography;
+
 const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
+  const [isImageHovered, setIsImageHovered] = useState(false);
   const isWishlisted = wishlist.includes(pet._id);
 
   const sampleImages = pet.images || [
     pet.imageUrl,
     "https://placehold.co/600x400?text=Pet+Image+2",
     "https://placehold.co/600x400?text=Pet+Image+3",
-    "https://placehold.co/600x400?text=Pet+Image+4",
   ];
 
   return (
-    <div className="group relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
-      <div className="cursor-pointer" onClick={() => onViewDetails(pet)}>
-        <ImageCarousel images={sampleImages} />
-
-        <div className="p-4">
-          <div className="flex justify-between items-start">
-            <h3 className="text-lg font-semibold text-gray-900">{pet.name}</h3>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToWishlist(pet._id);
+    <motion.div variants={itemAnimation} className="h-full">
+      <Card
+        hoverable
+        style={{
+          width: "100%",
+          marginTop: 16,
+          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+        }}
+        cover={
+          <div
+            className="relative"
+            onMouseEnter={() => setIsImageHovered(true)}
+            onMouseLeave={() => setIsImageHovered(false)}>
+            <img
+              alt={pet.name}
+              src={sampleImages[0]}
+              style={{
+                height: 200,
+                objectFit: "cover",
+                transition: "all 0.3s ease",
               }}
-              className="p-1 rounded-full hover:bg-gray-100"
-              aria-label="Add to wishlist">
-              <HeartIcon
-                className={`h-6 w-6 transition-colors duration-200 ${
-                  isWishlisted
-                    ? "text-red-500"
-                    : "text-gray-400 hover:text-red-500"
-                }`}
-              />
-            </button>
+            />
+            {isImageHovered && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.3)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  transition: "all 0.3s ease",
+                }}>
+                <Button
+                  icon={<EyeOutlined />}
+                  onClick={() => onViewDetails(pet)}
+                  style={{
+                    backgroundColor: "white",
+                    borderRadius: "50%",
+                    width: "40px",
+                    height: "40px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                />
+              </div>
+            )}
           </div>
-
-          <p className="mt-1 text-sm text-gray-500">{pet.breed}</p>
-          <p className="mt-1 text-sm text-gray-500">{pet.age} years old</p>
-
-          <div className="mt-2 flex justify-between items-center">
-            <p className="text-lg font-medium text-gray-900">${pet.price}</p>
-            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-              Available
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <button
-        onClick={() => onViewDetails(pet)}
-        className="block w-[calc(100%-2rem)] mx-auto mb-4 mt-2 bg-indigo-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">
-        View Details
-      </button>
-    </div>
+        }
+        actions={[
+          <Button
+            key="view-details"
+            type="primary"
+            onClick={() => onViewDetails(pet)}>
+            View Details
+          </Button>,
+          <Button
+            key="wishlist"
+            icon={<HeartOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToWishlist(pet._id);
+            }}
+            type={isWishlisted ? "primary" : "default"}
+          />,
+        ]}>
+        <Meta
+          title={<Title level={4}>{pet.breed}</Title>}
+          description={
+            <Space direction="vertical" size="small">
+              <Space>
+                <Rate defaultValue={4} disabled />
+                <Text type="secondary">(128 ratings)</Text>
+              </Space>
+              <Space align="baseline">
+                <Text strong style={{ fontSize: "18px", color: "#1890ff" }}>
+                  ${pet.price}
+                </Text>
+                {pet.actualPrice && (
+                  <Text delete type="secondary" style={{ fontSize: "14px" }}>
+                    ${pet.actualPrice}
+                  </Text>
+                )}
+                {pet.actualPrice && (
+                  <Text
+                    type="success"
+                    style={{
+                      fontSize: "12px",
+                      backgroundColor: "#f6ffed",
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      border: "1px solid #b7eb8f",
+                    }}>
+                    {Math.round(
+                      ((pet.actualPrice - pet.price) / pet.actualPrice) * 100
+                    )}
+                    % OFF
+                  </Text>
+                )}
+              </Space>
+              <Space direction="vertical" size={0}>
+                <Text type="secondary">{pet.details}</Text>
+              </Space>
+            </Space>
+          }
+        />
+      </Card>
+    </motion.div>
   );
 };
 
