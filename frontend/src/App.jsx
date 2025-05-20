@@ -34,7 +34,7 @@ import NewBoardingRequest from "./pages/boarding/NewBoardingRequest";
 import PrivateRoute from "./components/PrivateRoute"; // 🍭 import it
 import MyPet from './pages/My_Pet/MyPet';
 import PetDetails from './pages/My_Pet/PetDetails';
-import PetHealth from './../../backend/models/petHealth';
+import PetHealth from './pages/My_Pet/PetHealth';
 
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
