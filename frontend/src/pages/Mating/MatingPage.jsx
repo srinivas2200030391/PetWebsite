@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import axios from "axios";
 import {
   Dialog,
-  DialogBackdrop,
   DialogPanel,
   Disclosure,
   DisclosureButton,
@@ -11,6 +11,7 @@ import {
   MenuButton,
   MenuItem,
   MenuItems,
+  DialogBackdrop,
 } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
@@ -18,22 +19,36 @@ import {
   FunnelIcon,
   MinusIcon,
   PlusIcon,
-  Squares2X2Icon,
-  HeartIcon,
 } from "@heroicons/react/20/solid";
 import config from "../../config";
-import toast from "react-hot-toast";
 import PetCard from "../petshop/PetCard";
 import PetDetailsModal from "../petshop/PetDetailsModal";
 
-// Updated sort options with multiple sorting criteria
+// Animation variants
+const pageTransition = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.5 },
+  },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+// Updated sort options with essential sorting criteria
 const sortOptions = [
-  { name: "Most Popular", value: "popularity", current: true },
-  { name: "Price: Low to High", value: "price_asc", current: false },
-  { name: "Price: High to Low", value: "price_desc", current: false },
+  { name: "Most Recent", value: "recent", current: true },
   { name: "Age: Youngest First", value: "age_asc", current: false },
   { name: "Age: Oldest First", value: "age_desc", current: false },
-  { name: "Newest Arrivals", value: "arrival", current: false },
 ];
 
 const subCategories = [
@@ -89,9 +104,7 @@ export default function PetStore() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [pets, setPets] = useState([]);
-  const [filteredPets, setFilteredPets] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [pets, setPets] = useState([]);  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentSort, setCurrentSort] = useState(sortOptions[0]);
   const [payments, setPayments] = useState([]);
@@ -103,18 +116,20 @@ export default function PetStore() {
 
   // Add state for wishlist
   const [wishlist, setWishlist] = useState([]);
-
   const fetchPets = useCallback(async () => {
     setLoading(true);
     try {
       const queryParams = new URLSearchParams();
 
+      // Add filter parameters
       Object.entries(selectedFilters).forEach(([category, values]) => {
-        Object.entries(values).forEach(([value, isChecked]) => {
-          if (isChecked) {
-            queryParams.append(category, value);
-          }
-        });
+        const activeFilters = Object.entries(values)
+          .filter(([, isChecked]) => isChecked)
+          .map(([value]) => value);
+        
+        if (activeFilters.length > 0) {
+          queryParams.append(category, activeFilters.join(','));
+        }
       });
 
       if (selectedCategory) {
@@ -131,10 +146,6 @@ export default function PetStore() {
         `${config.baseURL}/api/aboutpet/all?${queryParams}`
       );
       setPets(response.data);
-      console.log("Fetched pets:", response.data);
-
-      setFilteredPets(response.data);
-
       setError(null);
     } catch (err) {
       console.error("Error fetching pets:", err);
@@ -142,26 +153,25 @@ export default function PetStore() {
     } finally {
       setLoading(false);
     }
-  }, [selectedFilters, selectedCategory, currentSort, userData?._id]);
+  }, [selectedFilters, selectedCategory, currentSort]);
 
-  // 1. Store userData from localStorage
+  // Store userData from localStorage
   useEffect(() => {
     const userdata = JSON.parse(localStorage.getItem("user"));
-
     if (userdata && userdata.data) {
-      setUserData(userdata.data); // setUserData is async
+      setUserData(userdata.data);
       console.log("Logged in as", userdata.data);
     } else {
       console.log("No user found");
     }
   }, []);
 
-  // 2. Fetch pets AFTER userData is available
+  // Fetch pets when filters change
   useEffect(() => {
     if (userData?._id) {
       fetchPets();
     }
-  }, [userData]); // This will trigger once userData is set 🌟
+  }, [userData, fetchPets]);
 
   // Fetch user's wishlist
   useEffect(() => {
@@ -196,23 +206,13 @@ export default function PetStore() {
       },
     }));
   };
-
   const handleCategoryChange = (categoryValue) => {
-    // If the same category is clicked again, clear the selection
     if (selectedCategory === categoryValue) {
-      //console.log("Clearing category selection");
       setSelectedCategory("");
-      setPets(filteredPets); // Reset to all pets
-      console.log(pets);
     } else {
       setSelectedCategory(categoryValue);
     }
-    // set pets with category as categoryValue
-    const filteredPet = filteredPets.filter(
-      (pet) => pet.category === categoryValue
-    );
-    setPets(filteredPet);
-    setSelectedCategory(categoryValue);
+    // Fetch pets will be triggered by the category change
   };
   // const handleCategoryChange = (categoryValue) => {
   //   if (selectedCategory === categoryValue) {
@@ -272,13 +272,19 @@ export default function PetStore() {
   };
 
   return (
-    <div className="bg-white">
+    <motion.div
+      variants={pageTransition}
+      initial="hidden"
+      animate="visible"
+      className="bg-white"
+    >
       <div>
         {/* Mobile filter dialog */}
         <Dialog
           open={mobileFiltersOpen}
           onClose={setMobileFiltersOpen}
-          className="relative z-40 lg:hidden">
+          className="relative z-40 lg:hidden"
+        >
           <DialogBackdrop
             transition
             className="fixed inset-0 bg-black/25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
@@ -287,13 +293,15 @@ export default function PetStore() {
           <div className="fixed inset-0 z-40 flex">
             <DialogPanel
               transition
-              className="relative ml-auto flex size-full max-w-xs transform flex-col overflow-y-auto bg-white py-4 pb-12 shadow-xl transition duration-300 ease-in-out data-[closed]:translate-x-full">
+              className="relative ml-auto flex size-full max-w-xs transform flex-col overflow-y-auto bg-white py-4 pb-12 shadow-xl transition duration-300 ease-in-out data-[closed]:translate-x-full"
+            >
               <div className="flex items-center justify-between px-4">
                 <h2 className="text-lg font-medium text-gray-900">Filters</h2>
                 <button
                   type="button"
                   onClick={() => setMobileFiltersOpen(false)}
-                  className="-mr-2 flex size-10 items-center justify-center rounded-md bg-white p-2 text-gray-400">
+                  className="-mr-2 flex size-10 items-center justify-center rounded-md bg-white p-2 text-gray-400"
+                >
                   <span className="sr-only">Close menu</span>
                   <XMarkIcon aria-hidden="true" className="size-6" />
                 </button>
@@ -312,7 +320,8 @@ export default function PetStore() {
                           selectedCategory === category.value
                             ? "text-indigo-600 font-semibold"
                             : ""
-                        }`}>
+                        }`}
+                      >
                         {category.name}
                       </button>
                     </li>
@@ -323,7 +332,8 @@ export default function PetStore() {
                   <Disclosure
                     key={section.id}
                     as="div"
-                    className="border-t border-gray-200 px-4 py-6">
+                    className="border-t border-gray-200 px-4 py-6"
+                  >
                     <h3 className="-mx-2 -my-3 flow-root">
                       <DisclosureButton className="group flex w-full items-center justify-between bg-white px-2 py-3 text-gray-400 hover:text-gray-500">
                         <span className="font-medium text-gray-900">
@@ -364,7 +374,8 @@ export default function PetStore() {
                                 <svg
                                   fill="none"
                                   viewBox="0 0 14 14"
-                                  className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-[:disabled]:stroke-gray-950/25">
+                                  className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-[:disabled]:stroke-gray-950/25"
+                                >
                                   <path
                                     d="M3 8L6 11L11 3.5"
                                     strokeWidth={2}
@@ -384,7 +395,8 @@ export default function PetStore() {
                             </div>
                             <label
                               htmlFor={`filter-mobile-${section.id}-${optionIdx}`}
-                              className="min-w-0 flex-1 text-gray-500">
+                              className="min-w-0 flex-1 text-gray-500"
+                            >
                               {option.label}
                             </label>
                           </div>
@@ -398,10 +410,10 @@ export default function PetStore() {
           </div>
         </Dialog>
 
-        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-baseline justify-between border-b border-gray-200 pb-6 pt-24">
+        <main className="w-full min-h-screen">
+          <div className="flex items-baseline justify-between border-b border-gray-200 pb-6 pt-24 px-8">
             <h1 className="text-4xl uppercase font-extrabold tracking-tighter text-gray-900">
-              Pets Store
+              Pet Mating
             </h1>
             <div className="flex items-center">
               <Menu as="div" className="relative inline-block text-left">
@@ -417,7 +429,8 @@ export default function PetStore() {
 
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in">
+                  className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                >
                   <div className="py-1">
                     {sortOptions.map((option) => (
                       <MenuItem key={option.name}>
@@ -428,7 +441,8 @@ export default function PetStore() {
                               ? "font-medium text-gray-900"
                               : "text-gray-500",
                             "block w-full text-left px-4 py-2 text-sm data-[focus]:bg-gray-100 data-[focus]:outline-none"
-                          )}>
+                          )}
+                        >
                           {option.name}
                         </button>
                       </MenuItem>
@@ -439,32 +453,29 @@ export default function PetStore() {
 
               <button
                 type="button"
-                className="-m-2 ml-5 p-2 text-gray-400 hover:text-gray-500 sm:ml-7">
-                <span className="sr-only">View grid</span>
-                <Squares2X2Icon aria-hidden="true" className="size-5" />
-              </button>
-              <button
-                type="button"
                 onClick={() => setMobileFiltersOpen(true)}
-                className="-m-2 ml-4 p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden">
+                className="-m-2 ml-4 p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden"
+              >
                 <span className="sr-only">Filters</span>
                 <FunnelIcon aria-hidden="true" className="size-5" />
               </button>
             </div>
           </div>
 
-          <section aria-labelledby="products-heading" className="pb-24 pt-6">
+          <section aria-labelledby="products-heading" className="pb-24 pt-6 px-8">
             <h2 id="products-heading" className="sr-only">
-              Available Pets
-            </h2>            <div className="grid grid-cols-1 gap-x-4 gap-y-10 lg:grid-cols-8">
-              {/* Filters - Add sticky positioning */}
-              <form className="hidden lg:block lg:col-span-2 max-w-[200px] sticky top-24 h-fit">
+              Available Pets for Mating
+            </h2>
+            <div className="grid grid-cols-1 gap-x-8 lg:grid-cols-4 xl:grid-cols-5">
+              {/* Filters sidebar */}
+              <form className="hidden lg:block lg:col-span-1 xl:col-span-1 bg-white p-4 rounded-lg shadow-sm">
                 <h3 className="font-medium text-gray-900 mb-3">
                   Pet Categories
                 </h3>
                 <ul
                   role="list"
-                  className="space-y-4 border-b border-gray-200 pb-6 text-sm text-gray-900">
+                  className="space-y-4 border-b border-gray-200 pb-6 text-sm text-gray-900"
+                >
                   {subCategories.map((category) => (
                     <li key={category.name}>
                       <button
@@ -474,7 +485,8 @@ export default function PetStore() {
                           selectedCategory === category.value
                             ? "text-indigo-600 font-medium"
                             : ""
-                        }`}>
+                        }`}
+                      >
                         {category.name}
                       </button>
                     </li>
@@ -486,7 +498,8 @@ export default function PetStore() {
                     key={section.id}
                     as="div"
                     className="border-b border-gray-200 py-6"
-                    defaultOpen={true}>
+                    defaultOpen={true}
+                  >
                     <h3 className="-my-3 flow-root">
                       <DisclosureButton className="group flex w-full items-center justify-between bg-white py-3 text-sm text-gray-400 hover:text-gray-500">
                         <span className="font-medium text-gray-900">
@@ -529,7 +542,8 @@ export default function PetStore() {
                                 <svg
                                   fill="none"
                                   viewBox="0 0 14 14"
-                                  className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-[:disabled]:stroke-gray-950/25">
+                                  className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-[:disabled]:stroke-gray-950/25"
+                                >
                                   <path
                                     d="M3 8L6 11L11 3.5"
                                     strokeWidth={2}
@@ -549,7 +563,8 @@ export default function PetStore() {
                             </div>
                             <label
                               htmlFor={`filter-${section.id}-${optionIdx}`}
-                              className="text-sm text-gray-600">
+                              className="text-sm text-gray-600"
+                            >
                               {option.label}
                             </label>
                           </div>
@@ -558,12 +573,25 @@ export default function PetStore() {
                     </DisclosurePanel>
                   </Disclosure>
                 ))}
-              </form>              {/* Products grid */}
-              <div className="lg:col-span-6">
-                <div className="pr-4">
+              </form>
+
+              {/* Pets grid */}
+              <div className="lg:col-span-3 xl:col-span-4">
+                <motion.div
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                  className="w-full"
+                >
                   {loading ? (
                     <div className="flex justify-center items-center h-64">
-                      <p className="text-gray-500">Loading pets...</p>
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-gray-500"
+                      >
+                        Loading pets...
+                      </motion.p>
                     </div>
                   ) : error ? (
                     <div className="flex justify-center items-center h-64">
@@ -576,7 +604,7 @@ export default function PetStore() {
                       </p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                    <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
                       {pets.map((pet) => (
                         <PetCard
                           key={pet._id}
@@ -587,24 +615,25 @@ export default function PetStore() {
                           payments={payments}
                         />
                       ))}
-                      {/* Pet Details Modal */}
-                      <PetDetailsModal
-                        pet={selectedPet}
-                        isOpen={isDetailsModalOpen}
-                        onClose={() => setIsDetailsModalOpen(false)}
-                        onAddToWishlist={handleAddToWishlist}
-                        wishlist={wishlist}
-                        userId={userData._id}
-                        payments={payments}
-                      />
                     </div>
                   )}
-                </div>
+                </motion.div>
               </div>
             </div>
           </section>
         </main>
       </div>
-    </div>
+
+      {/* Pet Details Modal */}
+      <PetDetailsModal
+        pet={selectedPet}
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        onAddToWishlist={handleAddToWishlist}
+        wishlist={wishlist}
+        userId={userData._id}
+        payments={payments}
+      />
+    </motion.div>
   );
 }

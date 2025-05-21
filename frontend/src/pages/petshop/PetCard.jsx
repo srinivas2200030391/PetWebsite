@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { HeartOutlined, EyeOutlined } from "@ant-design/icons";
 import { Card, Button, Typography, Space, Rate } from "antd";
+import PropTypes from "prop-types";
 
 const itemAnimation = {
   hidden: { opacity: 0, y: 20 },
@@ -32,23 +33,26 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
   return (
     <motion.div variants={itemAnimation} className="h-full">
       <Card
+        
         hoverable
         style={{
           width: "100%",
           marginTop: 16,
           boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
         }}
-        cover={
+        cover={          
           <div
-            className="relative"
+            className="relative overflow-hidden"
             onMouseEnter={() => setIsImageHovered(true)}
             onMouseLeave={() => setIsImageHovered(false)}>
-            <img
+              <img
               alt={pet.name}
               src={sampleImages[0]}
               style={{
-                height: 200,
+                width: "100%",
+                height: "250px",
                 objectFit: "cover",
+                objectPosition: "center",
                 transition: "all 0.3s ease",
               }}
             />
@@ -102,12 +106,23 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
         ]}>
         <Meta
           title={<Title level={4}>{pet.breed}</Title>}
-          description={
-            <Space direction="vertical" size="small">
-              <Space>
-                <Rate defaultValue={4} disabled />
-                <Text type="secondary">(128 ratings)</Text>
-              </Space>
+          description={            
+          <Space direction="vertical" size="small">
+              <div className="flex justify-between items-center">
+                <Rate defaultValue={4} disabled style={{ fontSize: 14 }} />
+                <Text
+                  style={{
+                    backgroundColor: pet.available ? '#f6ffed' : '#fff2f0',
+                    color: pet.available ? '#52c41a' : '#ff4d4f',
+                    padding: '0 8px',
+                    fontSize: '12px',
+                    borderRadius: '4px',
+                    border: `1px solid ${pet.available ? '#b7eb8f' : '#ffccc7'}`
+                  }}
+                >
+                  {pet.available ? 'Available' : 'Not Available'}
+                </Text>
+              </div>
               <Space align="baseline">
                 <Text strong style={{ fontSize: "18px", color: "#1890ff" }}>
                   ${pet.price}
@@ -143,6 +158,23 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
       </Card>
     </motion.div>
   );
+};
+
+PetCard.propTypes = {
+  pet: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    breed: PropTypes.string.isRequired,
+    price: PropTypes.number.isRequired,
+    actualPrice: PropTypes.number,
+    details: PropTypes.string,
+    images: PropTypes.arrayOf(PropTypes.string),
+    imageUrl: PropTypes.string,
+    available: PropTypes.bool,
+  }).isRequired,
+  onAddToWishlist: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
+  wishlist: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 export default PetCard;

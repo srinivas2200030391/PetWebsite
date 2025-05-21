@@ -6,6 +6,7 @@ import { HeartIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import config from "../../config";
 import { motion } from "framer-motion";
 import ImageCarousel from "./ImageCarousel";
+import PropTypes from "prop-types";
 
 // Pet Details Modal
 
@@ -229,7 +230,7 @@ const PetDetailsModal = ({
 
                     <div className="mt-6">
                       <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-gray-900">
+                        <h2 className="mt-8 text-xl font-bold text-gray-900">
                           {pet.breed}
                         </h2>
                       </div>
@@ -741,6 +742,15 @@ const PetDetailsModal = ({
       </div>
     </Dialog>
   );
+};
+PetDetailsModal.propTypes = {
+  pet: PropTypes.object,
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  wishlist: PropTypes.array.isRequired,
+  userId: PropTypes.string,
+  payments: PropTypes.array.isRequired,
+  onAddToWishlist: PropTypes.func.isRequired,
 };
 
 export default PetDetailsModal;

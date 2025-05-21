@@ -1,6 +1,5 @@
     import { useEffect, useState } from "react";
 
-    // Image Carousel Component for Pet Cards
     const ImageCarousel = ({ images }) => {
       const [currentIndex, setCurrentIndex] = useState(0);
 
