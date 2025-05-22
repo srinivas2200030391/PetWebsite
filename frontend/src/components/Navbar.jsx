@@ -234,7 +234,7 @@ export default function NavbarWithMegaMenu() {
   }, []);
 
   // Hide navbar for specific routes
-  const hiddenRoutes = ["/", "/login", "/signin"];
+  const hiddenRoutes = ["/", "/login", "/signup"];
   if (hiddenRoutes.includes(location.pathname)) {
     return null;
   }

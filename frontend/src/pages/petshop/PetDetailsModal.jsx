@@ -698,7 +698,7 @@ const PetDetailsModal = ({
               {/* Footer */}
               <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
                 <div className="text-sm text-gray-500">
-                  Pet Name: {pet.name || "N/A"}
+                  Pet Id: {pet.id || "N/A"}
                 </div>
                 <div className="flex space-x-2">
                   <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center">

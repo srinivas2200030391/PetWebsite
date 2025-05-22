@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const AboutPetSchema = new mongoose.Schema({
+  id: { type: String, required: true },
   images: { type: [String], required: true },
   breed: { type: String, required: true },
   name: { type: String, required: true },
