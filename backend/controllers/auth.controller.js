@@ -4,51 +4,50 @@ import { generatetoken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
-
 export const signup = async (req, res) => {
-  const { email, fullname, password } = req.body;
   try {
-    if (!fullname || !password || !email) {
-      return res.status(400).json({ message: "provide full details" });
+    const user = req.body;
+    console.log(user);
+    const gmail = user.gmail;
+    const userPresent = await User.findOne({ email: gmail }); // use email in DB
+
+    if (userPresent) {
+      return res.status(400).json({ message: "user already exists" });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: "password must be 6 characters" });
-    }
-
-    const user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: "user already exist" });
-    }
-    // hash passwords
-
+    // Hash the password
     const salt = await bcrypt.genSalt(10);
-    const hashedpasssword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(user.password, salt);
+    user.password = hashedPassword;
 
-    const newuser = new User({
-      fullname: fullname,
-      password: hashedpasssword,
-      email: email,
+    // Map fields to match your schema
+    const mappedUser = {
+      ...user,
+      fullname: user.fullName,
+      email: user.gmail,
+    };
+    delete mappedUser.fullName;
+    delete mappedUser.gmail;
+
+    const newUser = new User(mappedUser);
+    console.log("new user", newUser);
+
+    await newUser.save();
+
+    generatetoken(newUser._id, res); // moved after save
+
+    res.status(201).json({
+      message: "User created successfully",
+      data: {
+        ...newUser.toObject(),
+      },
     });
-
-    if (newuser) {
-      generatetoken(newuser._id, res);
-      await newuser.save();
-
-      res.status(201).json({
-        id: newuser._id,
-        fullname: newuser.fullname,
-        email: newuser.email,
-        profilepic: newuser.profilepic,
-      }); // 201 means somethinfg has created
-    } else {
-      res.status(400).json({ messaage: "Invalid user data" });
-    }
   } catch (error) {
     console.log(`error in signup controller ${error.message}`);
     res.status(500).json({ message: "internal server error" });
   }
 };
+
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
@@ -162,14 +161,12 @@ export const getOtp = async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "User not found, love 💔" });
-    }
 
     const otp = Math.floor(100000 + Math.random() * 900000);
-    user.otp = otp;
-    await user.save();
-
+    if (user) {
+      user.otp = otp;
+      await user.save();
+    }
     const html = `
       <div style="font-family: Arial; padding: 20px;">
         <h2>Hello lovely 💖</h2>
@@ -178,9 +175,9 @@ export const getOtp = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(user.email, "Your OTP Code 💘", html);
+    await sendEmail(email, "Your OTP Code 💘", html);
 
-    res.status(200).json({ message: "OTP sent to your email 💌" });
+    res.status(200).json({ message: "OTP sent to your email 💌", otp: otp });
   } catch (error) {
     console.error(`getOtp error: ${error.message}`);
     res.status(500).json({ message: "Internal server error 💔" });
@@ -216,7 +213,7 @@ export const verifyOtp = async (req, res) => {
   }
 };
 
-export const resetPassword =async (req, res) => {
+export const resetPassword = async (req, res) => {
   const { email, password } = req.body;
 
   try {
