@@ -1,22 +1,20 @@
 import AboutPet from "../models/aboutpet.model.js";
 
-
-
-export const getAllAboutPets = async (req, res) => {
-  try {
-    const pets = await AboutPet.find();
-    res.status(200).json(pets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+  export const getAllAboutPets = async (req, res) => {
+    try {
+      const pets = await AboutPet.find();
+      res.status(200).json(pets);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
 
 // Get a single about pet by ID
 export const getAboutPetById = async (req, res) => {
   try {
     const { petId } = req.params;
     console.log("Pet ID parameter:", petId); // Log the petId parameter
-    
+
     const pet = await AboutPet.findById(petId);
     if (!pet) return res.status(404).json({ message: "Pet not found" });
     res.status(200).json(pet);
@@ -64,39 +62,40 @@ export const aboutPet = {
     }
   },
 
-  getAllDogs: async (req, res) => {
+  getAllCategories: async (req, res) => {
     try {
-      const dogDetails = await AboutPet.find({ category: "Dog" });
+      const { item } = req.params.item;
+      const dogDetails = await AboutPet.find({ category: item });
       if (!dogDetails || dogDetails.length === 0) {
-        return res.status(404).json("No dogs found");
+        return res.status(404).json(`No ${item}'s found`);
       }
       res.status(200).json(dogDetails);
     } catch (error) {
       res.status(500).json(error.message);
     }
   },
-  getAllCats: async (req, res) => {
-    try {
-      const catDetails = await AboutPet.find({ category: "Cat" });
-      if (!catDetails || catDetails.length === 0) {
-        return res.status(404).json("No cats found");
-      }
-      res.status(200).json(catDetails);
-    } catch (error) {
-      res.status(500).json(error.message);
-    }
-  },
-  getAllBirds: async (req, res) => {
-    try {
-      const birdDetails = await AboutPet.find({ Category: "bird" });
-      if (!birdDetails || birdDetails.length === 0) {
-        return res.status(404).json("No birds found");
-      }
-      res.status(200).json(birdDetails);
-    } catch (error) {
-      res.status(500).json(error.message);
-    }
-  },
+  // getAllCats: async (req, res) => {
+  //   try {
+  //     const catDetails = await AboutPet.find({ category: "Cat" });
+  //     if (!catDetails || catDetails.length === 0) {
+  //       return res.status(404).json("No cats found");
+  //     }
+  //     res.status(200).json(catDetails);
+  //   } catch (error) {
+  //     res.status(500).json(error.message);
+  //   }
+  // },
+  // getAllBirds: async (req, res) => {
+  //   try {
+  //     const birdDetails = await AboutPet.find({ Category: "bird" });
+  //     if (!birdDetails || birdDetails.length === 0) {
+  //       return res.status(404).json("No birds found");
+  //     }
+  //     res.status(200).json(birdDetails);
+  //   } catch (error) {
+  //     res.status(500).json(error.message);
+  //   }
+  // },
   getBreeds: async (req, res) => {
     try {
       // get pet breeds
@@ -135,17 +134,16 @@ export const aboutPet = {
       res.status(500).json(error.message);
     }
   },
-  getAboutPetById : async (req, res) => {
+  getAboutPetById: async (req, res) => {
     try {
       const { petId } = req.params;
       console.log("Pet ID parameter:", petId); // Log the petId parameter
-      
+
       const pet = await AboutPet.findById(petId);
       if (!pet) return res.status(404).json({ message: "Pet not found" });
       res.status(200).json(pet);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  }
+  },
 };
-

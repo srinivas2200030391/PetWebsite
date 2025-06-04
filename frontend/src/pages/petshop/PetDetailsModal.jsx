@@ -87,7 +87,6 @@ const PetDetailsModal = ({
     "https://placehold.co/600x400?text=Pet+Image+2",
     "https://placehold.co/600x400?text=Pet+Image+3",
   ];
-
   const handlePayment = async () => {
     if (!razorpayLoaded) {
       toast.error("Hold on, darling! Payment system is still loading 🥺");
@@ -131,6 +130,9 @@ const PetDetailsModal = ({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
+                userId,
+                petId: pet._id,
+
               }
             );
 
@@ -235,7 +237,7 @@ const PetDetailsModal = ({
                         </h2>
                       </div>
                       <p className="text-lg font-semibold text-indigo-600 mt-1">
-                        ${pet.price}
+                        ₹{pet.price}
                       </p>
                     </div>
                   </motion.div>
@@ -699,7 +701,7 @@ const PetDetailsModal = ({
               {/* Footer */}
               <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
                 <div className="text-sm text-gray-500">
-                  Pet Id: {pet.id || "N/A"}
+                  Pet Id: {pet.petId || "N/A"}
                 </div>
                 <div className="flex space-x-2">
                   <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center">

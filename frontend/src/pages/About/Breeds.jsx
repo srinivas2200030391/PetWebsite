@@ -20,7 +20,7 @@ const Breeds = () => {
       // capitalize first letter of item
       const capitalizedItem = item.charAt(0).toUpperCase() + item.slice(1);
       const response = await axios.get(
-        `${config.baseURL}/api/aboutpet/getbreeds/${capitalizedItem}`
+        `${config.baseURL}/api/aboutpet/${capitalizedItem}`
         // {
         //   withCredentials: true,
         // }

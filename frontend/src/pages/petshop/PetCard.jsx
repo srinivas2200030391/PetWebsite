@@ -46,7 +46,7 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
             onMouseEnter={() => setIsImageHovered(true)}
             onMouseLeave={() => setIsImageHovered(false)}>
               <img
-              alt={pet.name}
+              alt={pet.id}
               src={sampleImages[0]}
               style={{
                 width: "100%",
@@ -112,24 +112,24 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
                 <Rate defaultValue={4} disabled style={{ fontSize: 14 }} />
                 <Text
                   style={{
-                    backgroundColor: pet.available ? '#f6ffed' : '#fff2f0',
-                    color: pet.available ? '#52c41a' : '#ff4d4f',
+                    backgroundColor: pet.status ? '#f6ffed' : '#fff2f0',
+                    color: pet.status ? '#52c41a' : '#ff4d4f',
                     padding: '0 8px',
                     fontSize: '12px',
                     borderRadius: '4px',
-                    border: `1px solid ${pet.available ? '#b7eb8f' : '#ffccc7'}`
+                    border: `1px solid ₹{pet.status ? '#b7eb8f' : '#ffccc7'}`
                   }}
                 >
-                  {pet.available ? 'Available' : 'Not Available'}
+                  {pet.status ? 'Available' : 'Not Available'}
                 </Text>
               </div>
               <Space align="baseline">
                 <Text strong style={{ fontSize: "18px", color: "#1890ff" }}>
-                  ${pet.price}
+                  ₹{pet.price}
                 </Text>
                 {pet.actualPrice && (
                   <Text delete type="secondary" style={{ fontSize: "14px" }}>
-                    ${pet.actualPrice}
+                    ₹{pet.actualPrice}
                   </Text>
                 )}
                 {pet.actualPrice && (
@@ -160,21 +160,5 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
   );
 };
 
-PetCard.propTypes = {
-  pet: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    breed: PropTypes.string.isRequired,
-    price: PropTypes.number.isRequired,
-    actualPrice: PropTypes.number,
-    details: PropTypes.string,
-    images: PropTypes.arrayOf(PropTypes.string),
-    imageUrl: PropTypes.string,
-    available: PropTypes.bool,
-  }).isRequired,
-  onAddToWishlist: PropTypes.func.isRequired,
-  onViewDetails: PropTypes.func.isRequired,
-  wishlist: PropTypes.arrayOf(PropTypes.string).isRequired,
-};
 
 export default PetCard;
