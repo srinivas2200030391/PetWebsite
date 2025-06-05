@@ -201,10 +201,9 @@ export default function MatingPage() {
       result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
     
-    // Sort available pets first
+    // Filter for only available pets
     const available = result.filter(p => p.availability === "available");
-    const unavailable = result.filter(p => p.availability !== "available");
-    setDisplayedPets([...available, ...unavailable]);
+    setDisplayedPets(available);
   }, [allFetchedPets, selectedCategory, selectedFilters, currentSort, searchQuery, initialLoadComplete, filterPetsBySearch]);
 
   useEffect(() => {

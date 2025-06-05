@@ -247,11 +247,9 @@ export default function PetStore() {
     // 'recent': If pets have a 'createdAt' or similar timestamp, sort by that. Otherwise, it's hard to do client-side accurately.
     // For now, 'recent' and 'relevance' will not apply a specific sort beyond what other filters/sorts do.
 
-    // 5. Final "Available" vs "Sold Out" sorting (applied last to maintain other sorts within these groups)
+    // 5. Filter for only "Available" pets
     const available = result.filter(p => p.status === "Available");
-    const soldOut = result.filter(p => p.status !== "Available");
-    
-    setDisplayedPets([...available, ...soldOut]);
+    setDisplayedPets(available);
 
   }, [allFetchedPets, selectedCategory, selectedFilters, currentSort, searchQuery, initialLoadComplete, filterPetsBySearch]);
 
