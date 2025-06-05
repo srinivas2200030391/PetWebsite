@@ -8,7 +8,7 @@ const paymentController = {
   // Create a new order
   createOrder: async (req, res) => {
     try {
-      const { amount, currency = "INR", receipt,userId, petId } = req.body;
+      const { amount, currency = "INR", receipt, userId, petId } = req.body;
       console.log("Request Body:", req.body);
 
       if (!amount) {
@@ -31,6 +31,7 @@ const paymentController = {
         currency,
         receipt: receipt || `receipt_order_${Date.now()}`,
       };
+      console.log(options);
 
       const order = await razorpayInstance.orders.create(options);
       const paymentRecord = new Payment({
@@ -44,7 +45,7 @@ const paymentController = {
         paymentMethod: "UPI", // Default payment method (you can update this later)
       });
       console.log("Payment Record:", paymentRecord); // Log payment record before saving
-
+      await paymentRecord.save()
       res.status(200).json({
         success: true,
         order,
@@ -71,7 +72,13 @@ const paymentController = {
         petId,
       } = req.body;
 
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !userId || !petId) {
+      if (
+        !razorpay_order_id ||
+        !razorpay_payment_id ||
+        !razorpay_signature ||
+        !userId ||
+        !petId
+      ) {
         return res.status(400).json({
           success: false,
           message: "All payment details are required",

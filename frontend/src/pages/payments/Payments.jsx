@@ -164,7 +164,7 @@ const PetDetailsModal = ({
                   <div>
                     <h4 className="text-sm font-medium text-gray-500">Price</h4>
                     <p className="text-xl font-bold text-indigo-600">
-                      ${pet.price}
+                      ₹{pet.price}
                     </p>
                   </div>
                 </div>
@@ -374,7 +374,7 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
           <p className="mt-1 text-sm text-gray-500">{pet.age} years old</p>
 
           <div className="mt-2 flex justify-between items-center">
-            <p className="text-lg font-medium text-gray-900">${pet.price}</p>
+            <p className="text-lg font-medium text-gray-900">₹{pet.price}</p>
             <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
               Available
             </span>
