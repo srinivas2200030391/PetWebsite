@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Navbar,
@@ -22,100 +21,82 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
-  Bars4Icon,
-  GlobeAmericasIcon,
-  NewspaperIcon,
-  PhoneIcon,
-  RectangleGroupIcon,
-  SquaresPlusIcon,
-  SunIcon,
-  TagIcon,
-  UserGroupIcon,
+  BuildingStorefrontIcon,
+  HomeModernIcon,
+  AcademicCapIcon,
+  HeartIcon,
+  MapIcon,
 } from "@heroicons/react/24/solid";
 import { useStore } from "../pages/store/store";
+import { useLocation } from "react-router-dom";
+import { useAuthStore } from "../pages/store/useAuthstore";
 
-const navListMenuItems = [
+const upcomingFeaturesMenuItems = [
   {
-    title: "Products",
-    href: "/",
-    description: "Find the perfect solution for your needs.",
-    icon: SquaresPlusIcon,
+    title: "Pet Boarding",
+    href: "#",
+    description: "Safe and comfortable boarding for your pets.",
+    icon: HomeModernIcon,
   },
   {
-    title: "About Us",
-    description: "Meet and learn about our dedication",
-    icon: UserGroupIcon,
+    title: "Pet Training",
+    href: "#",
+    description: "Professional training for a well-behaved companion.",
+    icon: AcademicCapIcon,
   },
   {
-    title: "Blog",
-    description: "Find the perfect solution for your needs.",
-    icon: Bars4Icon,
+    title: "Pet Hospitals",
+    href: "#",
+    description: "Find veterinary services and emergency care near you.",
+    icon: HeartIcon,
   },
   {
-    title: "Services",
-    description: "Learn how we can help you achieve your goals.",
-    icon: SunIcon,
+    title: "Pet Walk",
+    href: "#",
+    description: "Reliable pet walking services for your furry friend.",
+    icon: MapIcon,
   },
   {
-    title: "Support",
-    description: "Reach out to us for assistance or inquiries",
-    icon: GlobeAmericasIcon,
-  },
-  {
-    title: "Contact",
-    description: "Find the perfect solution for your needs.",
-    icon: PhoneIcon,
-  },
-  {
-    title: "SalesForm",
-    href: "/petsaleform",
-    description: "Read insightful articles, tips, and expert opinions.",
-    icon: NewspaperIcon,
-  },
-  {
-    title: "Matingform",
-    href: "/matingform",
-    description: "Find the perfect solution for your needs.",
-    icon: RectangleGroupIcon,
-  },
-  {
-    title: "Special Offers",
-    description: "Explore limited-time deals and bundles",
-    icon: TagIcon,
+    title: "Pet Stores",
+    href: "#",
+    description: "Discover local pet stores with all the supplies you need.",
+    icon: BuildingStorefrontIcon,
   },
 ];
 
-function NavListMenu() {
+function UpcomingFeaturesMenu() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  // In the NavListMenu component, update the renderItems mapping:
-const renderItems = navListMenuItems.map(
-  ({ icon, title, description, href }, key) => (
-    <a href={href} key={key}>
-      <MenuItem className="flex items-center gap-3 rounded-lg">
-        <div className="flex items-center justify-center rounded-lg !bg-blue-gray-50 p-2 ">
-          {React.createElement(icon, {
-            strokeWidth: 2,
-            className: "h-6 text-gray-900 w-6",
-          })}
-        </div>
-        <div>
-          <Typography
-            variant="h6"
-            color="blue-gray"
-            className="flex items-center text-sm font-bold">
-            {title}
-          </Typography>
-          <Typography
-            variant="paragraph"
-            className="text-xs !font-medium text-blue-gray-500">
-            {description}
-          </Typography>
-        </div>
-      </MenuItem>
-    </a>
-  )
-);
+
+  const renderItems = upcomingFeaturesMenuItems.map(
+    ({ icon, title, description, href }, key) => (
+      <a href={href} key={key}>
+        <MenuItem className="flex items-center gap-3 rounded-lg">
+          <div className="flex items-center justify-center rounded-lg !bg-blue-gray-50 p-2 ">
+            {React.createElement(icon, {
+              strokeWidth: 2,
+              className: "h-6 text-gray-900 w-6",
+            })}
+          </div>
+          <div>
+            <Typography
+              variant="h6"
+              color="blue-gray"
+              className="flex items-center text-sm font-bold"
+            >
+              {title}
+            </Typography>
+            <Typography
+              variant="paragraph"
+              className="text-xs !font-medium text-blue-gray-500"
+            >
+              {description}
+            </Typography>
+          </div>
+        </MenuItem>
+      </a>
+    )
+  );
 
   return (
     <React.Fragment>
@@ -124,14 +105,16 @@ const renderItems = navListMenuItems.map(
         handler={setIsMenuOpen}
         offset={{ mainAxis: 20 }}
         placement="bottom"
-        allowHover={true}>
+        allowHover={true}
+      >
         <MenuHandler>
           <Typography as="div" variant="small" className="font-medium">
             <ListItem
               className="flex items-center gap-2 py-2 pr-4 font-medium text-gray-900"
               selected={isMenuOpen || isMobileMenuOpen}
-              onClick={() => setIsMobileMenuOpen((cur) => !cur)}>
-              Resources
+              onClick={() => setIsMobileMenuOpen((cur) => !cur)}
+            >
+              Upcoming Features
               <ChevronDownIcon
                 strokeWidth={2.5}
                 className={`hidden h-3 w-3 transition-transform lg:block ${
@@ -168,46 +151,25 @@ function NavList() {
         href="/home"
         variant="small"
         color="blue-gray"
-        className="font-medium">
+        className="font-medium"
+      >
         <ListItem className="flex items-center gap-2 py-2 pr-4">Home</ListItem>
-      </Typography>
-
-      <NavListMenu />
-      <Typography
-        as="a"
-        href="/Petshop"
-        variant="small"
-        color="blue-gray"
-        className="font-medium">
-        <ListItem className="flex items-center gap-2 py-2 pr-4">Store</ListItem>
-      </Typography>
-      <Typography
-        as="a"
-        href="#"
-        variant="small"
-        color="blue-gray"
-        className="font-medium">
-        <ListItem className="flex items-center gap-2 py-2 pr-4">
-          Orders
-        </ListItem>
       </Typography>
       <Typography
         as="a"
         href="/my-pets"
         variant="small"
         color="blue-gray"
-        className="font-medium">
+        className="font-medium"
+      >
         <ListItem className="flex items-center gap-2 py-2 pr-4">
           My Pet
         </ListItem>
       </Typography>
-      
+      <UpcomingFeaturesMenu />
     </List>
   );
 }
-
-import { useLocation } from "react-router-dom";
-import { useAuthStore } from "../pages/store/useAuthstore";
 
 export default function NavbarWithMegaMenu() {
   const location = useLocation();
@@ -246,33 +208,34 @@ export default function NavbarWithMegaMenu() {
           as="a"
           href="/home"
           variant="h6"
-          className="mr-4 cursor-pointer py-1.5 lg:ml-2">
+          className="mr-4 cursor-pointer py-1.5 lg:ml-2"
+        >
           The Pet Shop
         </Typography>
         <div className="flex items-center gap-4 flex-1 justify-between">
-  <form 
-    onSubmit={handleSearch}
-    className="hidden lg:flex items-center w-72"
-  >
-    <div className="relative flex w-full">
-      <input
-        type="search"
-        name="search"
-        placeholder="Search products..."
-        className="w-full h-10 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400"
-      />
-      <button
-        type="submit"
-        className="absolute right-2 top-1/2 -translate-y-1/2"
-      >
-        <MagnifyingGlassIcon className="h-5 w-5 text-gray-500" />
-      </button>
-    </div>
-  </form>
-  <div className="hidden lg:block">
-    <NavList />
-  </div>
-</div>
+          <form
+            onSubmit={handleSearch}
+            className="hidden lg:flex items-center w-72"
+          >
+            <div className="relative flex w-full">
+              <input
+                type="search"
+                name="search"
+                placeholder="Search products..."
+                className="w-full h-10 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+              >
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+          </form>
+          <div className="hidden lg:block">
+            <NavList />
+          </div>
+        </div>
         <div className="hidden gap-2 lg:flex">
           <Profile />
         </div>
@@ -280,7 +243,8 @@ export default function NavbarWithMegaMenu() {
           variant="text"
           color="blue-gray"
           className="lg:hidden"
-          onClick={() => setOpenNav(!openNav)}>
+          onClick={() => setOpenNav(!openNav)}
+        >
           {openNav ? (
             <XMarkIcon className="h-6 w-6" strokeWidth={2} />
           ) : (
@@ -290,7 +254,7 @@ export default function NavbarWithMegaMenu() {
       </div>
       <Collapse open={openNav}>
         <NavList />
-        
+
         <div className="flex w-full flex-nowrap items-center gap-2 lg:hidden">
           {isAuthenticated ? (
             <Button
@@ -298,7 +262,8 @@ export default function NavbarWithMegaMenu() {
               size="sm"
               color="red"
               fullWidth
-              onClick={logout}>
+              onClick={logout}
+            >
               Logout
             </Button>
           ) : (
