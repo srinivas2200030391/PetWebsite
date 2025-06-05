@@ -18,6 +18,7 @@ const MatingPetsList = () => {
           withCredentials: true,
         });
         setMatingPets(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error("Error fetching mating pets:", error);
       } finally {

@@ -71,7 +71,7 @@ const PetDetailsModal = ({
         console.log("Razorpay loaded, sugar 🧁");
       };
       script.onerror = () => {
-        toast.error("Couldn’t load payment gateway, sweetie 😢");
+        toast.error("Couldn't load payment gateway, sweetie 😢");
       };
       document.body.appendChild(script);
     } else {
@@ -82,11 +82,15 @@ const PetDetailsModal = ({
   if (!pet) return null;
   const isWishlisted = wishlist.includes(pet._id);
   let hasPaid = payments.includes(pet._id);
-  const sampleImages = pet.images || [
-    pet.imageUrl,
-    "https://placehold.co/600x400?text=Pet+Image+2",
-    "https://placehold.co/600x400?text=Pet+Image+3",
-  ];
+  
+  // Refined logic for images passed to the carousel
+  let imagesForCarousel = [];
+  if (Array.isArray(pet.images) && pet.images.length > 0) {
+    imagesForCarousel = pet.images;
+  } else if (pet.imageUrl) {
+    imagesForCarousel = [pet.imageUrl];
+  }
+  // If imagesForCarousel is empty, ImageCarousel component will use its own default placeholder
 
   const handlePayment = async () => {
     if (!razorpayLoaded) {
@@ -143,7 +147,7 @@ const PetDetailsModal = ({
             }
           } catch (err) {
             console.error("Verification error:", err);
-            toast.error("Uh-oh! Couldn’t verify payment, honey 🍯");
+            toast.error("Uh-oh! Couldn't verify payment, honey 🍯");
           } finally {
             setIsLoading(false);
           }
@@ -174,7 +178,7 @@ const PetDetailsModal = ({
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50 ">
       {/* Backdrop with reduced opacity for a more subtle enterprise look */}
       <motion.div
         variants={{
@@ -188,7 +192,7 @@ const PetDetailsModal = ({
         <DialogBackdrop className="fixed inset-0 bg-slate-900/40" />
       </motion.div>
 
-      <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/10 bg-opacity-50 backdrop-blur-sm">
         <div className="flex min-h-full items-center justify-center p-4">
           <motion.div
             variants={{
@@ -226,7 +230,10 @@ const PetDetailsModal = ({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}>
-                    <ImageCarousel images={sampleImages} />
+                    {/* Added a wrapper for aspect ratio */}
+                    <div className="w-full aspect-[4/3] rounded-lg overflow-hidden mb-4 bg-gray-100">
+                      <ImageCarousel images={imagesForCarousel} />
+                    </div>
 
                     <div className="mt-6">
                       <div className="flex items-center justify-between">
@@ -235,7 +242,7 @@ const PetDetailsModal = ({
                         </h2>
                       </div>
                       <p className="text-lg font-semibold text-indigo-600 mt-1">
-                        ${pet.price}
+                        ₹{pet.price}
                       </p>
                     </div>
                   </motion.div>
@@ -264,7 +271,7 @@ const PetDetailsModal = ({
                           Age
                         </h5>
                         <p className="text-sm font-medium">
-                          {pet.age} years old
+                          {pet.age} {pet.ageUnit || "years old"}
                         </p>
                       </div>
                       <div>
@@ -272,12 +279,6 @@ const PetDetailsModal = ({
                           Gender
                         </h5>
                         <p className="text-sm font-medium">{pet.gender}</p>
-                      </div>
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Weight
-                        </h5>
-                        <p className="text-sm font-medium">{pet.weight}</p>
                       </div>
                       {pet.height && (
                         <div>
@@ -293,6 +294,22 @@ const PetDetailsModal = ({
                             Lifespan
                           </h5>
                           <p className="text-sm font-medium">{pet.lifeSpan}</p>
+                        </div>
+                      )}
+                      {pet.petQuality && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Quality
+                          </h5>
+                          <p className="text-sm font-medium">{pet.petQuality}</p>
+                        </div>
+                      )}
+                      {pet.status && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500">
+                            Status
+                          </h5>
+                          <p className="text-sm font-medium">{pet.status}</p>
                         </div>
                       )}
                     </div>
@@ -571,6 +588,26 @@ const PetDetailsModal = ({
                               )}
                             </div>
                           )}
+                          {pet.vendor && (
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-900">
+                                Vendor Ref
+                              </h5>
+                              <p className="text-sm text-gray-700">
+                                {pet.vendor}
+                              </p>
+                            </div>
+                          )}
+                           {pet.vendorId && (
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-900">
+                                Vendor ID
+                              </h5>
+                              <p className="text-sm text-gray-700">
+                                {pet.vendorId}
+                              </p>
+                            </div>
+                          )}
                         </div>
 
                         <div className="border-t border-gray-200 pt-4 mt-6">
@@ -699,7 +736,7 @@ const PetDetailsModal = ({
               {/* Footer */}
               <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
                 <div className="text-sm text-gray-500">
-                  Pet Id: {pet.id || "N/A"}
+                  Pet Id: {pet.petId || pet._id || "N/A"}
                 </div>
                 <div className="flex space-x-2">
                   <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center">

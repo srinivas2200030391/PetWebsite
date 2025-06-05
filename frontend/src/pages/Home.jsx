@@ -83,7 +83,7 @@ const HomeDashboard = () => {
               />
               <div className="justify-center before:bg-white/10 border-white/20 border-1 overflow-hidden py-2 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex items-center px-4 backdrop-blur-sm">
                 <p className="text-white uppercase font-black tracking-wide text-sm leading-relaxed font-[' Winky Rough']">
-                  Pet Store
+                  Pets for sale
                 </p>
               </div>
             </div>

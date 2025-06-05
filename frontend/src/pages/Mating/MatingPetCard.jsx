@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { HeartIcon as HeartOutlineIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid"; 
 import PropTypes from "prop-types";
-import ImageCarousel from "./ImageCarousel";
+import ImageCarousel from "../petshop/ImageCarousel";
 
 const itemAnimation = {
   hidden: { opacity: 0, y: 20 },
@@ -19,28 +19,17 @@ const itemAnimation = {
   },
 };
 
-const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDetails, wishlist = [] }) => {
+const MatingPetCard = ({ pet = { photosAndVideos: [] }, onAddToWishlist, onViewDetails, wishlist = [] }) => {
   const [isHovering, setIsHovering] = useState(false);
   const isWishlisted = wishlist?.includes(pet._id) || false;
 
-  const petImages = Array.isArray(pet.images) && pet.images.length > 0
-    ? pet.images
-    : pet.imageUrl
-      ? [pet.imageUrl]
-      : []; // Default to empty array, ImageCarousel will handle placeholder
+  const petImages = Array.isArray(pet.photosAndVideos) && pet.photosAndVideos.length > 0
+    ? pet.photosAndVideos
+    : [];
 
   const hasMultipleImages = petImages.length > 1;
 
-  const formattedPrice = !isNaN(parseFloat(pet.price))
-    ? new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(parseFloat(pet.price))
-    : `₹ ${pet.price || 'N/A'}`;
-
-  const isAvailable = pet.status === "Available";
+  const isAvailable = pet.availability === "available";
   
   const statusStyles = isAvailable 
     ? "bg-green-100 text-green-700 border-green-200"
@@ -52,14 +41,14 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
       className="h-full flex flex-col bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300 ease-in-out"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      layout // For smooth animations if list reorders
+      layout
     >
       <div className="relative aspect-[4/3]">
         <ImageCarousel images={petImages} />
         <div 
           className={`absolute top-3 right-3 px-2.5 py-1 text-xs font-semibold rounded-full border transition-all duration-200 ease-in-out ${statusStyles} ${isHovering && hasMultipleImages ? "opacity-0 translate-y-1" : "opacity-100 translate-y-0"}`}
         >
-          {pet.status || "Unknown"}
+          {isAvailable ? "Available" : "Unavailable"}
         </div>
         <AnimatePresence>
           {isHovering && (
@@ -96,22 +85,18 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
       </div>
 
       <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-lg font-semibold text-gray-800 truncate" title={pet.breed || pet.name || "Unnamed Pet"}>
-          {pet.breed || pet.name || "Unnamed Pet"}
+        <h3 className="text-lg font-semibold text-gray-800 truncate" title={pet.breedName || "Unnamed Pet"}>
+          {pet.breedName || "Unnamed Pet"}
         </h3>
         
-        <p className="text-xl font-bold text-indigo-600 my-1.5">
-          {formattedPrice}
-        </p>
-
-        {pet.details && (
-          <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-grow min-h-[40px]" title={pet.details}>
-            {pet.details}
+        {pet.breedLineage && (
+          <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-grow min-h-[40px]" title={pet.breedLineage}>
+            {pet.breedLineage}
           </p>
         )}
         
         <div className="flex flex-wrap gap-2 mb-3">
-          {[pet.age && `${pet.age} ${pet.ageUnit || "old"}`, pet.gender, pet.petQuality].filter(Boolean).map((tag, i) => (
+          {[pet.age && `${pet.age} years`, pet.gender, pet.petQuality, pet.location].filter(Boolean).map((tag, i) => (
             <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200">
               {tag}
             </span>
@@ -134,25 +119,21 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
   );
 };
 
-PetCard.propTypes = {
+MatingPetCard.propTypes = {
   pet: PropTypes.shape({
     _id: PropTypes.string.isRequired,
-    name: PropTypes.string,
-    breed: PropTypes.string,
-    price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    details: PropTypes.string,
-    images: PropTypes.arrayOf(PropTypes.string),
-    imageUrl: PropTypes.string,
-    status: PropTypes.string,
+    breedName: PropTypes.string,
+    breedLineage: PropTypes.string,
+    photosAndVideos: PropTypes.arrayOf(PropTypes.string),
+    availability: PropTypes.string,
     age: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    ageUnit: PropTypes.string,
     gender: PropTypes.string,
     petQuality: PropTypes.string,
+    location: PropTypes.string,
   }).isRequired,
   onAddToWishlist: PropTypes.func.isRequired,
   onViewDetails: PropTypes.func.isRequired,
   wishlist: PropTypes.arrayOf(PropTypes.string),
 };
 
-export default PetCard;
-
+export default MatingPetCard; 
