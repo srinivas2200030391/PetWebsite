@@ -9,4 +9,5 @@ router.get("/getall", userController.getAllUsers);
 router.put("/updatewishlist", userController.updateWishList);
 router.get("/getallwishlist/:id", userController.getAllWishList);
 router.put("/updateprofile", userController.updateprofile);
+router.get("/checkPetExists/:petId", userController.checkPetExists);
 export default router;

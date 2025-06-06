@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import {
@@ -25,8 +25,10 @@ function classNames(...classes) {
 const ImageCarousel = ({ images, className }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Limit to 4 images maximum
-  const displayImages = images.slice(0, 4);
+  // Ensure images is an array and handle empty cases
+  const displayImages = Array.isArray(images) && images.length > 0 
+    ? images.slice(0, 4) // Limit to 4 images maximum
+    : [];
 
   const nextImage = (e) => {
     e.stopPropagation(); // Prevent event bubbling to parent elements
@@ -42,12 +44,7 @@ const ImageCarousel = ({ images, className }) => {
     );
   };
 
-  const selectImage = (index, e) => {
-    e.stopPropagation(); // Prevent event bubbling to parent elements
-    setCurrentIndex(index);
-  };
-
-  if (!displayImages || displayImages.length === 0) {
+  if (displayImages.length === 0) {
     return (
       <div className={classNames(className, "bg-gray-200 flex items-center justify-center")}>
         <p className="text-gray-500">No Image</p>
@@ -56,12 +53,14 @@ const ImageCarousel = ({ images, className }) => {
   }
 
   return (
-    <div className={classNames(className, "relative w-full overflow-hidden")}>
+    <div className={classNames(className, "relative w-full overflow-hidden group")}>
       {displayImages.map((image, index) => (
         <div
           key={index}
-          className={`absolute w-full h-full transition-opacity duration-300 ${
-            index === currentIndex ? "opacity-100" : "opacity-0"
+          className={`absolute w-full h-full transition-all duration-500 ${
+            index === currentIndex 
+              ? "opacity-100 scale-100" 
+              : "opacity-0 scale-95"
           }`}>
           <img
             src={image}
@@ -75,21 +74,25 @@ const ImageCarousel = ({ images, className }) => {
         <>
           <button
             onClick={prevImage}
-            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-all">
-            <XMarkIcon className="h-4 w-4" style={{ transform: 'rotate(-45deg)', width: '1rem', height: '1rem' }} />
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 transform hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
           <button
             onClick={nextImage}
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-all">
-             <XMarkIcon className="h-4 w-4" style={{ transform: 'rotate(45deg)', width: '1rem', height: '1rem' }} />
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 transform hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
           <div className="absolute bottom-3 left-0 right-0 flex justify-center space-x-2">
             {displayImages.map((_, index) => (
               <button
                 key={index}
                 onClick={(e) => { e.stopPropagation(); setCurrentIndex(index); }}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentIndex ? "bg-white scale-125" : "bg-white/50"
+                className={`w-2 h-2 rounded-full transition-all transform ${
+                  index === currentIndex ? "bg-white scale-125" : "bg-white/50 hover:bg-white/80"
                 }`}
               />
             ))}
@@ -153,30 +156,38 @@ const PetDetailsModal = ({
 
   const isWishlisted = wishlist.includes(pet._id);
   const paymentStatus = payments.includes(pet._id);
-  const isAvailable = pet.status === "Available";
-
-  const sampleImages =
-    pet.images && pet.images.length > 0
+  const isAvailable = pet.status === "Available" || pet.status === "available";
+  const isMatingPet = pet.petType === "mating";
+  
+  // Handle different image field names between models
+  const petImages = isMatingPet
+    ? (pet.photosAndVideos || []).filter(Boolean)
+    : (pet.images && pet.images.length > 0
       ? pet.images
-      : [
-          pet.imageUrl,
-          "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        ];
+      : [pet.imageUrl].filter(Boolean));
 
   const handlePayment = async () => {
     try {
       setIsLoading(true);
-      const resp = await axios.post(`${config.baseURL}/api/payments/create`, {
-        amount: pet.price,
+      
+      // Different payment endpoint based on pet type
+      const endpoint = `${config.baseURL}/api/payments/create`;
+
+      const resp = await axios.post(endpoint, {
+        amount: pet.price || 2500, // Default price for mating pets if not specified
         currency: "INR",
         receipt: `rcpt_${pet._id.slice(-6)}_${Date.now().toString().slice(-6)}`,
-        notes: "Pet adoption payment",
+        notes: isMatingPet ? "Mating service payment" : "Pet adoption payment",
         userId: userId,
         petId: pet._id,
+        serviceType: isMatingPet ? "mating" : "adoption"
       });
 
       if (resp?.data?.success) {
-        toast.success("Payment initiated! Complete it to unlock exclusive details.");
+        toast.success(isMatingPet 
+          ? "Payment initiated! Complete it to contact the breeder." 
+          : "Payment initiated! Complete it to unlock exclusive details."
+        );
       } else {
         toast.error("Payment failed. Please try again.");
       }
@@ -201,6 +212,13 @@ const PetDetailsModal = ({
       <div className="fixed inset-0 z-50 w-screen overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4">
           <DialogPanel className="relative mx-auto w-full max-w-6xl rounded-2xl bg-white shadow-2xl">
+            {/* Pet Type Badge */}
+            {isMatingPet && (
+              <div className="absolute top-4 left-4 z-10 bg-purple-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg">
+                Mating Pet
+              </div>
+            )}
+            
             <div className="absolute top-4 right-4 z-10">
               <button onClick={onClose} className="p-2 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors">
                 <XMarkIcon className="h-6 w-6" />
@@ -208,79 +226,172 @@ const PetDetailsModal = ({
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2">
               <div className="p-4">
-                <ModalImageGallery images={sampleImages} />
+                <ModalImageGallery images={petImages} />
               </div>
 
               <div className="flex flex-col p-8">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-4xl font-extrabold text-gray-900 tracking-tight">{pet.name}</h3>
+                  <h3 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+                    {isMatingPet 
+                      ? `${pet.breed || pet.breedName}` 
+                      : pet.name}
+                  </h3>
                   <button className="flex items-center justify-center mx-auto bg-gray-100 hover:bg-gray-200 p-3 rounded-full">
-                    <HeartIconSolid className={`h-6 w-6  transition-colors duration-200 ${isWishlisted ? "text-red-500" : "text-gray-400 hover:text-red-500"}`} />
+                    <HeartIconSolid className={`h-6 w-6 transition-colors duration-200 ${isWishlisted ? "text-red-500" : "text-gray-400 hover:text-red-500"}`} />
                   </button>
                 </div>
-                <p className="text-lg text-gray-600 mb-4">{pet.breed}</p>
+                
+                {!isMatingPet && (
+                  <p className="text-lg text-gray-600 mb-4">{pet.breed}</p>
+                )}
 
-                <div className="flex items-center text-4xl font-bold text-gray-800 mb-6">
-                  <CurrencyRupeeIcon className="h-8 w-8 mr-1" />{pet.price.toLocaleString('en-IN')}
-                </div>
+                {/* Only show price for regular pets */}
+                {!isMatingPet && (
+                  <div className="flex items-center text-4xl font-bold text-gray-800 mb-6">
+                    <CurrencyRupeeIcon className="h-8 w-8 mr-1" />
+                    {typeof pet.price === 'number' ? pet.price.toLocaleString('en-IN') : pet.price}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 mb-6 text-base">
-                  <p><strong className="font-semibold text-gray-600">Age:</strong> {pet.age} years</p>
+                  <p><strong className="font-semibold text-gray-600">Age:</strong> {pet.age} {isMatingPet ? 'years' : ''}</p>
                   <p><strong className="font-semibold text-gray-600">Gender:</strong> {pet.gender}</p>
-                  {pet.breedLineage && <p><strong className="font-semibold text-gray-600">Lineage:</strong> {pet.breedLineage}</p>}
+                  {(pet.breedLineage || (isMatingPet && pet.breed)) && <p><strong className="font-semibold text-gray-600">Lineage:</strong> {pet.breedLineage || pet.breed}</p>}
                   {pet.height && <p><strong className="font-semibold text-gray-600">Height:</strong> {pet.height}</p>}
                   {pet.lifeSpan && <p><strong className="font-semibold text-gray-600">Lifespan:</strong> {pet.lifeSpan}</p>}
+                  {pet.petQuality && <p><strong className="font-semibold text-gray-600">Quality:</strong> {pet.petQuality}</p>}
+                  {pet.location && <p><strong className="font-semibold text-gray-600">Location:</strong> {pet.location}</p>}
                 </div>
                 
                 <div className="mb-6">
-                  <h4 className="font-semibold text-gray-800 mb-2">About {pet.name}</h4>
-                  <p className="text-gray-600 text-sm leading-relaxed">{pet.details || "No details available for this pet."}</p>
+                  <h4 className="font-semibold text-gray-800 mb-2">About {isMatingPet ? "This Pet" : pet.name}</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">{isMatingPet ? pet.breedLineage : pet.details || "No details available for this pet."}</p>
                 </div>
 
-                {pet.characteristics && (
+                {pet.characteristics && !isMatingPet && (
                   <div className="mb-auto">
                     <h4 className="font-semibold text-gray-800 mb-2">Characteristics</h4>
                     <div className="flex flex-wrap gap-2">
-                      {pet.characteristics.split(",").map((char) => (
-                        <span key={char} className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full">{char.trim()}</span>
-                      ))}
+                      {typeof pet.characteristics === 'string' ? 
+                        pet.characteristics.split(",").map((char) => (
+                          <span key={char} className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full">{char.trim()}</span>
+                        )) :
+                        <span className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                          {isMatingPet ? 'Mating Service' : 'Pet'}
+                        </span>
+                      }
                     </div>
                   </div>
                 )}
                 
                 <div className="mt-8">
                   {paymentStatus ? (
-                    <div className="bg-green-50/60 rounded-xl p-6 border border-green-200 space-y-5">
-                      <h4 className="text-lg font-semibold text-green-800 flex items-center gap-2">
-                        <SparklesIcon className="h-6 w-6 text-green-600" />
-                        Exclusive Details Unlocked
+                    <div className={`rounded-xl p-6 border space-y-5 ${
+                      isMatingPet ? 'bg-purple-50/60 border-purple-200' : 'bg-green-50/60 border-green-200'
+                    }`}>
+                      <h4 className={`text-lg font-semibold flex items-center gap-2 ${
+                        isMatingPet ? 'text-purple-800' : 'text-green-800'
+                      }`}>
+                        <SparklesIcon className={`h-6 w-6 ${isMatingPet ? 'text-purple-600' : 'text-green-600'}`} />
+                        {isMatingPet ? 'Breeder Contact Information' : 'Exclusive Details Unlocked'}
                       </h4>
                       
                       {/* Contact & Location */}
                       <div className="space-y-3">
-                        {pet.breederName && <div className="flex items-start gap-3"><UserCircleIcon className="h-5 w-5 text-green-500 mt-0.5" /><span className="text-gray-700 text-sm"><strong className="text-gray-900 block">Breeder:</strong> {pet.breederName}</span></div>}
-                        {pet.phoneNumber && <div className="flex items-start gap-3"><PhoneIcon className="h-5 w-5 text-green-500 mt-0.5" /><span className="text-gray-700 text-sm"><strong className="text-gray-900 block">Contact:</strong> {pet.phoneNumber}</span></div>}
-                        {pet.location && <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-green-500 mt-0.5" /><span className="text-gray-700 text-sm"><strong className="text-gray-900 block">Location:</strong> {pet.location}</span></div>}
-                        {pet.shopAddress && <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-green-500 mt-0.5" /><span className="text-gray-700 text-sm"><strong className="text-gray-900 block">Shop Address:</strong> {pet.shopAddress}</span></div>}
+                        {(pet.breederName || pet.vendorName) && 
+                          <div className="flex items-start gap-3">
+                            <UserCircleIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
+                            <span className="text-gray-700 text-sm">
+                              <strong className="text-gray-900 block">{isMatingPet ? 'Breeder' : 'Vendor'}:</strong> 
+                              {pet.breederName || pet.vendorName}
+                            </span>
+                          </div>
+                        }
+                        
+                        {(pet.phoneNumber || pet.phoneNum) && 
+                          <div className="flex items-start gap-3">
+                            <PhoneIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
+                            <span className="text-gray-700 text-sm">
+                              <strong className="text-gray-900 block">Contact:</strong> 
+                              {pet.phoneNumber || pet.phoneNum}
+                            </span>
+                          </div>
+                        }
+                        
+                        {pet.location && 
+                          <div className="flex items-start gap-3">
+                            <MapPinIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
+                            <span className="text-gray-700 text-sm">
+                              <strong className="text-gray-900 block">Location:</strong> 
+                              {pet.location}
+                            </span>
+                          </div>
+                        }
+                        
+                        {pet.shopAddress && 
+                          <div className="flex items-start gap-3">
+                            <MapPinIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
+                            <span className="text-gray-700 text-sm">
+                              <strong className="text-gray-900 block">Shop Address:</strong> 
+                              {pet.shopAddress}
+                            </span>
+                          </div>
+                        }
                       </div>
 
-                      <div className="border-t border-green-200"></div>
+                      <div className={`border-t ${isMatingPet ? 'border-purple-200' : 'border-green-200'}`}></div>
 
                       {/* Health & Lineage */}
                       <div className="space-y-3">
-                        {pet.vaccinationDetails && <div className="flex items-start gap-3"><ShieldCheckIcon className="h-5 w-5 text-green-500 mt-0.5" /><span className="text-gray-700 text-sm"><strong className="text-gray-900 block">Vaccination Details:</strong> {pet.vaccinationDetails}</span></div>}
-                        {pet.vaccinationProof && <div className="flex items-center gap-3"><ShieldCheckIcon className="h-5 w-5 text-green-500" /><a href={pet.vaccinationProof} target="_blank" rel="noopener noreferrer" className="text-green-700 hover:underline font-medium text-sm">View Vaccination Proof</a></div>}
+                        {pet.vaccinationDetails && 
+                          <div className="flex items-start gap-3">
+                            <ShieldCheckIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
+                            <span className="text-gray-700 text-sm">
+                              <strong className="text-gray-900 block">Vaccination Details:</strong> 
+                              {pet.vaccinationDetails}
+                            </span>
+                          </div>
+                        }
+                        
+                        {pet.vaccinationProof && 
+                          <div className="flex items-center gap-3">
+                            <ShieldCheckIcon className={`h-5 w-5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
+                            <a 
+                              href={pet.vaccinationProof} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className={`hover:underline font-medium text-sm ${isMatingPet ? 'text-purple-700' : 'text-green-700'}`}
+                            >
+                              View Vaccination Proof
+                            </a>
+                          </div>
+                        }
                       </div>
                       
                       {/* Videos */}
-                      {pet.videos?.length > 0 && (
+                      {(pet.videos?.length > 0 || pet.beforeMatingVideos?.length > 0) && (
                         <>
-                          <div className="border-t border-green-200"></div>
+                          <div className={`border-t ${isMatingPet ? 'border-purple-200' : 'border-green-200'}`}></div>
                           <div className="space-y-2">
-                            <h5 className="font-semibold text-gray-900 text-sm flex items-center gap-2"><VideoCameraIcon className="h-5 w-5 text-green-500" /> Videos</h5>
+                            <h5 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
+                              <VideoCameraIcon className={`h-5 w-5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} /> 
+                              {isMatingPet ? 'Mating Videos' : 'Pet Videos'}
+                            </h5>
                             <div className="flex flex-wrap gap-2">
-                              {pet.videos.map((video, idx) => (
-                                <a href={video} key={idx} target="_blank" rel="noopener noreferrer" className="bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-semibold hover:bg-green-300">Video {idx + 1}</a>
+                              {(pet.videos || pet.beforeMatingVideos || []).map((video, idx) => (
+                                <a 
+                                  href={video} 
+                                  key={idx} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold hover:opacity-80 ${
+                                    isMatingPet 
+                                      ? 'bg-purple-200 text-purple-800 hover:bg-purple-300' 
+                                      : 'bg-green-200 text-green-800 hover:bg-green-300'
+                                  }`}
+                                >
+                                  Video {idx + 1}
+                                </a>
                               ))}
                             </div>
                           </div>
@@ -291,17 +402,35 @@ const PetDetailsModal = ({
                     <div className="bg-gray-50 rounded-xl p-6 border">
                       <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
                         <LockClosedIcon className="h-6 w-6 text-gray-500" />
-                        Unlock Exclusive Details
+                        {isMatingPet ? 'Contact Breeder' : 'Unlock Exclusive Details'}
                       </h4>
-                       <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-6">
-                        <LockedFeature icon={UserCircleIcon} text="Breeder's Name" />
+                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-6">
+                        <LockedFeature icon={UserCircleIcon} text={isMatingPet ? "Breeder's Name" : "Owner's Name"} />
                         <LockedFeature icon={PhoneIcon} text="Contact Number" />
                         <LockedFeature icon={MapPinIcon} text="Exact Location & Address" />
                         <LockedFeature icon={ShieldCheckIcon} text="Vaccination Details & Proof" />
-                        <LockedFeature icon={VideoCameraIcon} text="Exclusive Videos" />
+                        <LockedFeature icon={VideoCameraIcon} text={isMatingPet ? "Mating Videos" : "Pet Videos"} />
                       </div>
-                      <button onClick={handlePayment} className={classNames("w-full text-white font-bold py-3 px-4 rounded-lg transition-transform text-base shadow-lg hover:shadow-xl", isAvailable ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:-translate-y-0.5" : "bg-gray-400 cursor-not-allowed")} disabled={isLoading || !isAvailable}>
-                        {isLoading ? "Processing..." : !isAvailable ? "Pet is Unavailable" : "Pay to Unlock"}
+                      <button 
+                        onClick={handlePayment} 
+                        className={classNames(
+                          "w-full text-white font-bold py-3 px-4 rounded-lg transition-transform text-base shadow-lg hover:shadow-xl", 
+                          isAvailable 
+                            ? isMatingPet 
+                              ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:-translate-y-0.5" 
+                              : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:-translate-y-0.5" 
+                            : "bg-gray-400 cursor-not-allowed"
+                        )} 
+                        disabled={isLoading || !isAvailable}
+                      >
+                        {isLoading 
+                          ? "Processing..." 
+                          : !isAvailable 
+                            ? "Pet is Unavailable" 
+                            : isMatingPet 
+                              ? "Pay to Contact Breeder" 
+                              : "Pay to Unlock Pet Details"
+                        }
                       </button>
                     </div>
                   )}
@@ -318,41 +447,93 @@ const PetDetailsModal = ({
 // Pet Card Component with Limited Information
 const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
   const isWishlisted = wishlist.includes(pet._id);
-  const isAvailable = pet.status === "Available";
-  const sampleImages = pet.images && pet.images.length > 0 ? pet.images : [pet.imageUrl].filter(Boolean);
+  const isAvailable = pet.status === "Available" || pet.status === "available";
+  const isMatingPet = pet.petType === "mating";
+  
+  const sampleImages = pet.images && pet.images.length > 0 
+    ? pet.images 
+    : [pet.imageUrl].filter(Boolean);
 
   return (
     <div
       onClick={isAvailable ? () => onViewDetails(pet) : (e) => e.preventDefault()}
       className={classNames(
-        "group relative rounded-2xl overflow-hidden shadow-lg border border-gray-200/80 transition-all duration-300 bg-white",
+        "group relative rounded-2xl overflow-hidden shadow-lg border transition-all duration-300 bg-white",
+        isMatingPet 
+          ? "border-purple-300 hover:border-purple-500" 
+          : "border-gray-200/80 hover:border-indigo-300",
         isAvailable ? "hover:shadow-2xl hover:-translate-y-1.5 cursor-pointer" : "opacity-60 grayscale"
       )}
     >
+      {/* Pet Type Badge */}
+      <div className={`absolute top-3 left-3 z-10 px-3 py-1 text-xs font-bold rounded-full ${
+        isMatingPet 
+          ? "bg-purple-600 text-white" 
+          : "bg-indigo-600 text-white opacity-0"
+      }`}>
+        {isMatingPet ? "Mating" : "Adoption"}
+      </div>
+      
       <div className="relative">
         <ImageCarousel images={sampleImages} className="h-72" />
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 via-black/40 to-transparent">
-          <h3 className="text-xl font-bold text-white leading-tight">{pet.name}</h3>
-          <p className="text-sm text-white/90">{pet.breed}</p>
+          <h3 className="text-xl font-bold text-white leading-tight">
+            {isMatingPet ? `${pet.breed || pet.breedName} (Mating)` : pet.name}
+          </h3>
+          <p className="text-sm text-white/90">
+            {isMatingPet 
+              ? `${pet.gender}, ${pet.age} years${pet.petQuality ? `, ${pet.petQuality}` : ''}` 
+              : pet.breed}
+          </p>
         </div>
       </div>
 
       <div className="p-4 flex justify-between items-center">
         <div>
-          <p className="text-xl font-bold text-gray-800">₹{pet.price.toLocaleString('en-IN')}</p>
-          <span className={classNames(
-              "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold mt-1",
-              isAvailable ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-          )}>
-            {isAvailable ? "Available" : "Sold"}
-          </span>
+          {/* Only show price for regular pets */}
+          {!isMatingPet && (
+            <p className="text-xl font-bold text-gray-800">
+              ₹{typeof pet.price === 'number' ? pet.price.toLocaleString('en-IN') : pet.price}
+            </p>
+          )}
+          
+          <div className="flex flex-wrap gap-2 mt-1">
+            {/* Status badge */}
+            <span className={classNames(
+              "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
+              isAvailable ? 
+                (isMatingPet ? "bg-purple-100 text-purple-800" : "bg-green-100 text-green-800") : 
+                "bg-gray-100 text-gray-800"
+            )}>
+              {isAvailable ? (isMatingPet ? "Available for Mating" : "Available") : "Unavailable"}
+            </span>
+            
+            {/* Pet location badge */}
+            {pet.location && (
+              <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-blue-700">
+                {pet.location}
+              </span>
+            )}
+            
+            {/* PetQuality badge for mating pets */}
+            {isMatingPet && pet.petQuality && (
+              <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-purple-50 text-purple-700">
+                {pet.petQuality}
+              </span>
+            )}
+          </div>
         </div>
+        
         <button
           onClick={(e) => { e.stopPropagation(); onAddToWishlist(pet._id); }}
-          className="p-2.5 rounded-full bg-gray-100 text-gray-600 hover:text-red-500 transition-all duration-300 hover:bg-red-50"
-          aria-label="Add to wishlist"
+          className={`p-2.5 rounded-full transition-all duration-300 ${
+            isWishlisted 
+              ? "bg-red-50 text-red-500" 
+              : "bg-gray-100 text-gray-600 hover:text-red-500 hover:bg-red-50"
+          }`}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
-          <HeartIconSolid className={`h-6 w-6 ${isWishlisted ? "text-red-500" : ""}`} />
+          <HeartIconSolid className="h-6 w-6" />
         </button>
       </div>
     </div>
@@ -365,7 +546,8 @@ export default function PetStore() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userData, setUserData] = useState([]);
-
+  const [sortOption, setSortOption] = useState("all"); // "all", "adoption", "mating"
+  
   // Add state for pet details modal
   const [selectedPet, setSelectedPet] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -373,6 +555,7 @@ export default function PetStore() {
   // Add state for wishlist
   const [wishlist, setWishlist] = useState([]);
   const [payments, setPayments] = useState([]);
+  
   // 1. Store userData from localStorage
   useEffect(() => {
     const userdata = JSON.parse(localStorage.getItem("user"));
@@ -384,12 +567,22 @@ export default function PetStore() {
     }
   }, []);
 
+  // Filtered pets based on sort option
+  const filteredPets = useMemo(() => {
+    if (sortOption === "all") return pets;
+    if (sortOption === "adoption") return pets.filter(p => p.petType !== "mating");
+    if (sortOption === "mating") return pets.filter(p => p.petType === "mating");
+    return pets;
+  }, [pets, sortOption]);
+
   // Fetch user's wishlist
   useEffect(() => {
     const fetchWishlist = async () => {
       if (!userData?._id) return; // Make sure we wait for the user ID
 
       try {
+        setLoading(true);
+        // Fetch wishlist IDs
         const response = await axios.get(
           `${config.baseURL}/api/user/getallwishlist/${userData._id}`
         );
@@ -397,30 +590,98 @@ export default function PetStore() {
         setWishlist(wishlistPetIds);
 
         if (wishlistPetIds.length > 0) {
-            const petDetailsPromises = wishlistPetIds.map((petId) =>
-            axios.get(`${config.baseURL}/api/aboutpet/pet/${petId}`)
-            );
-            const petDetailsResponses = await Promise.all(petDetailsPromises);
-            const petDetails = petDetailsResponses.map((res) => res.data);
-            setPets(petDetails);
+          // Create an array to store pet details
+          const petDetails = [];
+          
+          // Process each pet ID one by one to avoid failing the entire batch if one fails
+          for (const petId of wishlistPetIds) {
+            try {
+              // First check if pet exists and what type it is
+              const existsRes = await axios.get(`${config.baseURL}/api/user/checkPetExists/${petId}`);
+              
+              if (existsRes.data.exists) {
+                // Fetch pet details based on model type
+                if (existsRes.data.modelType === "AboutPet") {
+                  // Regular pet
+                  const res = await axios.get(`${config.baseURL}/api/aboutpet/pet/${petId}`);
+                  if (res.data) {
+                    // Add a type identifier
+                    petDetails.push({
+                      ...res.data,
+                      petType: "regular"
+                    });
+                  }
+                } else if (existsRes.data.modelType === "MatingPet") {
+                  // Mating pet - fetch from mating pets API
+                  try {
+                    const matingRes = await axios.get(`${config.baseURL}/api/matingpets/pet/${petId}`);
+                    if (matingRes.data) {
+                      // Format mating pet data to match structure expected by PetCard
+                      const formattedMatingPet = {
+                        _id: matingRes.data._id,
+                        name: matingRes.data.breedName || "Mating Pet",
+                        breed: matingRes.data.breedName,
+                        breedName: matingRes.data.breedName,
+                        images: matingRes.data.photosAndVideos || [],
+                        photosAndVideos: matingRes.data.photosAndVideos || [],
+                        price: matingRes.data.price || 0,
+                        petQuality: matingRes.data.petQuality,
+                        age: matingRes.data.age,
+                        gender: matingRes.data.gender,
+                        status: matingRes.data.availability === "available" ? "Available" : "Unavailable",
+                        availability: matingRes.data.availability,
+                        petType: "mating", // Add type identifier
+                        details: matingRes.data.breedLineage || "",
+                        breedLineage: matingRes.data.breedLineage || "",
+                        location: matingRes.data.location,
+                        phoneNum: matingRes.data.phoneNum,
+                        breederName: matingRes.data.breederName,
+                        shopAddress: matingRes.data.shopAddress,
+                        vaccinationDetails: matingRes.data.vaccinationDetails,
+                        vaccinationProof: matingRes.data.vaccinationProof,
+                        beforeMatingVideos: matingRes.data.beforeMatingVideos || []
+                      };
+                      petDetails.push(formattedMatingPet);
+                    }
+                  } catch (matingErr) {
+                    console.log(`Error fetching mating pet ${petId}:`, matingErr.message);
+                  }
+                }
+              } else {
+                console.log(`Pet with ID ${petId} no longer exists in any model`);
+              }
+            } catch (err) {
+              console.log(`Error processing pet ID ${petId}:`, err.message);
+            }
+          }
+          
+          setPets(petDetails);
         } else {
-            setPets([]);
+          setPets([]);
         }
 
-        const resp = await axios.get(
-          `${config.baseURL}/api/payments/getallpayments/${userData._id}`
-        );
-        setPayments(resp.data);
+        try {
+          // Fetch payment information
+          const paymentResp = await axios.get(
+            `${config.baseURL}/api/payments/getallpayments/${userData._id}`
+          );
+          setPayments(paymentResp.data);
+        } catch (paymentErr) {
+          console.error("Error fetching payment data:", paymentErr);
+          setPayments([]);
+        }
       } catch (err) {
         console.error("Error fetching wishlist:", err);
         setError("Failed to load your wishlist. Please try again later.");
+        setPets([]);
+        setWishlist([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchWishlist();
-  }, [userData]); 
+  }, [userData]);
 
   const handleAddToWishlist = async (petId) => {
     try {
@@ -451,6 +712,10 @@ export default function PetStore() {
     setSelectedPet(pet);
     setIsDetailsModalOpen(true);
   };
+
+  // Pet counts
+  const matingPetsCount = useMemo(() => pets.filter(p => p.petType === "mating").length, [pets]);
+  const regularPetsCount = useMemo(() => pets.filter(p => p.petType !== "mating").length, [pets]);
 
   return (
     <div className="bg-white">
@@ -483,14 +748,62 @@ export default function PetStore() {
         </Dialog>
 
         <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h1 className="text-5xl font-extrabold tracking-tight text-gray-900">
               Your Wishlist
             </h1>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-500">
-              The special pets you've saved. Click a pet to see more details, or click the heart to remove it.
+              Your collection of saved pets for adoption and mating services.
             </p>
+            
+            {!loading && pets.length > 0 && (
+              <div className="mt-6 flex flex-wrap justify-center gap-4">
+                <span className="text-sm text-gray-500">
+                  {regularPetsCount} pets for adoption • {matingPetsCount} mating pets
+                </span>
+              </div>
+            )}
           </div>
+          
+          {!loading && pets.length > 0 && (
+            <div className="mb-8 flex justify-center">
+              <div className="inline-flex rounded-md shadow-sm" role="group">
+                <button
+                  type="button"
+                  onClick={() => setSortOption("all")}
+                  className={`px-4 py-2 text-sm font-medium ${
+                    sortOption === "all"
+                      ? "bg-indigo-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  } border border-gray-200 rounded-l-lg`}
+                >
+                  All Pets
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortOption("adoption")}
+                  className={`px-4 py-2 text-sm font-medium ${
+                    sortOption === "adoption"
+                      ? "bg-indigo-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  } border-t border-b border-gray-200`}
+                >
+                  Adoption
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortOption("mating")}
+                  className={`px-4 py-2 text-sm font-medium ${
+                    sortOption === "mating"
+                      ? "bg-purple-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  } border border-gray-200 rounded-r-lg`}
+                >
+                  Mating
+                </button>
+              </div>
+            </div>
+          )}
 
           <section aria-labelledby="products-heading">
             <h2 id="products-heading" className="sr-only">
@@ -513,7 +826,7 @@ export default function PetStore() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-y-10 gap-x-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {pets.map((pet) => (
+                {filteredPets.map((pet) => (
                   <PetCard
                     key={pet._id}
                     pet={pet}

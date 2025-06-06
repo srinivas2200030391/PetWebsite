@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Routes, Route, Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Carsoule from "../components/Carsoule";
@@ -22,16 +23,80 @@ import {
 
 const Home = () => {
   const [setCartCount] = useState(0);
+  const [comingFromLogin, setComingFromLogin] = useState(false);
   const userId = 1;
+  
+  // Check if we're coming from login page
+  useEffect(() => {
+    const fromLogin = localStorage.getItem("comingFromLogin") === "true";
+    console.log("Home mounted, comingFromLogin:", fromLogin);
+    
+    if (fromLogin) {
+      setComingFromLogin(true);
+      // Give a small delay before removing the flag
+      setTimeout(() => {
+        localStorage.removeItem("comingFromLogin");
+        console.log("Removed comingFromLogin flag from localStorage");
+      }, 500);
+    }
+  }, []);
+  
   const updateCartCount = (newCount) => {
     setCartCount(newCount);
   };
 
+  // Cloud animation variants for exit
+  const cloudOverlayVariants = {
+    visible: { 
+      opacity: 1,
+    },
+    hidden: { 
+      opacity: 0,
+      transition: { duration: 2.5, ease: "easeOut" }
+    }
+  };
+
+  // Container variants for home content scaling
+  const homeContainerVariants = {
+    initial: { 
+      scale: comingFromLogin ? 0.85 : 1, 
+      opacity: comingFromLogin ? 0 : 1 
+    },
+    animate: { 
+      scale: 1, 
+      opacity: 1, 
+      transition: { 
+        delay: comingFromLogin ? 1.5 : 0,
+        duration: comingFromLogin ? 2 : 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  console.log("Home render, comingFromLogin state:", comingFromLogin);
+
   return (
-    <div className="min-h-screen bg-white py-16">
+    <motion.div 
+      className="min-h-screen bg-white py-16"
+      variants={homeContainerVariants}
+      initial="initial"
+      animate="animate"
+    >
+      <AnimatePresence>
+        {comingFromLogin && (
+          <motion.div 
+            className="fixed inset-0 bg-white z-[9999]"
+            variants={cloudOverlayVariants}
+            initial="visible"
+            animate="hidden"
+            exit={{ opacity: 0 }}
+          />
+        )}
+      </AnimatePresence>
+      
       <div className="container mx-auto px-4">
         <Routes>
-          <Route path="/" element={<HomeDashboard />} />
+          <Route path="/" element={<HomeDashboard comingFromLogin={comingFromLogin} />} />
           <Route
             path="/cart"
             element={<Cart userId={userId} updateCartCount={updateCartCount} />}
@@ -41,13 +106,13 @@ const Home = () => {
           <Route path="/profile" element={<MyProfile />} />
         </Routes>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 const heroSlides = [
   {
-    image: "https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=2762&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "https://images.unsplash.com/photo-1622968422511-643849144666?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     title: "Find Your Furry Soulmate",
     subtitle: "Healthy, Happy, and Vetted Pets",
   },
@@ -63,9 +128,33 @@ const heroSlides = [
   }
 ];
 
-const HomeDashboard = () => {
+const HomeDashboard = ({ comingFromLogin }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideInterval = useRef();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: comingFromLogin ? 0.4 : 0.2,
+        duration: 0.8,
+        delay: comingFromLogin ? 2 : 0,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 40, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { 
+        duration: comingFromLogin ? 1.2 : 0.5, 
+        ease: "easeOut" 
+      },
+    },
+  };
 
   const nextSlide = () => {
     setCurrentSlide(prev => (prev === heroSlides.length - 1 ? 0 : prev + 1));
@@ -115,9 +204,14 @@ const HomeDashboard = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-y-24 py-8 ">
+    <motion.div 
+      className="flex flex-col gap-y-24 py-8 "
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Hero Section - A new redesign */}
-      <section className="relative h-[80vh] w-full overflow-hidden rounded-3xl shadow-2xl">
+      <motion.section variants={itemVariants} className="relative h-[50vh] md:h-[80vh] w-full overflow-hidden rounded-3xl shadow-2xl">
         <div 
           className="absolute inset-0 flex transition-transform duration-700 ease-in-out"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -125,8 +219,8 @@ const HomeDashboard = () => {
           onMouseLeave={startSlideTimer}
         >
           {heroSlides.map((slide, index) => (
-            <div key={index} className="relative h-full w-full flex-shrink-0">
-              <img src={slide.image} alt={slide.title} className="h-full w-full object-cover" />
+            <div key={index} className="relative h-full w-full flex-shrink-0 flex items-center justify-center overflow-hidden">
+              <img src={slide.image} alt={slide.title} className="absolute inset-0 h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20" />
             </div>
           ))}
@@ -140,7 +234,7 @@ const HomeDashboard = () => {
             <p className="text-lg md:text-xl text-white/90 mb-8">
               {heroSlides[currentSlide].subtitle}
             </p>
-            <div className="flex flex-wrap gap-4 justify-center">
+            <div className="flex flex-wrap gap-2 justify-center">
               <Link to="/Petshop" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                 Explore Pets for Sale <ArrowRightIcon className="h-5 w-5" />
               </Link>
@@ -158,7 +252,7 @@ const HomeDashboard = () => {
           <ChevronRightIcon className="h-6 w-6" />
         </button>
 
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5">
           {heroSlides.map((_, index) => (
             <button 
               key={index} 
@@ -167,10 +261,10 @@ const HomeDashboard = () => {
             />
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* Main Services Section - Redesigned to match the hero */}
-      <section className="container mx-auto px-4">
+      <motion.section variants={itemVariants} className="container mx-auto px-4">
         <div className="text-center mb-16">
           <span className="bg-blue-100 text-blue-800 text-sm font-medium px-4 py-1.5 rounded-full">Premium Services</span>
           <h2 className="text-4xl font-bold text-gray-900 mt-4 mb-4">Our Featured Services</h2>
@@ -204,10 +298,10 @@ const HomeDashboard = () => {
             </div>
           </Link>
         </div>
-      </section>
+      </motion.section>
 
       {/* Why Choose Us Section - Redesigned */}
-      <section className="py-20 bg-white">
+      <motion.section variants={itemVariants} className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div className="relative">
@@ -255,10 +349,10 @@ const HomeDashboard = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Special Launch Discounts - Redesigned */}
-      <section className="py-20 bg-gray-50 rounded-3xl">
+      <motion.section variants={itemVariants} className="py-20 bg-gray-50 rounded-3xl">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <span className="bg-red-100 text-red-800 text-sm font-medium px-4 py-1.5 rounded-full">Hot Deals</span>
@@ -288,10 +382,10 @@ const HomeDashboard = () => {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
       
       {/* CTA Section */}
-      <section className="container mx-auto px-4 py-16">
+      <motion.section variants={itemVariants} className="container mx-auto px-4 py-16">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/20">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-2/3 p-8 md:p-12 text-center md:text-left">
@@ -320,8 +414,8 @@ const HomeDashboard = () => {
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 };
 

@@ -57,7 +57,7 @@ const App = () => {
           <Routes>
             {/* Private Routes */}
             <Route
-              path="/home*"
+              path="/home/*"
               element={
                 <PrivateRoute>
                   <Home />

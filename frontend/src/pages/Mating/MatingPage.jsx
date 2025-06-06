@@ -91,6 +91,7 @@ export default function MatingPage() {
 
   const [userData, setUserData] = useState(null);
   const [wishlist, setWishlist] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [selectedPet, setSelectedPet] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
@@ -109,12 +110,12 @@ export default function MatingPage() {
     debounce(async () => {
       if (pendingToastRef.current) toast.dismiss(pendingToastRef.current);
       pendingToastRef.current = toast.loading("Fetching mating pets...");
-      setLoading(true);
+    setLoading(true);
       setError(null);
-      try {
+    try {
         const response = await axios.get(`${config.baseURL}/api/matingpets/all`);
         const petsFromApi = response.data;
-        
+
         // No need to normalize data - use the mating pet data directly
         setAllFetchedPets(petsFromApi);
 
@@ -132,7 +133,7 @@ export default function MatingPage() {
           { id: "petQuality", name: "Quality" },
           { id: "location", name: "Location" },
         ];
-        
+
         const newDynamicFilters = filterFields.map(field => {
           const uniqueValues = [...new Set(petsFromApi.map(p => p[field.id]).filter(Boolean).sort())];
           return {
@@ -143,7 +144,7 @@ export default function MatingPage() {
         }).filter(f => f.options.length > 0);
         
         setDynamicFilters(newDynamicFilters);
-      } catch (err) {
+    } catch (err) {
         setError("Could not load mating pets. Please try again.");
         toast.error("Failed to fetch mating pets.");
       } finally {
@@ -208,15 +209,31 @@ export default function MatingPage() {
 
   useEffect(() => {
     if (!userData?._id) return;
-    const fetchWishlist = async () => {
+    
+    // Combine fetching wishlist and payments
+    const fetchWishlistAndPayments = async () => {
       try {
-        const wishlistRes = await axios.get(`${config.baseURL}/api/user/getallwishlist/${userData._id}`);
+        // Use Promise.all to fetch both in parallel
+        const [wishlistRes, paymentsRes] = await Promise.all([
+          axios.get(`${config.baseURL}/api/user/getallwishlist/${userData._id}`),
+          axios.get(`${config.baseURL}/api/payments/getallpayments/${userData._id}`)
+        ]);
+        
+        // Set wishlist data
         setWishlist(wishlistRes.data || []);
+        
+        // Extract pet IDs from payment data
+        const paidPetIds = paymentsRes.data.map(payment => payment.petId);
+        setPayments(paidPetIds || []);
       } catch (err) {
+        console.error("Error fetching wishlist or payments:", err);
         setWishlist([]);
+        setPayments([]);
+        toast.error("Could not load your wishlist or payment data.");
       }
     };
-    fetchWishlist();
+    
+    fetchWishlistAndPayments();
   }, [userData]);
 
   const handleCategoryChange = useCallback((categoryValue) => {
@@ -242,11 +259,28 @@ export default function MatingPage() {
 
   const handleSearchQueryChange = (e) => setSearchQuery(e.target.value);
   const handleViewDetails = (pet) => { setSelectedPet(pet); setIsDetailsModalOpen(true); };
-  
+
+  const handlePaymentComplete = (petId) => {
+    if (!payments.includes(petId)) {
+      setPayments(prev => [...prev, petId]);
+    }
+  };
+
   const handleAddToWishlist = async (petId) => {
-    if (!userData?._id) { toast.error("Please log in to add to wishlist."); return; }
     try {
-      await axios.put(`${config.baseURL}/api/user/updatewishlist`, { userId: userData._id, wishListId: petId });
+      if (!userData?._id) {
+        toast.error("Please log in to add to wishlist");
+        return;
+      }
+
+      const userId = userData._id;
+      // Make API call to update wishlist
+      await axios.put(`${config.baseURL}/api/user/updatewishlist`, {
+        userId,
+        wishListId: petId,
+      });
+      
+      // Update local wishlist state
       const isCurrentlyWishlisted = wishlist.includes(petId);
       if (isCurrentlyWishlisted) {
         setWishlist(prev => prev.filter(id => id !== petId));
@@ -256,7 +290,8 @@ export default function MatingPage() {
         toast.success("Added to wishlist!");
       }
     } catch (err) {
-      toast.error("Could not update wishlist.");
+      console.error("Error updating wishlist:", err);
+      toast.error("Couldn't update wishlist. Please try again.");
     }
   };
 
@@ -307,7 +342,7 @@ export default function MatingPage() {
         <DialogBackdrop className="fixed inset-0 bg-black bg-opacity-25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0" />
         <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 transform transition duration-300 ease-in-out data-[closed]:translate-x-full">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900">Filters</h2>
+                <h2 className="text-lg font-medium text-gray-900">Filters</h2>
             <button type="button" className="-m-2.5 p-2.5 text-gray-700" onClick={() => setMobileFiltersOpen(false)}><XMarkIcon className="h-6 w-6" /></button>
           </div>
           <div className="mt-6 flow-root">
@@ -357,8 +392,8 @@ export default function MatingPage() {
         <div className="border-b border-gray-200 pb-8 pt-16 md:pt-20">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Find a Mate for Your Pet</h1>
           <p className="mt-4 text-lg text-gray-500">Browse available pets for mating or use filters to find the perfect match.</p>
-        </div>
-        
+              </div>
+
         <div className="pt-8 pb-24 lg:grid lg:grid-cols-4 lg:gap-x-8">
           <aside className="hidden lg:block">
             <h2 className="sr-only">Filters</h2>
@@ -389,26 +424,26 @@ export default function MatingPage() {
                         <DisclosureButton className="flex w-full items-center justify-between bg-white py-3 text-sm text-gray-400 hover:text-gray-500">
                           <span className="font-medium text-gray-900">{section.name}</span>
                           <span className="ml-6 flex items-center">{open ? <MinusIcon className="h-5 w-5" /> : <PlusIcon className="h-5 w-5" />}</span>
-                        </DisclosureButton>
-                      </h3>
-                      <DisclosurePanel className="pt-6">
+                      </DisclosureButton>
+                    </h3>
+                    <DisclosurePanel className="pt-6">
                         <div className="space-y-4">
                           {section.options.map(option => (
                             <div key={`desktop-${section.id}-${option.value}`} className="flex items-center">
                               <input id={`desktop-filter-${section.id}-${option.value}`} name={`${section.id}[]`} value={option.value} type="checkbox" checked={!!(selectedFilters[section.id]?.[option.value])} onChange={(e) => handleFilterChange(section.id, option.value, e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                               <label htmlFor={`desktop-filter-${section.id}-${option.value}`} className="ml-4 text-sm font-medium text-gray-700 cursor-pointer">{option.label}</label>
-                            </div>
-                          ))}
-                        </div>
-                      </DisclosurePanel>
+                          </div>
+                        ))}
+                      </div>
+                    </DisclosurePanel>
                     </>
                   )}
-                </Disclosure>
-              ))}
+                  </Disclosure>
+                ))}
               <div className="pt-6">
                 <button onClick={clearAllFilters} className="w-full flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">Clear All Filters</button>
               </div>
-            </div>
+          </div>
           </aside>
 
           <div className="lg:col-span-3">
@@ -416,29 +451,29 @@ export default function MatingPage() {
               <div className="text-sm text-gray-500">
                 {loading ? "Loading..." : `${displayedPets.length} mating pet${displayedPets.length === 1 ? "" : "s"} found`}
               </div>
-              <div className="flex items-center">
-                <Menu as="div" className="relative inline-block text-left">
+            <div className="flex items-center">
+              <Menu as="div" className="relative inline-block text-left">
                   <MenuButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
                     Sort: {currentSort.name}
                     <ChevronDownIcon className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" />
                   </MenuButton>
                   <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <div className="py-1">
+                  <div className="py-1">
                       {sortOptions.map(option => (
-                        <MenuItem key={option.name}>
+                      <MenuItem key={option.name}>
                           {({ active }) => (
                             <button onClick={() => handleSortChange(option)} className={classNames(option.current ? 'font-medium text-indigo-600' : 'text-gray-500', active ? 'bg-gray-100' : '', 'block w-full text-left px-4 py-2 text-sm')}>{option.name}</button>
                           )}
-                        </MenuItem>
-                      ))}
-                    </div>
-                  </MenuItems>
-                </Menu>              
+                      </MenuItem>
+                    ))}
+                  </div>
+                </MenuItems>
+              </Menu>
                 <button type="button" onClick={() => setMobileFiltersOpen(true)} className="-m-2 ml-4 p-2 text-gray-400 hover:text-gray-500 lg:hidden">
                   <FunnelIcon className="h-5 w-5" />
-                </button>
-              </div>
+              </button>
             </div>
+          </div>
 
             {activeFilterObjects().length > 0 && (
               <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -447,7 +482,7 @@ export default function MatingPage() {
                   <span key={`${tag.id}-${tag.value}`} className="inline-flex items-center gap-x-1.5 rounded-full bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">
                     {tag.label}
                     <button type="button" onClick={() => removeFilterTag(tag)} className="-mr-0.5 h-3.5 w-3.5 rounded-full text-indigo-500 hover:bg-indigo-200"><XCircleIcon className="h-4 w-4"/></button>
-                  </span>
+                        </span>
                 ))}
                 <button onClick={clearAllFilters} className="text-xs text-gray-500 hover:text-indigo-600 underline">Clear all</button>
               </div>
@@ -462,8 +497,8 @@ export default function MatingPage() {
                       <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                       <div className="h-6 bg-gray-200 rounded w-1/2"></div>
                       <div className="h-8 bg-gray-200 rounded w-full"></div>
-                    </div>
-                  ))}
+                          </div>
+                        ))}
                 </motion.div>
               ) : !loading && displayedPets.length === 0 ? (
                 <motion.div key="no-results" className="text-center py-12">
@@ -474,7 +509,7 @@ export default function MatingPage() {
                     <button onClick={clearAllFilters} type="button" className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                       Clear All Filters
                     </button>
-                  </div>
+                      </div>
                 </motion.div>
               ) : (
                 <motion.div
@@ -486,28 +521,34 @@ export default function MatingPage() {
                 >
                   {displayedPets.map(pet => (
                     <MatingPetCard 
-                      key={pet._id} 
-                      pet={pet} 
-                      onViewDetails={handleViewDetails} 
-                      onAddToWishlist={handleAddToWishlist} 
-                      wishlist={wishlist} 
-                    />
-                  ))}
+                          key={pet._id}
+                          pet={pet}
+                          onViewDetails={handleViewDetails}
+                          onAddToWishlist={handleAddToWishlist}
+                          wishlist={wishlist}
+                        />
+                      ))}
                 </motion.div>
               )}
             </AnimatePresence>
             {error && <p className="text-red-500 text-center mt-4">Error: {error}</p>}
-          </div>
-        </div>
-      </main>
-      <MatingDetailsModal 
-        pet={selectedPet} 
-        isOpen={isDetailsModalOpen} 
-        onClose={() => setIsDetailsModalOpen(false)} 
-        onAddToWishlist={handleAddToWishlist} 
-        wishlist={wishlist} 
-        userId={userData?._id} 
-      />
+              </div>
+            </div>
+        </main>
+      <AnimatePresence>
+        {isDetailsModalOpen && selectedPet && (
+          <MatingDetailsModal
+            pet={selectedPet}
+            isOpen={isDetailsModalOpen}
+            onClose={() => setIsDetailsModalOpen(false)}
+            wishlist={wishlist}
+            payments={payments}
+            userId={userData?._id}
+            onAddToWishlist={handleAddToWishlist}
+            onPaymentComplete={handlePaymentComplete}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

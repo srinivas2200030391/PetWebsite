@@ -1,58 +1,105 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Typography,
-  Input,
-  Button,
-} from "@material-tailwind/react";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "../store/useAuthstore";
 import { useStore } from "../store/store";
 import toast from "react-hot-toast";
 import axios from "axios";
 import config from "../../config";
-import { CpuChipIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
-// Add animation variants
-const cardAnimation = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.4,
-      type: "spring",
-      bounce: 0.3,
-    },
-  },
+// Animation variants for the form
+const formVariants = {
+  hidden: { opacity: 0, x: -50 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  exit: { 
+    scale: 0.8, 
+    opacity: 0, 
+    transition: { duration: 0.5, ease: "easeInOut" }
+  }
 };
 
-export default function LoginCard() {
+// Animation variants for the image panel
+const imageVariants = {
+  hidden: { opacity: 0, x: 50 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.2 } },
+  exit: { 
+    scale: 0.8, 
+    opacity: 0, 
+    transition: { duration: 0.5, ease: "easeInOut" }
+  }
+};
+
+// Cloud animation variants
+const cloudOverlayVariants = {
+  hidden: { 
+    clipPath: `circle(0% at 50% 50%)`, 
+    opacity: 0 
+  },
+  visible: { 
+    clipPath: `circle(150% at 50% 50%)`, 
+    opacity: 1,
+    transition: { 
+      clipPath: { duration: 2, ease: "easeInOut" },
+      opacity: { duration: 1, ease: "easeOut" }
+    }
+  }
+};
+
+export default function LoginPage() {
   const navigate = useNavigate();
-  const { isLoggingIn } = useAuthStore();
+  const { isLoggingIn, setAuthUser } = useAuthStore();
   const login = useStore((state) => state.login);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [transitionState, setTransitionState] = useState("initial"); // "initial", "scaling", "clouds", "navigating"
+
+  // Cleanup effect to handle navigation away during transition
+  useEffect(() => {
+    return () => {
+      // If component unmounts during transition, clean up
+      if (transitionState === "scaling" || transitionState === "clouds") {
+        console.log("Login component unmounted during transition, cleaning up");
+        // Check if we actually completed auth before removing
+        if (!localStorage.getItem("user")) {
+          localStorage.removeItem("comingFromLogin");
+        }
+      }
+    };
+  }, [transitionState]);
 
   const handleInputChange = (event) => {
-    const { name, value, type, checked } = event.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const { name, value } = event.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  // Begin the transition sequence
+  const startTransition = () => {
+    console.log("Starting login transition sequence");
+    // Set the flag FIRST to ensure it's available when Home mounts
+    localStorage.setItem("comingFromLogin", "true");
+    
+    setTransitionState("scaling");
+    
+    // After the form scales down, show the clouds
+    setTimeout(() => {
+      console.log("Starting cloud animation");
+      setTransitionState("clouds");
+      
+      // After the clouds fill the screen, navigate
+      setTimeout(() => {
+        console.log("Navigating to home");
+        navigate("/home");
+      }, 2000); // Extended cloud animation duration to 2 seconds
+    }, 1000); // Extended scale animation duration to 1 second
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.email || !formData.password) {
+      return toast.error("Please enter both email and password.");
+    }
     setLoading(true);
     try {
       const res = await axios.post(
@@ -61,152 +108,167 @@ export default function LoginCard() {
         { withCredentials: true }
       );
       localStorage.setItem("user", JSON.stringify(res.data));
-      console.log("Login response:", res.data.data);
-      login(res.data.data); // Update the store with the user data
-      toast.success("User logged in successfully!");
-      location.reload();
-      navigate("/home");
+      setAuthUser(res.data);
+      login(res.data.data);
+      toast.success("Login successful! Welcome back.");
+      // Start transition sequence instead of navigating immediately
+      startTransition();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Login failed");
-    } finally {
+      toast.error(err.response?.data?.message || "Login failed. Please check your credentials.");
       setLoading(false);
     }
   };
 
   return (
-    <section className="px-8 min-h-screen bg-blue-gray-900 flex items-center justify-center">
-      <div className="container mx-auto h-screen grid place-items-center">
-        <motion.div
-          variants={cardAnimation}
-          initial="hidden"
-          animate="visible"
-        >
-          <Card
-            shadow={false}
-            className="md:px-24 md:py-14 py-8 border border-gray-300"
+    <div className="relative min-h-screen">
+      <AnimatePresence>
+        {transitionState === "clouds" && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-white"
+            variants={cloudOverlayVariants}
+            initial="hidden"
+            animate="visible"
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        className="flex min-h-screen bg-white"
+        initial={{ opacity: 1 }}
+        animate={{ 
+          opacity: transitionState === "scaling" || transitionState === "clouds" ? 0.8 : 1,
+          scale: transitionState === "scaling" || transitionState === "clouds" ? 0.9 : 1,
+        }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+      >
+        {/* Left Panel: Form */}
+        <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+          <motion.div 
+            variants={formVariants}
+            initial="hidden"
+            animate={transitionState === "initial" ? "visible" : "exit"}
+            className="mx-auto w-full max-w-sm lg:w-96"
           >
-            <CardHeader shadow={false} floated={false} className="text-center">
-              <Typography
-                variant="h1"
-                color="blue-gray"
-                className="mb-4 !text-3xl lg:text-4xl"
-              >
+            <div>
+              <Link to="/home">
+                <span className="text-3xl font-bold text-gray-900 tracking-tight">The Pet Shop</span>
+              </Link>
+              <h2 className="mt-8 text-3xl font-bold leading-9 tracking-tight text-gray-900">
                 Welcome Back
-              </Typography>
-              <Typography className="!text-gray-600 text-[18px] font-normal md:max-w-sm">
-                Sign in to access your account and continue your pet journey.
-              </Typography>
-            </CardHeader>
-            <CardBody>
-              <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-4 md:mt-12"
-              >
-                <div>
-                  <label htmlFor="email">
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="block font-medium mb-2"
-                    >
-                      Your Email
-                    </Typography>
-                  </label>
-                  <Input
-                    id="email"
-                    color="gray"
-                    size="lg"
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="name@mail.com"
-                    className="w-full placeholder:opacity-100 focus:border-t-primary border-t-blue-gray-200"
-                    labelProps={{
-                      className: "hidden",
-                    }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="password">
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="block font-medium mb-2"
-                    >
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-gray-500">
+                Don't have an account?{' '}
+                <Link to="/signup" className="font-semibold text-blue-600 hover:text-blue-500">
+                  Sign up
+                </Link>
+              </p>
+            </div>
+
+            <div className="mt-10">
+              <div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+                      Email address
+                    </label>
+                    <div className="mt-2">
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
                       Password
-                    </Typography>
-                  </label>
-                  <Input
-                    id="password"
-                    color="gray"
-                    size="lg"
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="••••••••"
-                    className="w-full focus:border-t-primary border-t-blue-gray-200"
-                    labelProps={{
-                      className: "hidden",
-                    }}
-                    required
-                  />
+                    </label>
+                    <div className="mt-2 relative">
+                      <input
+                        id="password"
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete="current-password"
+                        required
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeSlashIcon className="h-5 w-5"/> : <EyeIcon className="h-5 w-5"/>}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm leading-6">
+                      <a href="#" className="font-semibold text-blue-600 hover:text-blue-500">
+                        Forgot password?
+                      </a>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:bg-blue-300 transition-all duration-300"
+                    >
+                      {loading ? "Signing in..." : "Sign in"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="mt-10">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="w-full border-t border-gray-200" />
+                  </div>
+                  <div className="relative flex justify-center text-sm font-medium leading-6">
+                    <span className="bg-white px-6 text-gray-500">Or continue with</span>
+                  </div>
                 </div>
 
-                <Button
-                  size="lg"
-                  color="gray"
-                  fullWidth
-                  type="submit"
-                  disabled={loading}
-                >
-                  {loading ? "Signing in..." : "Continue"}
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  size="lg"
-                  className="flex h-12 border-blue-gray-200 items-center justify-center gap-2"
-                  fullWidth
-                >
-                  <img
-                    src="https://www.material-tailwind.com/logos/logo-google.png"
-                    alt="google"
-                    className="h-6 w-6"
-                  />
-                  Sign in with Google
-                </Button>
-
-                <Typography
-                  variant="small"
-                  className="text-center mx-auto max-w-[19rem] !font-medium !text-gray-600"
-                >
-                  Don&apos;t have an account?{" "}
-                  <Link to="/signup" className="text-gray-900 font-bold">
-                    Sign up
-                  </Link>
-                </Typography>
-
-                <Typography
-                  variant="small"
-                  className="text-center mx-auto max-w-[19rem] !font-medium !text-gray-600"
-                >
-                  By signing in, you agree to our{" "}
-                  <a href="#" className="text-gray-900">
-                    Terms of Service
-                  </a>{" "}
-                  &{" "}
-                  <a href="#" className="text-gray-900">
-                    Privacy Policy
+                <div className="mt-6">
+                  <a
+                    href="#"
+                    className="flex w-full items-center justify-center gap-3 rounded-md border bg-white px-3 py-2 text-sm font-semibold text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:ring-transparent"
+                  >
+                    <img src="https://www.material-tailwind.com/logos/logo-google.png" alt="Google" className="h-5 w-5" />
+                    <span className="text-sm font-semibold leading-6">Google</span>
                   </a>
-                </Typography>
-              </form>
-            </CardBody>
-          </Card>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Right Panel: Image */}
+        <motion.div 
+          variants={imageVariants}
+          initial="hidden"
+          animate={transitionState === "initial" ? "visible" : "exit"}
+          className="relative hidden w-0 flex-1 lg:block"
+        >
+          <img
+            className="absolute inset-0 h-full w-full object-cover"
+            src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=2874&auto=format&fit=crop"
+            alt="Happy dog looking up"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"/>
         </motion.div>
-      </div>
-    </section>
+      </motion.div>
+    </div>
   );
 }

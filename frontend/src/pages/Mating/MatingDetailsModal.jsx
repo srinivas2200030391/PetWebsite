@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
@@ -52,18 +52,145 @@ const MatingDetailsModal = ({
   onClose,
   wishlist,
   userId,
+  payments = [],
   onAddToWishlist,
+  onPaymentComplete,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [contactVisible, setContactVisible] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(false);
+  const RAZORPAY_KEY_ID = "rzp_test_BbYHp3Xn5nnaxa";
+
+  // Calculate if pet is in wishlist and if payment has been made
+  const isWishlisted = wishlist?.includes(pet?._id) || false;
+  const hasPaid = payments?.includes(pet?._id) || false;
+
+  useEffect(() => {
+    if (!window.Razorpay) {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => {
+        setRazorpayLoaded(true);
+      };
+      script.onerror = () => {
+        toast.error("Couldn't load payment gateway");
+      };
+      document.body.appendChild(script);
+    } else {
+      setRazorpayLoaded(true);
+    }
+  }, []);
+
+  // Set contact visible if already paid
+  useEffect(() => {
+    if (hasPaid) {
+      setContactVisible(true);
+    }
+  }, [hasPaid]);
 
   if (!pet) return null;
-  const isWishlisted = wishlist.includes(pet._id);
   
   // Images for carousel
   const imagesForCarousel = Array.isArray(pet.photosAndVideos) && pet.photosAndVideos.length > 0
     ? pet.photosAndVideos
     : [];
+
+  const handlePayment = async () => {
+    if (!razorpayLoaded) {
+      toast.error("Payment system is still loading. Please wait a moment");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Create an order for the mating service
+      const { data } = await axios.post(
+        `${config.baseURL}/api/payments/create`,
+        {
+          amount: pet.price || 2500,
+          currency: "INR",
+          receipt: `rcpt_mating_${pet._id.slice(-6)}_${Date.now()
+            .toString()
+            .slice(-6)}`,
+          userId,
+          petId: pet._id,
+          serviceType: "mating",
+        }
+      );
+
+      if (!data.success) {
+        throw new Error(data.message || "Order creation failed");
+      }
+
+      const { order } = data;
+
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Pet Mating Service",
+        description: `Mating Service for ${pet.breedName}`,
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            const verifyRes = await axios.post(
+              `${config.baseURL}/api/payments/verify`,
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                userId,
+                petId: pet._id,
+                serviceType: "mating",
+              }
+            );
+
+            if (verifyRes.data.success) {
+              toast.success("Payment successful!");
+              setPaymentStatus(true);
+              setContactVisible(true);
+              
+              // Notify parent component about successful payment
+              if (onPaymentComplete) {
+                onPaymentComplete(pet._id);
+              }
+            } else {
+              toast.error("Payment verification failed");
+            }
+          } catch (err) {
+            console.error("Verification error:", err);
+            toast.error("Couldn't verify payment");
+          } finally {
+            setIsLoading(false);
+          }
+        },
+        prefill: {
+          name: "Customer",
+          email: "customer@example.com",
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#7C3AED",
+        },
+        modal: {
+          ondismiss: () => {
+            setIsLoading(false);
+            toast("You closed the payment window");
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error("Payment error:", err);
+      toast.error("Something went wrong with the payment");
+      setIsLoading(false);
+    }
+  };
 
   const handleContactRequest = async () => {
     if (!userId) {
@@ -71,20 +198,13 @@ const MatingDetailsModal = ({
       return;
     }
     
-    setIsLoading(true);
-    
-    try {
-      // This is a placeholder for any API call you might want to make
-      // to record the contact request or notify the breeder
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+    if (hasPaid) {
       setContactVisible(true);
       toast.success("Contact information revealed!");
-    } catch (err) {
-      toast.error("Could not process your request. Please try again.");
-    } finally {
-      setIsLoading(false);
+      return;
     }
+    
+    handlePayment();
   };
 
   return (
@@ -353,37 +473,27 @@ const MatingDetailsModal = ({
                       </div>
 
                       <div className="flex gap-2">
-                        {!contactVisible && (
-                          <button
-                            onClick={handleContactRequest}
-                            disabled={isLoading}
-                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2">
-                            {isLoading ? (
-                              <>
-                                <svg
-                                  className="animate-spin h-5 w-5 text-white"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24">
-                                  <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"></circle>
-                                  <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <span>Processing</span>
-                              </>
-                            ) : (
-                              "Show Contact Info"
-                            )}
-                          </button>
-                        )}
+                        <button
+                          onClick={handleContactRequest}
+                          disabled={isLoading}
+                          className={`w-full flex justify-center items-center rounded-lg ${
+                            hasPaid ? "bg-green-600 hover:bg-green-700" : "bg-indigo-600 hover:bg-indigo-500"
+                          } px-4 py-3 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:bg-gray-300`}
+                        >
+                          {isLoading ? (
+                            <>
+                              <span className="mr-2">Processing...</span>
+                              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            </>
+                          ) : hasPaid ? (
+                            "View Contact Information"
+                          ) : (
+                            "Pay to Contact Breeder"
+                          )}
+                        </button>
                         <button
                           onClick={() => onAddToWishlist(pet._id)}
                           className={`${contactVisible ? 'flex-1' : ''} border py-3 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 ${
@@ -431,12 +541,15 @@ MatingDetailsModal.propTypes = {
     shopAddress: PropTypes.string,
     vendor: PropTypes.object,
     vaccinationDetails: PropTypes.string,
+    price: PropTypes.number,
   }),
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   wishlist: PropTypes.arrayOf(PropTypes.string),
   userId: PropTypes.string,
+  payments: PropTypes.arrayOf(PropTypes.string),
   onAddToWishlist: PropTypes.func.isRequired,
+  onPaymentComplete: PropTypes.func,
 };
 
 export default MatingDetailsModal; 
