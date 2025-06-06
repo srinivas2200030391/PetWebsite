@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { useAuthStore } from '../pages/store/useAuthstore';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   UserCircleIcon,
   InboxIcon,
@@ -17,7 +17,6 @@ function classNames(...classes) {
 
 export default function ProfileMenu() {
   const { logout } = useAuthStore();
-  const navigate = useNavigate();
   const [userName, setUserName] = useState('User');
   const [userEmail, setUserEmail] = useState('');
   
@@ -29,11 +28,6 @@ export default function ProfileMenu() {
       setUserEmail(userData.data.email || '');
     }
   }, []);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
 
   const menuItems = [
     { name: 'My Profile', href: '/home/profile', icon: UserCircleIcon },
@@ -124,8 +118,9 @@ export default function ProfileMenu() {
               <div className="py-2 bg-gray-50">
                 <Menu.Item>
                   {({ active }) => (
-                    <button
-                      onClick={handleLogout}
+                    <a
+                      href="/"
+                      onClick={logout}
                       className={classNames(
                         active ? 'bg-red-50' : '',
                         'w-full flex items-center gap-3 px-6 py-2.5 text-sm transition-colors duration-150 ease-in-out'
@@ -140,7 +135,7 @@ export default function ProfileMenu() {
                       <span className={active ? "text-red-700 font-medium" : "text-gray-700"}>
                         Sign Out
                       </span>
-                    </button>
+                    </a>
                   )}
                 </Menu.Item>
               </div>

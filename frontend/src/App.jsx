@@ -35,6 +35,7 @@ import PrivateRoute from "./components/PrivateRoute"; // 🍭 import it
 import MyPet from './pages/My_Pet/MyPet';
 import PetDetails from './pages/My_Pet/PetDetails';
 import PetHealth from './pages/My_Pet/PetHealth';
+import ScrollToTop from "./components/ScrollToTop";
 
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
@@ -281,14 +282,8 @@ const App = () => {
             />
     
             {/* Public Routes */}
-            <Route
-              path="/"
-              element={!authUser ? <Intro /> : <Navigate to="/home" />}
-            />
-            <Route
-              path="/intro"
-              element={!authUser ? <Intro /> : <Navigate to="/home" />}
-            />
+            <Route path="/" element={<Intro />} />
+            <Route path="/intro" element={<Intro />} />
             <Route
               path="/login"
               element={!authUser ? <Login /> : <Navigate to="/home" />}
@@ -312,6 +307,7 @@ const App = () => {
 export default function AppWrapper() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <App />
     </BrowserRouter>
   );

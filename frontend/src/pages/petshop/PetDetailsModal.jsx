@@ -316,13 +316,7 @@ const PetDetailsModal = ({
                         <span className="bg-blue-200 text-blue-900 text-xs font-bold px-2.5 py-1 rounded-full">
                           ID: {pet.petId || pet._id?.substring(0, 8) || "N/A"}
                         </span>
-                        {pet.status && (
-                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                            pet.status === "available" ? "bg-green-500 text-white" : "bg-gray-500 text-white"
-                          }`}>
-                            {pet.status.charAt(0).toUpperCase() + pet.status.slice(1)}
-                          </span>
-                        )}
+                        
                       </div>
                       <h1 className="text-2xl font-bold text-white">
                         {pet.breed || "Unknown Breed"}
@@ -345,8 +339,8 @@ const PetDetailsModal = ({
                     </div>
                     <div className="flex items-start gap-4">
                       {pet.price && (
-                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                          <p className="text-xs text-white/80">Price</p>
+                        <div className="bg-white/10 backdrop-blur-sm flex md:flex-row flex-col items-center justify-center gap-2 rounded-lg px-4 py-2">
+                          <p className="text-xs text-white/80">Price :</p>
                           <p className="text-xl font-bold text-white">₹{pet.price}</p>
                         </div>
                       )}

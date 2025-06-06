@@ -110,7 +110,6 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(res.data));
       setAuthUser(res.data);
       login(res.data.data);
-      toast.success("Login successful! Welcome back.");
       
       // Clean, direct approach - no transition animations
       navigate("/home");
@@ -151,18 +150,12 @@ export default function LoginPage() {
             className="mx-auto w-full max-w-sm lg:w-96"
           >
             <div>
-              <Link to="/home">
-                <span className="text-3xl font-bold text-gray-900 tracking-tight">The Pet Shop</span>
+              <Link to="/">
+                <span className="text-3xl font-bold text-gray-900 tracking-tight">PETZU</span>
               </Link>
               <h2 className="mt-8 text-3xl font-bold leading-9 tracking-tight text-gray-900">
                 Welcome Back
               </h2>
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                Don't have an account?{' '}
-                <Link to="/signup" className="font-semibold text-blue-600 hover:text-blue-500">
-                  Sign up
-                </Link>
-              </p>
             </div>
 
             <div className="mt-10">
@@ -229,6 +222,12 @@ export default function LoginPage() {
                     </button>
                   </div>
                 </form>
+                <p className="mt-2 text-sm leading-6 text-gray-500 text-center">
+                Don't have an account?{' '}
+                <Link to="/signup" className="font-semibold text-blue-600 hover:text-blue-500">
+                  Sign up
+                </Link>
+              </p>
               </div>
 
               <div className="mt-10">

@@ -45,11 +45,6 @@ const MatingPetCard = ({ pet = { photosAndVideos: [] }, onAddToWishlist, onViewD
     >
       <div className="relative aspect-[4/3]">
         <ImageCarousel images={petImages} />
-        <div 
-          className={`absolute top-3 right-3 px-2.5 py-1 text-xs font-semibold rounded-full border transition-all duration-200 ease-in-out ${statusStyles} ${isHovering && hasMultipleImages ? "opacity-0 translate-y-1" : "opacity-100 translate-y-0"}`}
-        >
-          {isAvailable ? "Available" : "Unavailable"}
-        </div>
         <AnimatePresence>
           {isHovering && (
             <motion.div 

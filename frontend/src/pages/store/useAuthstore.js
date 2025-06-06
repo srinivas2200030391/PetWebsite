@@ -62,7 +62,6 @@ export const useAuthStore = create((set, get) => ({
     try {
       localStorage.removeItem("user");
       localStorage.removeItem("authData");
-      set({ authUser: null });
 
       // Call backend to clear the HttpOnly cookie
       await fetch(`${config.baseURL}/api/auth/logout`, {
@@ -70,8 +69,7 @@ export const useAuthStore = create((set, get) => ({
         credentials: "include", // 💌 ensures cookies are sent
       });
 
-      toast.success("Logged out, sweetness 🍓");
-      window.location.href = "/login";
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Logout failed, love 💔");

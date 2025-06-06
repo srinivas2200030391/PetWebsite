@@ -9,7 +9,12 @@ export default withMT({
     "path-to-your-node_modules/@material-tailwind/react/theme/components/**/*.{js,ts,jsx,tsx}",
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],  theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['"DM Serif Display"', 'serif'],
+        serif: ['"DM Serif Display"', 'serif'],
+      },
+    },
   },
   darkMode: "class",
   plugins: [nextui({

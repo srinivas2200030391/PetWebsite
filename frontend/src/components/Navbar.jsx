@@ -113,21 +113,21 @@ const NavLinks = () => {
   const location = useLocation();
   const navItems = [
     { name: 'Home', href: '/home' },
-    { name: 'Pet Shop', href: '/petshop' },
-    { name: 'Mating', href: '/matingpage' },
+    { name: 'Buy Pet', href: '/petshop' },
+    { name: 'Adult Mating', href: '/matingpage' },
     { name: 'My Pets', href: '/my-pets' },
-  ];
+  ]
 
   return (
-    <div className="hidden lg:flex items-center gap-2">
+    <div className="hidden lg:flex items-center gap-2 ml-auto">
       {navItems.map((item) => (
         <Link
           key={item.name}
           to={item.href}
           className={classNames(
-            'px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200',
+            'px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-full',
             location.pathname === item.href
-              ? 'bg-blue-50 text-blue-600 shadow-sm'
+              ? 'bg-red-50 text-black shadow-sm'
               : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
           )}
         >
@@ -205,12 +205,12 @@ export default function Navbar() {
                 {/* Logo on the left */}
                 <Link to="/home" className="flex-shrink-0 transition-all duration-200 hover:opacity-80">
                   <span className="text-2xl font-bold text-gray-900 tracking-tight">
-                    The Pet Shop
+                    PETZU
                   </span>
                 </Link>
 
                 {/* Centered Navigation Links */}
-                <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center lg:gap-8">
+                <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center mx-auto lg:gap-8">
                   <NavLinks />
                 </div>
 

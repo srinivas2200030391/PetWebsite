@@ -139,18 +139,12 @@ export default function SignupPage() {
             className="mx-auto w-full max-w-sm lg:w-96"
           >
             <div>
-              <Link to="/home">
-                <span className="text-3xl font-bold text-gray-900 tracking-tight">The Pet Shop</span>
+              <Link to="/">
+                <span className="text-3xl font-bold text-gray-900 tracking-tight">PETZU</span>
               </Link>
               <h2 className="mt-8 text-3xl font-bold leading-9 tracking-tight text-gray-900">
                 Create an account
               </h2>
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                Already have an account?{' '}
-                <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-500">
-                  Sign in
-                </Link>
-              </p>
             </div>
 
             <div className="mt-10">
@@ -173,6 +167,12 @@ export default function SignupPage() {
                 </button>
               </form>
 
+              <p className="mt-2 text-sm leading-6 text-gray-500 text-center">
+                Already have an account?{' '}
+                <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-500">
+                  Sign in
+                </Link>
+              </p>
               <div className="mt-8">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>

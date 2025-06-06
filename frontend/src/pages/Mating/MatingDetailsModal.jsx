@@ -346,13 +346,7 @@ const MatingDetailsModal = ({
                         <span className="bg-purple-200 text-purple-900 text-xs font-bold px-2.5 py-1 rounded-full">
                           ID: {pet.vendorId || pet._id?.substring(0, 8) || "N/A"}
                         </span>
-                        {pet.availability && (
-                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                            pet.availability === "available" ? "bg-green-500 text-white" : "bg-gray-500 text-white"
-                          }`}>
-                            {pet.availability.charAt(0).toUpperCase() + pet.availability.slice(1)}
-                          </span>
-                        )}
+                        
                       </div>
                       <h1 className="text-2xl font-bold text-white">
                         {pet.breedName || "Unknown Breed"}
