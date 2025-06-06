@@ -292,7 +292,7 @@ const HomeDashboard = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <span className="bg-red-100 text-red-800 text-sm font-medium px-4 py-1.5 rounded-full">Hot Deals</span>
-            <h2 className="text-4xl font-bold text-gray-900 mt-4 mb-4">Special Launch Discounts</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mt-4 mb-4">Upcoming Special Launch Discounts</h2>
             <p className="text-gray-600 max-w-2xl mx-auto text-lg">
               Limited time offers on our entire range of premium pet products.
             </p>

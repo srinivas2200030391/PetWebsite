@@ -1,15 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
-import { HeartIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { HeartIcon, XMarkIcon, ShieldCheckIcon, ArrowRightIcon, CheckCircleIcon, PhotoIcon, DocumentTextIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import config from "../../config";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import ImageCarousel from "./ImageCarousel";
 import PropTypes from "prop-types";
 
 // Pet Details Modal
-
 const backdropAnimation = {
   hidden: { opacity: 0 },
   visible: {
@@ -25,7 +24,7 @@ const backdropAnimation = {
 const modalAnimation = {
   hidden: {
     opacity: 0,
-    scale: 0.8,
+    scale: 0.95,
     y: 20,
   },
   visible: {
@@ -34,18 +33,128 @@ const modalAnimation = {
     y: 0,
     transition: {
       duration: 0.4,
-      scale: { type: "spring", bounce: 0.5 },
-      ease: "easeOut",
+      ease: [0.22, 1, 0.36, 1],
     },
   },
   exit: {
     opacity: 0,
-    scale: 0.8,
+    scale: 0.95,
     y: 20,
     transition: {
       duration: 0.3,
     },
   },
+};
+
+const contentAnimation = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (custom) => ({
+    opacity: 1,
+    y: 0,
+    transition: { 
+      delay: custom * 0.1,
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }),
+};
+
+// Enhanced ImageCarousel with auto-rotate functionality
+const AutoRotatingCarousel = ({ images }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const timerRef = useRef(null);
+  
+  const resetTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    if (images && images.length > 1) {
+      timerRef.current = setInterval(() => {
+        setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
+      }, 4000);
+    }
+  };
+  
+  useEffect(() => {
+    resetTimer();
+    return () => clearInterval(timerRef.current);
+  }, [images]);
+
+  const handlePrev = () => {
+    setCurrentIndex(prevIndex => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
+    resetTimer();
+  };
+
+  const handleNext = () => {
+    setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
+    resetTimer();
+  };
+
+  const handleDotClick = (index) => {
+    setCurrentIndex(index);
+    resetTimer();
+  };
+  
+  if (!images || images.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+        <PhotoIcon className="h-16 w-16 text-gray-300" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-full overflow-hidden group">
+      <AnimatePresence initial={false} mode="wait">
+        <motion.img
+          key={currentIndex}
+          src={images[currentIndex]}
+          alt={`Pet image ${currentIndex + 1}`}
+          className="w-full h-full object-cover"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        />
+      </AnimatePresence>
+      
+      {/* Navigation Buttons */}
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={handlePrev}
+            className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white transition hover:bg-black/50 opacity-0 group-hover:opacity-100 focus:outline-none"
+            aria-label="Previous image"
+          >
+            <ChevronLeftIcon className="h-5 w-5" />
+          </button>
+          <button
+            onClick={handleNext}
+            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white transition hover:bg-black/50 opacity-0 group-hover:opacity-100 focus:outline-none"
+            aria-label="Next image"
+          >
+            <ChevronRightIcon className="h-5 w-5" />
+          </button>
+        </>
+      )}
+
+      {/* Navigation dots */}
+      {images.length > 1 && (
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+          {images.map((_, idx) => (
+            <button 
+              key={idx} 
+              onClick={() => handleDotClick(idx)}
+              className={`h-2 rounded-full transition-all ${
+                currentIndex === idx ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/75'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const PetDetailsModal = ({
@@ -60,7 +169,9 @@ const PetDetailsModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(false);
+  const [activeTab, setActiveTab] = useState('details');
   const RAZORPAY_KEY_ID = "rzp_test_BbYHp3Xn5nnaxa";
+  
   useEffect(() => {
     if (!window.Razorpay) {
       const script = document.createElement("script");
@@ -68,10 +179,9 @@ const PetDetailsModal = ({
       script.async = true;
       script.onload = () => {
         setRazorpayLoaded(true);
-        console.log("Razorpay loaded, sugar 🧁");
       };
       script.onerror = () => {
-        toast.error("Couldn't load payment gateway, sweetie 😢");
+        toast.error("Couldn't load payment gateway");
       };
       document.body.appendChild(script);
     } else {
@@ -90,11 +200,10 @@ const PetDetailsModal = ({
   } else if (pet.imageUrl) {
     imagesForCarousel = [pet.imageUrl];
   }
-  // If imagesForCarousel is empty, ImageCarousel component will use its own default placeholder
 
   const handlePayment = async () => {
     if (!razorpayLoaded) {
-      toast.error("Hold on, darling! Payment system is still loading 🥺");
+      toast.error("Payment system is still loading. Please wait a moment");
       return;
     }
 
@@ -124,8 +233,8 @@ const PetDetailsModal = ({
         key: RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
-        name: "Pet Adoption Center 💕",
-        description: `Adopt ${pet.name}`,
+        name: "Pet Adoption Center",
+        description: `Adopt ${pet.name || pet.breed}`,
         order_id: order.id,
         handler: async function (response) {
           try {
@@ -137,20 +246,19 @@ const PetDetailsModal = ({
                 razorpay_signature: response.razorpay_signature,
                 userId,
                 petId: pet._id,
-
               }
             );
 
             if (verifyRes.data.success) {
-              toast.success("Paw-fect! Payment successful 🐾💸");
+              toast.success("Payment successful!");
               setPaymentStatus(true);
               hasPaid = true;
             } else {
-              toast.error("Oops! Verification failed, sweetpea 😢");
+              toast.error("Payment verification failed");
             }
           } catch (err) {
             console.error("Verification error:", err);
-            toast.error("Uh-oh! Couldn't verify payment, honey 🍯");
+            toast.error("Couldn't verify payment");
           } finally {
             setIsLoading(false);
           }
@@ -161,12 +269,12 @@ const PetDetailsModal = ({
           contact: "9999999999",
         },
         theme: {
-          color: "#7C3AED",
+          color: "#4F46E5",
         },
         modal: {
           ondismiss: () => {
             setIsLoading(false);
-            toast("You closed the payment window 😘");
+            toast("Payment window closed");
           },
         },
       };
@@ -175,690 +283,512 @@ const PetDetailsModal = ({
       rzp.open();
     } catch (err) {
       console.error("Payment error:", err);
-      toast.error("Something went wrong, cupcake 💔");
+      toast.error("Something went wrong with the payment");
       setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50 ">
-      {/* Backdrop with reduced opacity for a more subtle enterprise look */}
-      <motion.div
-        variants={{
-          hidden: { opacity: 0 },
-          visible: { opacity: 1 },
-          exit: { opacity: 0 },
-        }}
-        initial="hidden"
-        animate="visible"
-        exit="exit">
-        <DialogBackdrop className="fixed inset-0 bg-slate-900/40" />
-      </motion.div>
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <AnimatePresence>
+        <motion.div
+          variants={backdropAnimation}
+          initial="hidden"
+          animate="visible"
+          exit="exit">
+          <DialogBackdrop className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+        </motion.div>
 
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/10 bg-opacity-50 backdrop-blur-sm">
-        <div className="flex min-h-full items-center justify-center p-4">
-          <motion.div
-            variants={{
-              hidden: { opacity: 0, scale: 0.95 },
-              visible: { opacity: 1, scale: 1 },
-              exit: { opacity: 0, scale: 0.95 },
-            }}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="w-full max-w-4xl">
-            <DialogPanel className="mx-auto rounded-lg bg-white shadow-xl overflow-hidden">
-              {/* Header section with gradient background */}
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
-                <div className="flex justify-between items-center">
-                  <motion.h3
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-2xl font-semibold text-white">
-                    Pet Profile
-                  </motion.h3>
-                  <button
-                    onClick={onClose}
-                    className="p-1 rounded-full hover:bg-white/10 transition-colors">
-                    <XMarkIcon className="h-6 w-6 text-white" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200">
-                {/* Left column: Image carousel */}
-                <div className="md:col-span-1 p-4">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}>
-                    {/* Added a wrapper for aspect ratio */}
-                    <div className="w-full aspect-[4/3] rounded-lg overflow-hidden mb-4 bg-gray-100">
-                      <ImageCarousel images={imagesForCarousel} />
-                    </div>
-
-                    <div className="mt-6">
-                      <div className="flex items-center justify-between">
-                        <h2 className="mt-8 text-xl font-bold text-gray-900">
-                          {pet.breed}
-                        </h2>
-                      </div>
-                      <p className="text-lg font-semibold text-indigo-600 mt-1">
-                        ₹{pet.price}
-                      </p>
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* Middle column: Pet details */}
-                <div className="md:col-span-1 p-6">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="space-y-4">
-                    <h4 className="text-lg font-medium text-gray-900 pb-2 border-b border-gray-200">
-                      Pet Information
-                    </h4>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Breed
-                        </h5>
-                        <p className="text-sm font-medium">{pet.breed}</p>
-                      </div>
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Age
-                        </h5>
-                        <p className="text-sm font-medium">
-                          {pet.age} {pet.ageUnit || "years old"}
-                        </p>
-                      </div>
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500">
-                          Gender
-                        </h5>
-                        <p className="text-sm font-medium">{pet.gender}</p>
-                      </div>
-                      {pet.height && (
-                        <div>
-                          <h5 className="text-sm font-medium text-gray-500">
-                            Height
-                          </h5>
-                          <p className="text-sm font-medium">{pet.height}</p>
-                        </div>
-                      )}
-                      {pet.lifeSpan && (
-                        <div>
-                          <h5 className="text-sm font-medium text-gray-500">
-                            Lifespan
-                          </h5>
-                          <p className="text-sm font-medium">{pet.lifeSpan}</p>
-                        </div>
-                      )}
-                      {pet.petQuality && (
-                        <div>
-                          <h5 className="text-sm font-medium text-gray-500">
-                            Quality
-                          </h5>
-                          <p className="text-sm font-medium">{pet.petQuality}</p>
-                        </div>
-                      )}
-                      {pet.status && (
-                        <div>
-                          <h5 className="text-sm font-medium text-gray-500">
-                            Status
-                          </h5>
-                          <p className="text-sm font-medium">{pet.status}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="pt-4">
-                      <h5 className="text-sm font-medium text-gray-500 mb-1">
-                        Details
-                      </h5>
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        {pet.details || "No details available for this pet."}
-                      </p>
-                    </div>
-
-                    {pet.characteristics && (
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-500 mb-1">
-                          Characteristics
-                        </h5>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {pet.characteristics.split(",").map((trait, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
-                              {trait.trim()}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                </div>
-
-                {/* Right column: Premium details or call to action */}
-                <div className="md:col-span-1 p-6 bg-gray-50">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}>
-                    {!hasPaid ? (
-                      <div className="flex flex-col h-full">
-                        <div className="flex-grow">
-                          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-                            <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                              <span className="text-indigo-600">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor">
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 116 0z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              </span>
-                              Premium Information
-                            </h4>
-                            <p className="text-sm text-gray-600 mt-2">
-                              Unlock complete pet details including:
-                            </p>
-                            <ul className="mt-3 space-y-2">
-                              <li className="flex items-center text-sm text-gray-600">
-                                <svg
-                                  className="h-4 w-4 text-green-500 mr-2"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                                Contact information & location
-                              </li>
-                              <li className="flex items-center text-sm text-gray-600">
-                                <svg
-                                  className="h-4 w-4 text-green-500 mr-2"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                                Breeder documentation
-                              </li>
-                              <li className="flex items-center text-sm text-gray-600">
-                                <svg
-                                  className="h-4 w-4 text-green-500 mr-2"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                                Health & vaccination records
-                              </li>
-                              <li className="flex items-center text-sm text-gray-600">
-                                <svg
-                                  className="h-4 w-4 text-green-500 mr-2"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                                Video content & more
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-
-                        <div>
-                          <button
-                            onClick={handlePayment}
-                            disabled={isLoading}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2">
-                            {isLoading ? (
-                              <>
-                                <svg
-                                  className="animate-spin h-5 w-5 text-white"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24">
-                                  <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"></circle>
-                                  <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Processing...
-                              </>
-                            ) : (
-                              <>
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor">
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 116 0z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                                Unlock Complete Details
-                              </>
-                            )}
-                          </button>
-                          <div className="flex items-center justify-center mt-2">
-                            <button
-                              className="flex items-center text-gray-500 hover:text-indigo-600 text-sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onAddToWishlist(pet._id);
-                              }}>
-                              <HeartIcon
-                                className={`h-5 w-5 mr-1 transition-colors duration-200 ${
-                                  isWishlisted
-                                    ? "text-red-500"
-                                    : "text-gray-400"
-                                }`}
-                              />
-                              {isWishlisted
-                                ? "Saved to Wishlist"
-                                : "Add to Wishlist"}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-5">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-lg font-medium text-gray-900">
-                            Premium Details
-                          </h4>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Verified
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <motion.div
+              variants={modalAnimation}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="w-full max-w-5xl">
+              <DialogPanel className="mx-auto overflow-hidden rounded-2xl bg-white shadow-2xl">
+                {/* Modern header with pet info and close button */}
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="bg-blue-200 text-blue-900 text-xs font-bold px-2.5 py-1 rounded-full">
+                          ID: {pet.petId || pet._id?.substring(0, 8) || "N/A"}
+                        </span>
+                        {pet.status && (
+                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                            pet.status === "available" ? "bg-green-500 text-white" : "bg-gray-500 text-white"
+                          }`}>
+                            {pet.status.charAt(0).toUpperCase() + pet.status.slice(1)}
                           </span>
+                        )}
+                      </div>
+                      <h1 className="text-2xl font-bold text-white">
+                        {pet.breed || "Unknown Breed"}
+                      </h1>
+                      <div className="flex items-center text-white/80 mt-1">
+                        {pet.gender && <span>{pet.gender}</span>}
+                        {pet.age && (
+                          <>
+                            <span className="mx-2">•</span>
+                            <span>{pet.age} {pet.ageUnit || "years old"}</span>
+                          </>
+                        )}
+                        {pet.petQuality && (
+                          <>
+                            <span className="mx-2">•</span>
+                            <span>{pet.petQuality}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      {pet.price && (
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                          <p className="text-xs text-white/80">Price</p>
+                          <p className="text-xl font-bold text-white">₹{pet.price}</p>
+                        </div>
+                      )}
+                      <button
+                        onClick={onClose}
+                        className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+                      >
+                        <XMarkIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Tabs navigation */}
+                <div className="border-b border-gray-200">
+                  <div className="flex px-6">
+                    <button
+                      onClick={() => setActiveTab('details')}
+                      className={`py-4 px-4 relative ${
+                        activeTab === 'details' 
+                          ? 'text-indigo-600 font-medium' 
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Details
+                      {activeTab === 'details' && (
+                        <motion.div 
+                          layoutId="activeTab"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" 
+                        />
+                      )}
+                    </button>
+                    
+                    {hasPaid && (
+                      <button
+                        onClick={() => setActiveTab('contact')}
+                        className={`py-4 px-4 relative ${
+                          activeTab === 'contact' 
+                            ? 'text-indigo-600 font-medium' 
+                            : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Contact Info
+                        {activeTab === 'contact' && (
+                          <motion.div 
+                            layoutId="activeTab"
+                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" 
+                          />
+                        )}
+                      </button>
+                    )}
+                    
+                    {hasPaid && (
+                      <button
+                        onClick={() => setActiveTab('health')}
+                        className={`py-4 px-4 relative ${
+                          activeTab === 'health' 
+                            ? 'text-indigo-600 font-medium' 
+                            : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Health Records
+                        {activeTab === 'health' && (
+                          <motion.div 
+                            layoutId="activeTab"
+                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" 
+                          />
+                        )}
+                      </button>
+                    )}
+
+                    {hasPaid && pet.videos && pet.videos.length > 0 && (
+                      <button
+                        onClick={() => setActiveTab('media')}
+                        className={`py-4 px-4 relative ${
+                          activeTab === 'media' 
+                            ? 'text-indigo-600 font-medium' 
+                            : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Media
+                        {activeTab === 'media' && (
+                          <motion.div 
+                            layoutId="activeTab"
+                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" 
+                          />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tab content */}
+                <div className="p-6">
+                  <AnimatePresence mode="wait">
+                    {activeTab === 'details' && (
+                      <motion.div
+                        key="details"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                      >
+                        {/* Left column */}
+                        <div className="space-y-6">
+                          {/* Image carousel with auto-rotation */}
+                          <motion.div 
+                            custom={1}
+                            variants={contentAnimation}
+                            initial="hidden" 
+                            animate="visible"
+                            className="overflow-hidden rounded-lg border border-gray-200 shadow-sm bg-gray-50"
+                          >
+                            <div className="aspect-[4/3]">
+                              <AutoRotatingCarousel images={imagesForCarousel} />
+                            </div>
+                          </motion.div>
+                          
+                          {/* Characteristics */}
+                          {pet.characteristics && (
+                            <motion.div 
+                              custom={3}
+                              variants={contentAnimation}
+                              initial="hidden" 
+                              animate="visible"
+                            >
+                              <h3 className="text-lg font-medium text-gray-900 mb-3">Characteristics</h3>
+                              <div className="flex flex-wrap gap-2">
+                                {pet.characteristics.split(",").map((trait, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-full">
+                                    {trait.trim()}
+                                  </span>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
                         </div>
 
-                        {/* Organized sections with cards for better separation */}
-                        <div className="overflow-y-auto max-h-[400px] pr-2 space-y-4">
-                          {/* Section 1: Contact Information */}
-                          <div className="bg-white rounded-lg border border-green-200 shadow-sm">
-                            <div className="bg-green-50 px-4 py-2 border-b border-green-200 rounded-t-lg">
-                              <h3 className="text-sm font-semibold text-green-800 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Contact Information
+                        {/* Right column */}
+                        <div className="space-y-6">
+                          {/* Info grid */}
+                          <motion.div 
+                            custom={2}
+                            variants={contentAnimation}
+                            initial="hidden" 
+                            animate="visible"
+                          >
+                            <h3 className="text-lg font-medium text-gray-900 mb-3">Pet Information</h3>
+                            <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                              <dl className="divide-y divide-gray-200">
+                                {pet.breed && (
+                                  <div className="grid grid-cols-3 px-4 py-3">
+                                    <dt className="text-sm font-medium text-gray-500">Breed</dt>
+                                    <dd className="text-sm text-gray-900 col-span-2">{pet.breed}</dd>
+                                  </div>
+                                )}
+                                {pet.age && (
+                                  <div className="grid grid-cols-3 px-4 py-3">
+                                    <dt className="text-sm font-medium text-gray-500">Age</dt>
+                                    <dd className="text-sm text-gray-900 col-span-2">{pet.age} {pet.ageUnit || "years old"}</dd>
+                                  </div>
+                                )}
+                                {pet.gender && (
+                                  <div className="grid grid-cols-3 px-4 py-3">
+                                    <dt className="text-sm font-medium text-gray-500">Gender</dt>
+                                    <dd className="text-sm text-gray-900 col-span-2">{pet.gender}</dd>
+                                  </div>
+                                )}
+                                {pet.height && (
+                                  <div className="grid grid-cols-3 px-4 py-3">
+                                    <dt className="text-sm font-medium text-gray-500">Height</dt>
+                                    <dd className="text-sm text-gray-900 col-span-2">{pet.height}</dd>
+                                  </div>
+                                )}
+                                {pet.lifeSpan && (
+                                  <div className="grid grid-cols-3 px-4 py-3">
+                                    <dt className="text-sm font-medium text-gray-500">Lifespan</dt>
+                                    <dd className="text-sm text-gray-900 col-span-2">{pet.lifeSpan}</dd>
+                                  </div>
+                                )}
+                                {pet.petQuality && (
+                                  <div className="grid grid-cols-3 px-4 py-3">
+                                    <dt className="text-sm font-medium text-gray-500">Quality</dt>
+                                    <dd className="text-sm text-gray-900 col-span-2">{pet.petQuality}</dd>
+                                  </div>
+                                )}
+                              </dl>
+                            </div>
+                          </motion.div>
+                          
+                          {/* Pet details */}
+                          {pet.details && (
+                            <motion.div 
+                              custom={4}
+                              variants={contentAnimation}
+                              initial="hidden" 
+                              animate="visible"
+                            >
+                              <h3 className="text-lg font-medium text-gray-900 mb-3">Details</h3>
+                              <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                                <p className="text-sm text-gray-700">{pet.details}</p>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {!hasPaid && (
+                            <motion.div 
+                              custom={5}
+                              variants={contentAnimation}
+                              initial="hidden" 
+                              animate="visible"
+                              className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-5 text-white"
+                            >
+                              <h3 className="text-lg font-semibold flex items-center gap-2">
+                                <ShieldCheckIcon className="h-5 w-5" />
+                                Premium Information
                               </h3>
-                            </div>
-                            <div className="p-4 space-y-3">
-                              {pet.breederName && (
-                                <div className="flex items-start">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 text-gray-400 mr-2"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    />
-                                  </svg>
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-500">
-                                      Breeder
-                                    </h5>
-                                    <p className="text-sm text-gray-900">
-                                      {pet.breederName}
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
+                              <p className="mt-2 text-sm text-white/90">
+                                Unlock complete access to:
+                              </p>
+                              <ul className="mt-3 space-y-2">
+                                <li className="flex items-center text-sm">
+                                  <CheckCircleIcon className="h-4 w-4 mr-2 text-indigo-200" />
+                                  Contact information & location
+                                </li>
+                                <li className="flex items-center text-sm">
+                                  <CheckCircleIcon className="h-4 w-4 mr-2 text-indigo-200" />
+                                  Health & vaccination records
+                                </li>
+                                <li className="flex items-center text-sm">
+                                  <CheckCircleIcon className="h-4 w-4 mr-2 text-indigo-200" />
+                                  Video content & more
+                                </li>
+                              </ul>
+                            </motion.div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
 
-                              {pet.phoneNumber && (
-                                <div className="flex items-start">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 text-gray-400 mr-2"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                    />
-                                  </svg>
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-500">
-                                      Phone
-                                    </h5>
-                                    <p className="text-sm text-gray-900">
-                                      {pet.phoneNumber}
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
-
-                              {pet.location && (
-                                <div className="flex items-start">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 text-gray-400 mr-2"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                    />
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                    />
-                                  </svg>
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-500">
-                                      Location
-                                    </h5>
-                                    <p className="text-sm text-gray-900">
-                                      {pet.location}
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
-
-                              {pet.shopAddress && (
-                                <div className="flex items-start">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 text-gray-400 mr-2"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                    />
-                                  </svg>
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-500">
-                                      Shop Address
-                                    </h5>
-                                    <p className="text-sm text-gray-900">
-                                      {pet.shopAddress}
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                    {activeTab === 'contact' && hasPaid && (
+                      <motion.div
+                        key="contact"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-6"
+                      >
+                        <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-5">
+                          <h3 className="text-lg font-medium text-indigo-800 mb-4">Contact Information</h3>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {pet.breederName && (
+                              <div className="bg-white rounded-lg p-4 shadow-sm border border-indigo-100">
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">Breeder</h4>
+                                <p className="text-base text-gray-900">{pet.breederName}</p>
+                              </div>
+                            )}
+                            
+                            {pet.phoneNumber && (
+                              <div className="bg-white rounded-lg p-4 shadow-sm border border-indigo-100">
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">Phone</h4>
+                                <p className="text-base text-gray-900">{pet.phoneNumber}</p>
+                              </div>
+                            )}
+                            
+                            {pet.location && (
+                              <div className="bg-white rounded-lg p-4 shadow-sm border border-indigo-100">
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">Location</h4>
+                                <p className="text-base text-gray-900">{pet.location}</p>
+                              </div>
+                            )}
+                            
+                            {pet.shopAddress && (
+                              <div className="bg-white rounded-lg p-4 shadow-sm border border-indigo-100">
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">Shop Address</h4>
+                                <p className="text-base text-gray-900">{pet.shopAddress}</p>
+                              </div>
+                            )}
                           </div>
+                        </div>
+                      </motion.div>
+                    )}
 
-                          {/* Section 2: Health & Vaccinations */}
+                    {activeTab === 'health' && hasPaid && (
+                      <motion.div
+                        key="health"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-6"
+                      >
+                        <div className="bg-green-50 border border-green-100 rounded-lg p-5">
+                          <h3 className="text-lg font-medium text-green-800 mb-4">Health Records</h3>
+                          
                           {pet.vaccinationDetails && (
-                            <div className="bg-white rounded-lg border border-blue-200 shadow-sm">
-                              <div className="bg-blue-50 px-4 py-2 border-b border-blue-200 rounded-t-lg">
-                                <h3 className="text-sm font-semibold text-blue-800 flex items-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                  </svg>
-                                  Health & Vaccination
-                                </h3>
-                              </div>
-                              <div className="p-4">
-                                <h5 className="text-xs font-medium text-gray-500 mb-1">
-                                  Vaccination Details
-                                </h5>
-                                <p className="text-sm text-gray-700">
-                                  {pet.vaccinationDetails}
-                                </p>
-
-                                {pet.vaccinationProof && (
-                                  <a
-                                    href={pet.vaccinationProof}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center mt-3 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded-full">
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      className="h-4 w-4 mr-1"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor">
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                                      />
-                                    </svg>
-                                    View Vaccination Certificate
-                                  </a>
-                                )}
-                              </div>
+                            <div className="bg-white rounded-lg p-4 shadow-sm border border-green-100 mb-4">
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">Vaccination Details</h4>
+                              <p className="text-base text-gray-900">{pet.vaccinationDetails}</p>
+                              
+                              {pet.vaccinationProof && (
+                                <a
+                                  href={pet.vaccinationProof}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center mt-3 text-sm font-medium text-green-600 hover:text-green-800"
+                                >
+                                  <DocumentTextIcon className="h-4 w-4 mr-1" />
+                                  View Vaccination Certificate
+                                </a>
+                              )}
                             </div>
                           )}
-
-                          {/* Section 3: Media Gallery */}
-                          {pet.videos && pet.videos.length > 0 && (
-                            <div className="bg-white rounded-lg border border-purple-200 shadow-sm">
-                              <div className="bg-purple-50 px-4 py-2 border-b border-purple-200 rounded-t-lg">
-                                <h3 className="text-sm font-semibold text-purple-800 flex items-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                  </svg>
-                                  Media Gallery
-                                </h3>
-                              </div>
-                              <div className="p-4">
-                                <div className="grid grid-cols-1 gap-3">
-                                  {pet.videos.map((video, idx) => (
-                                    <a
-                                      key={idx}
-                                      href={video}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center bg-purple-50 border border-purple-100 rounded-lg px-4 py-2 hover:bg-purple-100 transition-colors text-purple-700">
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-5 w-5 mr-3 text-purple-500"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor">
-                                        <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                                        <path
-                                          fillRule="evenodd"
-                                          d="M10 18a2 2 0 002-2v-8a2 2 0 00-2-2V4a2 2 0 00-2 2v.5a1 1 0 001 1H9v10H8a1 1 0 00-1 1V17a2 2 0 002 2h1z"
-                                          clipRule="evenodd"
-                                        />
-                                      </svg>
-                                      <span className="flex-1">Pet Video {idx + 1}</span>
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                      </svg>
-                                    </a>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Section 4: Breed Information */}
+                          
                           {pet.breedLineage && (
-                            <div className="bg-white rounded-lg border border-amber-200 shadow-sm">
-                              <div className="bg-amber-50 px-4 py-2 border-b border-amber-200 rounded-t-lg">
-                                <h3 className="text-sm font-semibold text-amber-800 flex items-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                  </svg>
-                                  Breed Information
-                                </h3>
-                              </div>
-                              <div className="p-4">
-                                <h5 className="text-xs font-medium text-gray-500 mb-1">
-                                  Breed Lineage
-                                </h5>
-                                <p className="text-sm text-gray-700">
-                                  {pet.breedLineage}
-                                </p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Section 5: Vendor Information */}
-                          {(pet.vendor || pet.vendorId) && (
-                            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 rounded-t-lg">
-                                <h3 className="text-sm font-semibold text-gray-700 flex items-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                  </svg>
-                                  Vendor Information
-                                </h3>
-                              </div>
-                              <div className="p-4 space-y-3">
-                                {pet.vendor && (
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-500">
-                                      Vendor Reference
-                                    </h5>
-                                    <p className="text-sm text-gray-700">
-                                      {pet.vendor}
-                                    </p>
-                                  </div>
-                                )}
-                                {pet.vendorId && (
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-500">
-                                      Vendor ID
-                                    </h5>
-                                    <p className="text-sm text-gray-700">
-                                      {pet.vendorId}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
+                            <div className="bg-white rounded-lg p-4 shadow-sm border border-green-100">
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">Breed Lineage</h4>
+                              <p className="text-base text-gray-900">{pet.breedLineage}</p>
                             </div>
                           )}
                         </div>
+                      </motion.div>
+                    )}
 
-                        {/* Wishlist button at bottom */}
-                        <div className="pt-3 border-t border-gray-200">
-                          <button
-                            className="flex items-center text-gray-500 hover:text-indigo-600 text-sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAddToWishlist(pet._id);
-                            }}>
-                            <HeartIcon
-                              className={`h-5 w-5 mr-2 transition-colors duration-200 ${
-                                isWishlisted
-                                  ? "text-red-500 fill-red-500"
-                                  : "text-gray-400"
-                              }`}
-                            />
-                            {isWishlisted
-                              ? "Remove from Wishlist"
-                              : "Add to Wishlist"}
-                          </button>
+                    {activeTab === 'media' && hasPaid && pet.videos && pet.videos.length > 0 && (
+                      <motion.div
+                        key="media"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-6"
+                      >
+                        <div className="bg-purple-50 border border-purple-100 rounded-lg p-5">
+                          <h3 className="text-lg font-medium text-purple-800 mb-4">Media Gallery</h3>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {pet.videos.map((video, idx) => (
+                              <a
+                                key={idx}
+                                href={video}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center bg-white border border-purple-100 rounded-lg p-4 shadow-sm hover:bg-purple-50 transition-colors"
+                              >
+                                <div className="bg-purple-100 p-3 rounded-lg mr-4">
+                                  <PhotoIcon className="h-6 w-6 text-purple-600" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-gray-900">Pet Video {idx + 1}</p>
+                                  <p className="text-sm text-gray-500">Click to view</p>
+                                </div>
+                                <ArrowRightIcon className="h-5 w-5 text-purple-500 ml-auto" />
+                              </a>
+                            ))}
+                          </div>
                         </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Footer with actions */}
+                <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToWishlist(pet._id);
+                      }}
+                      className={`flex items-center justify-center px-4 py-2 rounded-lg border text-sm font-medium ${
+                        isWishlisted
+                          ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      <HeartIcon
+                        className={`h-5 w-5 mr-2 transition-colors ${
+                          isWishlisted ? "text-red-600 fill-red-500" : ""
+                        }`}
+                      />
+                      {isWishlisted ? "Saved to Wishlist" : "Add to Wishlist"}
+                    </button>
+                    
+                    {!hasPaid ? (
+                      <button
+                        onClick={handlePayment}
+                        disabled={isLoading}
+                        className="relative inline-flex items-center justify-center sm:px-8 px-6 py-2.5 rounded-lg overflow-hidden group bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-70"
+                      >
+                        <span className="relative flex items-center gap-2">
+                          {isLoading ? (
+                            <>
+                              <svg
+                                className="animate-spin h-5 w-5 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24">
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"></circle>
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <ShieldCheckIcon className="h-5 w-5" />
+                              Unlock Premium Details
+                            </>
+                          )}
+                        </span>
+                      </button>
+                    ) : (
+                      <div className="text-sm text-green-600 font-medium flex items-center">
+                        <CheckCircleIcon className="h-5 w-5 mr-1" />
+                        Premium access unlocked
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Footer */}
-              <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
-                <div className="text-sm text-gray-500">
-                  Pet Id: {pet.petId || pet._id || "N/A"}
-                </div>
-                <div className="flex space-x-2">
-                  <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                      />
-                    </svg>
-                    Share
-                  </button>
-                  <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    Schedule Visit
-                  </button>
-                </div>
-              </div>
-            </DialogPanel>
-          </motion.div>
+              </DialogPanel>
+            </motion.div>
+          </div>
         </div>
-      </div>
+      </AnimatePresence>
     </Dialog>
   );
 };
+
 PetDetailsModal.propTypes = {
   pet: PropTypes.object,
   isOpen: PropTypes.bool.isRequired,
