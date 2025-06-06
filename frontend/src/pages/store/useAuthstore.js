@@ -85,7 +85,12 @@ export const useAuthStore = create((set, get) => ({
         withCredentials: true,
       });
       if (res.data) {
-        set({ authUser: res.data });
+        // Update auth state synchronously
+        set({ authUser: res.data, ischeckingAuth: false });
+        
+        // Store in localStorage
+        localStorage.setItem("user", JSON.stringify(res.data));
+        
         toast.success("Logged in successfully");
         return true;
       }

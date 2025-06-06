@@ -514,68 +514,24 @@ const PetDetailsModal = ({
                           </span>
                         </div>
 
-                        {pet.videos?.length > 0 && (
-                          <div>
-                            <h5 className="text-sm font-medium text-gray-900 mb-1">
-                              Media Content
-                            </h5>
-                            <div className="space-y-2">
-                              {pet.videos.map((video, idx) => (
-                                <a
-                                  key={idx}
-                                  href={video}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="block bg-white border border-gray-200 rounded-md p-2 hover:bg-gray-50 transition-colors flex items-center text-blue-600 text-sm">
+                        {/* Organized sections with cards for better separation */}
+                        <div className="overflow-y-auto max-h-[400px] pr-2 space-y-4">
+                          {/* Section 1: Contact Information */}
+                          <div className="bg-white rounded-lg border border-green-200 shadow-sm">
+                            <div className="bg-green-50 px-4 py-2 border-b border-green-200 rounded-t-lg">
+                              <h3 className="text-sm font-semibold text-green-800 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                Contact Information
+                              </h3>
+                            </div>
+                            <div className="p-4 space-y-3">
+                              {pet.breederName && (
+                                <div className="flex items-start">
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 mr-2"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor">
-                                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M10 18a2 2 0 002-2v-8a2 2 0 00-2-2V4a2 2 0 00-2 2v.5a1 1 0 001 1H9v10H8a1 1 0 00-1 1V17a2 2 0 002 2h1z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                  Video {idx + 1}
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="space-y-4">
-                          {pet.breedLineage && (
-                            <div>
-                              <h5 className="text-sm font-medium text-gray-900">
-                                Breed Lineage
-                              </h5>
-                              <p className="text-sm text-gray-700">
-                                {pet.breedLineage}
-                              </p>
-                            </div>
-                          )}
-
-                          {pet.vaccinationDetails && (
-                            <div>
-                              <h5 className="text-sm font-medium text-gray-900">
-                                Vaccination Details
-                              </h5>
-                              <p className="text-sm text-gray-700">
-                                {pet.vaccinationDetails}
-                              </p>
-
-                              {pet.vaccinationProof && (
-                                <a
-                                  href={pet.vaccinationProof}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center mt-2 text-sm text-blue-600 hover:text-blue-800">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 mr-1"
+                                    className="h-5 w-5 text-gray-400 mr-2"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor">
@@ -583,152 +539,272 @@ const PetDetailsModal = ({
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
                                       strokeWidth={2}
-                                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                                     />
                                   </svg>
-                                  View Documentation
-                                </a>
+                                  <div>
+                                    <h5 className="text-xs font-medium text-gray-500">
+                                      Breeder
+                                    </h5>
+                                    <p className="text-sm text-gray-900">
+                                      {pet.breederName}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+
+                              {pet.phoneNumber && (
+                                <div className="flex items-start">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 text-gray-400 mr-2"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                    />
+                                  </svg>
+                                  <div>
+                                    <h5 className="text-xs font-medium text-gray-500">
+                                      Phone
+                                    </h5>
+                                    <p className="text-sm text-gray-900">
+                                      {pet.phoneNumber}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+
+                              {pet.location && (
+                                <div className="flex items-start">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 text-gray-400 mr-2"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                    />
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                    />
+                                  </svg>
+                                  <div>
+                                    <h5 className="text-xs font-medium text-gray-500">
+                                      Location
+                                    </h5>
+                                    <p className="text-sm text-gray-900">
+                                      {pet.location}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+
+                              {pet.shopAddress && (
+                                <div className="flex items-start">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 text-gray-400 mr-2"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                    />
+                                  </svg>
+                                  <div>
+                                    <h5 className="text-xs font-medium text-gray-500">
+                                      Shop Address
+                                    </h5>
+                                    <p className="text-sm text-gray-900">
+                                      {pet.shopAddress}
+                                    </p>
+                                  </div>
+                                </div>
                               )}
                             </div>
-                          )}
-                          {pet.vendor && (
-                            <div>
-                              <h5 className="text-sm font-medium text-gray-900">
-                                Vendor Ref
-                              </h5>
-                              <p className="text-sm text-gray-700">
-                                {pet.vendor}
-                              </p>
+                          </div>
+
+                          {/* Section 2: Health & Vaccinations */}
+                          {pet.vaccinationDetails && (
+                            <div className="bg-white rounded-lg border border-blue-200 shadow-sm">
+                              <div className="bg-blue-50 px-4 py-2 border-b border-blue-200 rounded-t-lg">
+                                <h3 className="text-sm font-semibold text-blue-800 flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                  </svg>
+                                  Health & Vaccination
+                                </h3>
+                              </div>
+                              <div className="p-4">
+                                <h5 className="text-xs font-medium text-gray-500 mb-1">
+                                  Vaccination Details
+                                </h5>
+                                <p className="text-sm text-gray-700">
+                                  {pet.vaccinationDetails}
+                                </p>
+
+                                {pet.vaccinationProof && (
+                                  <a
+                                    href={pet.vaccinationProof}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center mt-3 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded-full">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 mr-1"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor">
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                      />
+                                    </svg>
+                                    View Vaccination Certificate
+                                  </a>
+                                )}
+                              </div>
                             </div>
                           )}
-                           {pet.vendorId && (
-                            <div>
-                              <h5 className="text-sm font-medium text-gray-900">
-                                Vendor ID
-                              </h5>
-                              <p className="text-sm text-gray-700">
-                                {pet.vendorId}
-                              </p>
+
+                          {/* Section 3: Media Gallery */}
+                          {pet.videos && pet.videos.length > 0 && (
+                            <div className="bg-white rounded-lg border border-purple-200 shadow-sm">
+                              <div className="bg-purple-50 px-4 py-2 border-b border-purple-200 rounded-t-lg">
+                                <h3 className="text-sm font-semibold text-purple-800 flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                  </svg>
+                                  Media Gallery
+                                </h3>
+                              </div>
+                              <div className="p-4">
+                                <div className="grid grid-cols-1 gap-3">
+                                  {pet.videos.map((video, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={video}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center bg-purple-50 border border-purple-100 rounded-lg px-4 py-2 hover:bg-purple-100 transition-colors text-purple-700">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-5 w-5 mr-3 text-purple-500"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                                        <path
+                                          fillRule="evenodd"
+                                          d="M10 18a2 2 0 002-2v-8a2 2 0 00-2-2V4a2 2 0 00-2 2v.5a1 1 0 001 1H9v10H8a1 1 0 00-1 1V17a2 2 0 002 2h1z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                      <span className="flex-1">Pet Video {idx + 1}</span>
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                      </svg>
+                                    </a>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Section 4: Breed Information */}
+                          {pet.breedLineage && (
+                            <div className="bg-white rounded-lg border border-amber-200 shadow-sm">
+                              <div className="bg-amber-50 px-4 py-2 border-b border-amber-200 rounded-t-lg">
+                                <h3 className="text-sm font-semibold text-amber-800 flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                  </svg>
+                                  Breed Information
+                                </h3>
+                              </div>
+                              <div className="p-4">
+                                <h5 className="text-xs font-medium text-gray-500 mb-1">
+                                  Breed Lineage
+                                </h5>
+                                <p className="text-sm text-gray-700">
+                                  {pet.breedLineage}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Section 5: Vendor Information */}
+                          {(pet.vendor || pet.vendorId) && (
+                            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 rounded-t-lg">
+                                <h3 className="text-sm font-semibold text-gray-700 flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                  </svg>
+                                  Vendor Information
+                                </h3>
+                              </div>
+                              <div className="p-4 space-y-3">
+                                {pet.vendor && (
+                                  <div>
+                                    <h5 className="text-xs font-medium text-gray-500">
+                                      Vendor Reference
+                                    </h5>
+                                    <p className="text-sm text-gray-700">
+                                      {pet.vendor}
+                                    </p>
+                                  </div>
+                                )}
+                                {pet.vendorId && (
+                                  <div>
+                                    <h5 className="text-xs font-medium text-gray-500">
+                                      Vendor ID
+                                    </h5>
+                                    <p className="text-sm text-gray-700">
+                                      {pet.vendorId}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
 
-                        <div className="border-t border-gray-200 pt-4 mt-6">
-                          <h4 className="text-sm font-medium text-gray-900 mb-3">
-                            Contact Information
-                          </h4>
-
-                          <div className="space-y-3">
-                            {pet.breederName && (
-                              <div className="flex items-start">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 text-gray-400 mr-2"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                  />
-                                </svg>
-                                <div>
-                                  <h5 className="text-xs font-medium text-gray-500">
-                                    Breeder
-                                  </h5>
-                                  <p className="text-sm text-gray-900">
-                                    {pet.breederName}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-
-                            {pet.phoneNumber && (
-                              <div className="flex items-start">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 text-gray-400 mr-2"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                  />
-                                </svg>
-                                <div>
-                                  <h5 className="text-xs font-medium text-gray-500">
-                                    Phone
-                                  </h5>
-                                  <p className="text-sm text-gray-900">
-                                    {pet.phoneNumber}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-
-                            {pet.location && (
-                              <div className="flex items-start">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 text-gray-400 mr-2"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                  />
-                                </svg>
-                                <div>
-                                  <h5 className="text-xs font-medium text-gray-500">
-                                    Location
-                                  </h5>
-                                  <p className="text-sm text-gray-900">
-                                    {pet.location}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-
-                            {pet.shopAddress && (
-                              <div className="flex items-start">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 text-gray-400 mr-2"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                  />
-                                </svg>
-                                <div>
-                                  <h5 className="text-xs font-medium text-gray-500">
-                                    Shop Address
-                                  </h5>
-                                  <p className="text-sm text-gray-900">
-                                    {pet.shopAddress}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                        {/* Wishlist button at bottom */}
+                        <div className="pt-3 border-t border-gray-200">
+                          <button
+                            className="flex items-center text-gray-500 hover:text-indigo-600 text-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onAddToWishlist(pet._id);
+                            }}>
+                            <HeartIcon
+                              className={`h-5 w-5 mr-2 transition-colors duration-200 ${
+                                isWishlisted
+                                  ? "text-red-500 fill-red-500"
+                                  : "text-gray-400"
+                              }`}
+                            />
+                            {isWishlisted
+                              ? "Remove from Wishlist"
+                              : "Add to Wishlist"}
+                          </button>
                         </div>
                       </div>
                     )}

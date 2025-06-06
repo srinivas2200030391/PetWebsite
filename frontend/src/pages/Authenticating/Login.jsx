@@ -111,8 +111,9 @@ export default function LoginPage() {
       setAuthUser(res.data);
       login(res.data.data);
       toast.success("Login successful! Welcome back.");
-      // Start transition sequence instead of navigating immediately
-      startTransition();
+      
+      // Clean, direct approach - no transition animations
+      navigate("/home");
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed. Please check your credentials.");
       setLoading(false);

@@ -43,6 +43,13 @@ const App = () => {
     checkAuth();
   }, [checkAuth]);
 
+  // Simple check to ensure events are properly bound after navigation
+  useEffect(() => {
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 100);
+  }, []);
+
   if (ischeckingAuth && !authUser)
     return (
       <div className="flex items-center justify-center h-screen">

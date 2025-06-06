@@ -23,80 +23,17 @@ import {
 
 const Home = () => {
   const [setCartCount] = useState(0);
-  const [comingFromLogin, setComingFromLogin] = useState(false);
   const userId = 1;
-  
-  // Check if we're coming from login page
-  useEffect(() => {
-    const fromLogin = localStorage.getItem("comingFromLogin") === "true";
-    console.log("Home mounted, comingFromLogin:", fromLogin);
-    
-    if (fromLogin) {
-      setComingFromLogin(true);
-      // Give a small delay before removing the flag
-      setTimeout(() => {
-        localStorage.removeItem("comingFromLogin");
-        console.log("Removed comingFromLogin flag from localStorage");
-      }, 500);
-    }
-  }, []);
   
   const updateCartCount = (newCount) => {
     setCartCount(newCount);
   };
 
-  // Cloud animation variants for exit
-  const cloudOverlayVariants = {
-    visible: { 
-      opacity: 1,
-    },
-    hidden: { 
-      opacity: 0,
-      transition: { duration: 2.5, ease: "easeOut" }
-    }
-  };
-
-  // Container variants for home content scaling
-  const homeContainerVariants = {
-    initial: { 
-      scale: comingFromLogin ? 0.85 : 1, 
-      opacity: comingFromLogin ? 0 : 1 
-    },
-    animate: { 
-      scale: 1, 
-      opacity: 1, 
-      transition: { 
-        delay: comingFromLogin ? 1.5 : 0,
-        duration: comingFromLogin ? 2 : 0.5,
-        ease: "easeOut"
-      }
-    }
-  };
-
-  console.log("Home render, comingFromLogin state:", comingFromLogin);
-
   return (
-    <motion.div 
-      className="min-h-screen bg-white py-16"
-      variants={homeContainerVariants}
-      initial="initial"
-      animate="animate"
-    >
-      <AnimatePresence>
-        {comingFromLogin && (
-          <motion.div 
-            className="fixed inset-0 bg-white z-[9999]"
-            variants={cloudOverlayVariants}
-            initial="visible"
-            animate="hidden"
-            exit={{ opacity: 0 }}
-          />
-        )}
-      </AnimatePresence>
-      
+    <div className="min-h-screen bg-white py-16">      
       <div className="container mx-auto px-4">
         <Routes>
-          <Route path="/" element={<HomeDashboard comingFromLogin={comingFromLogin} />} />
+          <Route path="/" element={<HomeDashboard />} />
           <Route
             path="/cart"
             element={<Cart userId={userId} updateCartCount={updateCartCount} />}
@@ -106,7 +43,7 @@ const Home = () => {
           <Route path="/profile" element={<MyProfile />} />
         </Routes>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -128,7 +65,7 @@ const heroSlides = [
   }
 ];
 
-const HomeDashboard = ({ comingFromLogin }) => {
+const HomeDashboard = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideInterval = useRef();
 
@@ -137,20 +74,19 @@ const HomeDashboard = ({ comingFromLogin }) => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: comingFromLogin ? 0.4 : 0.2,
-        duration: 0.8,
-        delay: comingFromLogin ? 2 : 0,
+        staggerChildren: 0.2,
+        duration: 0.6,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 40, opacity: 0 },
+    hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: { 
-        duration: comingFromLogin ? 1.2 : 0.5, 
+        duration: 0.5, 
         ease: "easeOut" 
       },
     },

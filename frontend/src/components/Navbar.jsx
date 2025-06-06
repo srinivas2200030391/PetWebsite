@@ -59,18 +59,18 @@ const upcomingFeaturesMenuItems = [
 function UpcomingFeaturesMenu() {
   return (
     <Menu as="div" className="relative inline-block text-left">
-      <Menu.Button className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+      <Menu.Button className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
         <span>Upcoming Features</span>
-        <ChevronDownIcon className="h-4 w-4 text-gray-500" aria-hidden="true" />
+        <ChevronDownIcon className="h-4 w-4 text-gray-500 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
       </Menu.Button>
       <Transition
         as={Fragment}
-        enter="transition ease-out duration-100"
-        enterFrom="transform opacity-0 scale-95"
-        enterTo="transform opacity-100 scale-100"
-        leave="transition ease-in duration-75"
-        leaveFrom="transform opacity-100 scale-100"
-        leaveTo="transform opacity-0 scale-95"
+        enter="transition ease-out duration-200"
+        enterFrom="transform opacity-0 scale-98 translate-y-1"
+        enterTo="transform opacity-100 scale-100 translate-y-0"
+        leave="transition ease-in duration-150"
+        leaveFrom="transform opacity-100 scale-100 translate-y-0"
+        leaveTo="transform opacity-0 scale-98 translate-y-1"
       >
         <Menu.Items className="absolute right-0 mt-2 w-80 origin-top-right divide-y divide-gray-100 rounded-xl bg-white shadow-2xl ring-1 ring-black/5 focus:outline-none md:grid md:grid-cols-2 md:w-[30rem]">
           <div className="p-2 grid grid-cols-1 md:col-span-2 gap-1">
@@ -82,17 +82,17 @@ function UpcomingFeaturesMenu() {
                       href={href}
                       className={`${
                         active ? "bg-blue-500 text-white" : "text-gray-900"
-                      } group flex w-full items-start gap-3 rounded-lg p-3 text-sm transition-colors`}
+                      } group flex w-full items-start gap-3 rounded-lg p-3 text-sm transition-all duration-200`}
                     >
-                      <div className="flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-100 p-2 group-hover:bg-blue-100">
+                      <div className="flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-100 p-2 transition-all duration-200 group-hover:bg-blue-100">
                         {React.createElement(icon, {
                           strokeWidth: 2,
-                          className: `h-6 w-6 text-gray-600 group-hover:text-blue-600 ${active && 'text-blue-600'}`,
+                          className: `h-6 w-6 text-gray-600 transition-all duration-200 group-hover:text-blue-600 ${active && 'text-blue-600'}`,
                         })}
                       </div>
                       <div>
                         <p className="font-semibold">{title}</p>
-                        <p className={`text-xs ${active ? 'text-blue-100' : 'text-gray-500'}`}>
+                        <p className={`text-xs transition-colors duration-200 ${active ? 'text-blue-100' : 'text-gray-500'}`}>
                           {description}
                         </p>
                       </div>
@@ -121,24 +121,20 @@ const NavLinks = () => {
   return (
     <div className="hidden lg:flex items-center gap-2">
       {navItems.map((item) => (
-        <motion.div key={item.name} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
-          <Link
-            key={item.name}
-            to={item.href}
-            className={classNames(
-              'px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-300',
-              location.pathname === item.href
-                ? 'bg-blue-50 text-blue-600'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-            )}
-          >
-            {item.name}
-          </Link>
-        </motion.div>
+        <Link
+          key={item.name}
+          to={item.href}
+          className={classNames(
+            'px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200',
+            location.pathname === item.href
+              ? 'bg-blue-50 text-blue-600 shadow-sm'
+              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+          )}
+        >
+          {item.name}
+        </Link>
       ))}
-      <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
-        <UpcomingFeaturesMenu />
-      </motion.div>
+      <UpcomingFeaturesMenu />
     </div>
   );
 };
@@ -146,28 +142,28 @@ const NavLinks = () => {
 // Navigation links for mobile view
 const MobileNavLinks = () => (
   <div className="space-y-1">
-    <Link to="/home" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">Home</Link>
-    <Link to="/petshop" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">Pet Shop</Link>
-    <Link to="/matingpage" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">Mating</Link>
-    <Link to="/my-pets" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">My Pets</Link>
+    <Link to="/home" className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">Home</Link>
+    <Link to="/petshop" className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">Pet Shop</Link>
+    <Link to="/matingpage" className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">Mating</Link>
+    <Link to="/my-pets" className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">My Pets</Link>
     <Disclosure>
       {({ open }) => (
         <>
-          <Disclosure.Button className="flex w-full items-center justify-between px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">
+          <Disclosure.Button className="flex w-full items-center justify-between px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
             <span>Upcoming Features</span>
-            <ChevronDownIcon className={`${open ? "rotate-180" : ""} h-5 w-5`} />
+            <ChevronDownIcon className={`${open ? "rotate-180" : ""} h-5 w-5 transition-transform duration-200`} />
           </Disclosure.Button>
           <Disclosure.Panel className="pl-4 pt-2 space-y-1">
             {upcomingFeaturesMenuItems.map((item) => (
               <a
                 key={item.title}
                 href={item.href}
-                className="group flex w-full items-start gap-3 rounded-lg p-3 text-sm hover:bg-gray-100"
+                className="group flex w-full items-start gap-3 rounded-lg p-3 text-sm hover:bg-gray-50 transition-all duration-200"
               >
-                <div className="flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-100 p-2 group-hover:bg-blue-100">
+                <div className="flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-100 p-2 transition-colors duration-200 group-hover:bg-blue-100">
                   {React.createElement(item.icon, {
                     strokeWidth: 2,
-                    className: "h-6 w-6 text-gray-600 group-hover:text-blue-600",
+                    className: "h-6 w-6 text-gray-600 group-hover:text-blue-600 transition-colors duration-200",
                   })}
                 </div>
                 <div>
@@ -197,7 +193,7 @@ export default function Navbar() {
     <motion.div
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1.0] }}
       className="fixed top-0 left-0 right-0 z-50"
     >
       <Disclosure as="nav" className="bg-white/80 backdrop-blur-md shadow-sm">
@@ -207,13 +203,11 @@ export default function Navbar() {
               <div className="flex h-20 items-center justify-between">
                 
                 {/* Logo on the left */}
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link to="/home" className="flex-shrink-0">
-                    <span className="text-2xl font-bold text-gray-900 tracking-tight">
-                      The Pet Shop
-                    </span>
-                  </Link>
-                </motion.div>
+                <Link to="/home" className="flex-shrink-0 transition-all duration-200 hover:opacity-80">
+                  <span className="text-2xl font-bold text-gray-900 tracking-tight">
+                    The Pet Shop
+                  </span>
+                </Link>
 
                 {/* Centered Navigation Links */}
                 <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center lg:gap-8">
@@ -222,25 +216,25 @@ export default function Navbar() {
 
                 {/* Action Icons and Profile on the right */}
                 <div className="hidden lg:flex items-center gap-4">
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <Link to="/home/wishlist" className="p-2 rounded-full text-gray-500 hover:text-gray-800  transition-colors">
-                      <HeartIcon className="h-6 w-6" />
-                    </Link>
-                  </motion.div>
+                  <Link 
+                    to="/home/wishlist" 
+                    className="p-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                  >
+                    <HeartIcon className="h-6 w-6" />
+                  </Link>
                   <div className="w-px h-6 bg-gray-200"></div>
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <Profile />
-                  </motion.div>
+                  <Profile />
                 </div>
 
                 {/* Mobile Menu Button */}
                 <div className="flex items-center lg:hidden">
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <Link to="/home/wishlist" className="p-2 mr-2 rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors">
-                      <HeartIcon className="h-6 w-6" />
-                    </Link>
-                  </motion.div>
-                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                  <Link 
+                    to="/home/wishlist" 
+                    className="p-2 mr-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                  >
+                    <HeartIcon className="h-6 w-6" />
+                  </Link>
+                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-all duration-200">
                     <span className="sr-only">Open main menu</span>
                     {open ? (
                       <XMarkIcon
@@ -266,7 +260,7 @@ export default function Navbar() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1.0] }}
                   className="lg:hidden border-t border-gray-200 bg-white shadow-lg overflow-hidden"
                 >
                   <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
@@ -281,7 +275,7 @@ export default function Navbar() {
                     {isAuthenticated ? (
                       <button
                         onClick={logout}
-                        className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-red-600 hover:bg-red-700"
+                        className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200"
                       >
                         Logout
                       </button>
@@ -289,13 +283,13 @@ export default function Navbar() {
                       <div className="grid grid-cols-2 gap-3">
                         <Link
                           to="/login"
-                          className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50"
+                          className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
                         >
                           Log In
                         </Link>
                         <Link
                           to="/signup"
-                          className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+                          className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
                         >
                           Sign Up
                         </Link>

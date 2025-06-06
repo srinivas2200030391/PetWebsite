@@ -279,7 +279,7 @@ export default function MatingPage() {
         userId,
         wishListId: petId,
       });
-      
+
       // Update local wishlist state
       const isCurrentlyWishlisted = wishlist.includes(petId);
       if (isCurrentlyWishlisted) {
@@ -538,15 +538,15 @@ export default function MatingPage() {
       <AnimatePresence>
         {isDetailsModalOpen && selectedPet && (
           <MatingDetailsModal
-            pet={selectedPet}
-            isOpen={isDetailsModalOpen}
-            onClose={() => setIsDetailsModalOpen(false)}
-            wishlist={wishlist}
-            payments={payments}
+        pet={selectedPet}
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        wishlist={wishlist}
+        payments={payments}
             userId={userData?._id}
             onAddToWishlist={handleAddToWishlist}
             onPaymentComplete={handlePaymentComplete}
-          />
+      />
         )}
       </AnimatePresence>
     </motion.div>
