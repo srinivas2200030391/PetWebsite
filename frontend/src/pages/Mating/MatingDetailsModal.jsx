@@ -7,6 +7,7 @@ import config from "../../config";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageCarousel from "../petshop/ImageCarousel";
 import PropTypes from "prop-types";
+import ZoomableImage from "../../components/ZoomableImage";
 
 const backdropAnimation = {
   hidden: { opacity: 0 },
@@ -58,10 +59,14 @@ const contentAnimation = {
   }),
 };
 
-// Enhanced ImageCarousel with auto-rotate functionality
+// Enhanced ImageCarousel with auto-rotate functionality, touch support, and zoom capability
 const AutoRotatingCarousel = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showZoomedImage, setShowZoomedImage] = useState(false);
   const timerRef = useRef(null);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const carouselRef = useRef(null);
 
   const resetTimer = () => {
     if (timerRef.current) {
@@ -79,31 +84,76 @@ const AutoRotatingCarousel = ({ images }) => {
     return () => clearInterval(timerRef.current);
   }, [images]);
 
-  const handlePrev = () => {
+  const handlePrev = (e) => {
+    e?.stopPropagation();
     setCurrentIndex(prevIndex => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
     resetTimer();
   };
 
-  const handleNext = () => {
+  const handleNext = (e) => {
+    e?.stopPropagation();
     setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
     resetTimer();
   };
 
-  const handleDotClick = (index) => {
+  const handleDotClick = (index, e) => {
+    e?.stopPropagation();
     setCurrentIndex(index);
     resetTimer();
+  };
+  
+  // Touch handlers for swipe functionality
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    // Minimum swipe distance (px)
+    const minSwipeDistance = 50;
+    const swipeDistance = touchEndX.current - touchStartX.current;
+    
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0) {
+        // Swiped right -> previous image
+        handlePrev(e);
+      } else {
+        // Swiped left -> next image
+        handleNext(e);
+      }
+    } else {
+      // It's a tap/click - open zoom view
+      openZoomView(e);
+    }
+  };
+  
+  const openZoomView = (e) => {
+    e?.stopPropagation();
+    setShowZoomedImage(true);
+    // Pause auto-rotation when zoomed
+    clearInterval(timerRef.current);
   };
   
   if (!images || images.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-100">
-        <PhotoIcon className="h-16 w-16 text-gray-300" />
+        <PhotoIcon className="h-12 w-12 sm:h-16 sm:w-16 text-gray-300" />
       </div>
     );
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden group">
+    <div 
+      ref={carouselRef}
+      className="relative w-full h-full overflow-hidden group cursor-zoom-in"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onClick={openZoomView}
+    >
       <AnimatePresence initial={false} mode="wait">
         <motion.img
           key={currentIndex}
@@ -117,19 +167,19 @@ const AutoRotatingCarousel = ({ images }) => {
         />
       </AnimatePresence>
       
-      {/* Navigation Buttons */}
+      {/* Navigation Buttons - Hidden on mobile, visible on desktop */}
       {images.length > 1 && (
         <>
           <button
             onClick={handlePrev}
-            className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white transition hover:bg-black/50 opacity-0 group-hover:opacity-100 focus:outline-none"
+            className="hidden md:block absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white transition hover:bg-black/50 opacity-0 group-hover:opacity-100 focus:outline-none"
             aria-label="Previous image"
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </button>
           <button
             onClick={handleNext}
-            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white transition hover:bg-black/50 opacity-0 group-hover:opacity-100 focus:outline-none"
+            className="hidden md:block absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white transition hover:bg-black/50 opacity-0 group-hover:opacity-100 focus:outline-none"
             aria-label="Next image"
           >
             <ChevronRightIcon className="h-5 w-5" />
@@ -143,15 +193,30 @@ const AutoRotatingCarousel = ({ images }) => {
           {images.map((_, idx) => (
             <button 
               key={idx} 
-              onClick={() => handleDotClick(idx)}
+              onClick={(e) => handleDotClick(idx, e)}
               className={`h-2 rounded-full transition-all ${
-                currentIndex === idx ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/75'
+                currentIndex === idx ? 'w-5 md:w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/75'
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
           ))}
         </div>
       )}
+      
+      {/* Zoomable Image Gallery Modal */}
+      <ZoomableImage
+        src={images[currentIndex]}
+        galleryImages={images}
+        initialIndex={currentIndex}
+        showZoomIcon={false}
+        aspectRatio={false}
+        className="hidden" // Hide the component, we just want to use its modal
+        isModalOpen={showZoomedImage}
+        onModalClose={() => {
+          setShowZoomedImage(false);
+          resetTimer(); // Resume auto-rotation when zoom is closed
+        }}
+      />
     </div>
   );
 };
@@ -341,7 +406,7 @@ const MatingDetailsModal = ({
         </motion.div>
 
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
+          <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
             <motion.div
               variants={modalAnimation}
               initial="hidden"
@@ -350,37 +415,41 @@ const MatingDetailsModal = ({
               className="w-full max-w-5xl">
               <DialogPanel className="mx-auto overflow-hidden rounded-2xl bg-white shadow-2xl">
                 {/* Header */}
-                <div className="px-6 py-4 border-b">
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
                   <div className="flex justify-between items-centered">
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-900">{pet.breedName || "Unknown Breed"}</h2>
+                      <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{pet.breedName || "Unknown Breed"}</h2>
                       {!hasPaid && (
                         <div className="flex items-center mt-1 space-x-2">
-                          <span className="text-sm line-through text-gray-400">₹99</span>
-                          <span className="text-sm font-bold text-gray-900">₹9</span>
-                          <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 text-xs rounded">Special Offer</span>
+                          <span className="text-xs sm:text-sm line-through text-gray-400">₹99</span>
+                          <span className="text-xs sm:text-sm font-bold text-gray-900">₹9</span>
+                          <span className="px-1.5 py-0.5 sm:px-2 bg-indigo-100 text-indigo-600 text-xs rounded">Special Offer</span>
                         </div>
                       )}
                     </div>
-                    <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-700">
+                    <button 
+                      onClick={onClose} 
+                      className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
+                      aria-label="Close modal"
+                    >
                       <XMarkIcon className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
                 
                 {/* Tabs */}
-                <div className="px-6 border-b">
-                  <div className="flex space-x-6">
+                <div className="px-4 sm:px-6 border-b">
+                  <div className="flex space-x-4 sm:space-x-6 overflow-x-auto no-scrollbar">
                     <button
                       onClick={() => setActiveTab('details')}
-                      className={`py-3 text-sm font-medium ${activeTab === 'details' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                      className={`py-2.5 sm:py-3 text-xs sm:text-sm font-medium ${activeTab === 'details' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
                     >
                       Details
                     </button>
                     {contactVisible && (
                       <button
                         onClick={() => setActiveTab('contact')}
-                        className={`py-3 text-sm font-medium ${activeTab === 'contact' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`py-2.5 sm:py-3 text-xs sm:text-sm font-medium ${activeTab === 'contact' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
                       >
                         Contact Info
                       </button>
@@ -388,7 +457,7 @@ const MatingDetailsModal = ({
                     {contactVisible && pet.vaccinationDetails && (
                       <button
                         onClick={() => setActiveTab('health')}
-                        className={`py-3 text-sm font-medium ${activeTab === 'health' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`py-2.5 sm:py-3 text-xs sm:text-sm font-medium ${activeTab === 'health' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
                       >
                         Health Records
                       </button>
@@ -397,7 +466,7 @@ const MatingDetailsModal = ({
                 </div>
 
                 {/* Tab content */}
-                <div className="px-6 py-6">
+                <div className="px-4 sm:px-6 py-4 sm:py-6">
                   <AnimatePresence mode="wait">
                     {activeTab === 'details' && (
                       <motion.div
@@ -406,10 +475,10 @@ const MatingDetailsModal = ({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="grid grid-cols-1 md:grid-cols-12 gap-6"
+                        className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6"
                       >
                         {/* Left column */}
-                        <div className="md:col-span-4 space-y-4">
+                        <div className="md:col-span-4 space-y-3 sm:space-y-4">
                           <motion.div 
                             custom={1}
                             variants={contentAnimation}
@@ -417,7 +486,7 @@ const MatingDetailsModal = ({
                             animate="visible"
                             className="bg-white shadow rounded-lg overflow-hidden"
                           >
-                            <div className="w-full h-80 md:h-96">
+                            <div className="w-full h-72 sm:h-80 md:h-96">
                               <AutoRotatingCarousel images={imagesForCarousel} />
                             </div>
                           </motion.div>
@@ -427,30 +496,30 @@ const MatingDetailsModal = ({
                               variants={contentAnimation}
                               initial="hidden" 
                               animate="visible"
-                              className="bg-white shadow rounded-lg p-4"
+                              className="bg-white shadow rounded-lg p-3 sm:p-4"
                             >
-                              <h3 className="text-lg font-medium text-gray-900 mb-2">Vaccination Preview</h3>
-                              <p className="text-gray-500 italic text-sm">This pet has vaccination records available. Pay to view complete details.</p>
+                              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">Vaccination Preview</h3>
+                              <p className="text-gray-500 italic text-xs sm:text-sm">This pet has vaccination records available. Pay to view complete details.</p>
                             </motion.div>
                           )}
                         </div>
                         {/* Right column */}
-                        <div className="md:col-span-8 space-y-4">
+                        <div className="md:col-span-8 space-y-3 sm:space-y-4">
                           <motion.div 
                             custom={4}
                             variants={contentAnimation}
                             initial="hidden" 
                             animate="visible"
-                            className="bg-white shadow rounded-lg p-4"
+                            className="bg-white shadow rounded-lg p-3 sm:p-4"
                           >
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Pet Information</h3>
+                            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-4">Pet Information</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4">
-                              {pet.breedName && (<><dt className="text-gray-500 text-sm">Breed</dt><dd className="text-gray-900 text-sm">{pet.breedName}</dd></>)}
-                              {pet.age && (<><dt className="text-gray-500 text-sm">Age</dt><dd className="text-gray-900 text-sm">{pet.age} years</dd></>)}
-                              {pet.gender && (<><dt className="text-gray-500 text-sm">Gender</dt><dd className="text-gray-900 text-sm">{pet.gender}</dd></>)}
-                              {pet.petQuality && (<><dt className="text-gray-500 text-sm">Quality</dt><dd className="text-gray-900 text-sm">{pet.petQuality}</dd></>)}
-                              {pet.location && (<><dt className="text-gray-500 text-sm">Location</dt><dd className="text-gray-900 text-sm">{pet.location}</dd></>)}
-                              {pet.availability && (<><dt className="text-gray-500 text-sm">Status</dt><dd className="text-gray-900 text-sm">{pet.availability === "available" ? "Available" : "Unavailable"}</dd></>)}
+                              {pet.breedName && (<><dt className="text-gray-500 text-xs sm:text-sm">Breed</dt><dd className="text-gray-900 text-xs sm:text-sm">{pet.breedName}</dd></>)}
+                              {pet.age && (<><dt className="text-gray-500 text-xs sm:text-sm">Age</dt><dd className="text-gray-900 text-xs sm:text-sm">{pet.age} years</dd></>)}
+                              {pet.gender && (<><dt className="text-gray-500 text-xs sm:text-sm">Gender</dt><dd className="text-gray-900 text-xs sm:text-sm">{pet.gender}</dd></>)}
+                              {pet.petQuality && (<><dt className="text-gray-500 text-xs sm:text-sm">Quality</dt><dd className="text-gray-900 text-xs sm:text-sm">{pet.petQuality}</dd></>)}
+                              {pet.location && (<><dt className="text-gray-500 text-xs sm:text-sm">Location</dt><dd className="text-gray-900 text-xs sm:text-sm">{pet.location}</dd></>)}
+                              {pet.availability && (<><dt className="text-gray-500 text-xs sm:text-sm">Status</dt><dd className="text-gray-900 text-xs sm:text-sm">{pet.availability === "available" ? "Available" : "Unavailable"}</dd></>)}
                             </div>
                           </motion.div>
                           {pet.breedLineage && (
@@ -459,10 +528,10 @@ const MatingDetailsModal = ({
                               variants={contentAnimation}
                               initial="hidden"
                               animate="visible"
-                              className="bg-white shadow rounded-lg p-4"
+                              className="bg-white shadow rounded-lg p-3 sm:p-4"
                             >
-                              <h3 className="text-lg font-medium text-gray-900 mb-2">Breed Lineage</h3>
-                              <p className="text-gray-700 text-sm">{pet.breedLineage}</p>
+                              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">Breed Lineage</h3>
+                              <p className="text-gray-700 text-xs sm:text-sm">{pet.breedLineage}</p>
                             </motion.div>
                           )}
                           {!contactVisible && (
@@ -471,10 +540,10 @@ const MatingDetailsModal = ({
                               variants={contentAnimation}
                               initial="hidden" 
                               animate="visible"
-                              className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-4 text-white shadow"
+                              className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-3 sm:p-4 text-white shadow"
                             >
-                              <h3 className="text-lg font-medium mb-3">Breeder Contact Info</h3>
-                              <ul className="space-y-2 text-sm list-disc list-inside">
+                              <h3 className="text-base sm:text-lg font-medium mb-2 sm:mb-3">Breeder Contact Info</h3>
+                              <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm list-disc list-inside">
                                 <li>Breeder name and contact details</li>
                                 <li>Shop address and location</li>
                                 <li>Complete vaccination records</li>
@@ -493,37 +562,37 @@ const MatingDetailsModal = ({
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="bg-white shadow rounded-lg p-4 space-y-4">
-                          <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="bg-white shadow rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4">
+                          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-4">Contact Information</h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
                             {pet.breederName && (
-                              <div className="bg-white shadow rounded-lg p-4">
-                                <h4 className="text-sm font-medium text-gray-500 mb-1">Breeder</h4>
-                                <p className="text-gray-900 text-sm">{pet.breederName}</p>
+                              <div className="bg-white shadow rounded-lg p-3 sm:p-4">
+                                <h4 className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Breeder</h4>
+                                <p className="text-gray-900 text-xs sm:text-sm">{pet.breederName}</p>
                               </div>
                             )}
                             {pet.phoneNum && (
-                              <div className="bg-white shadow rounded-lg p-4">
-                                <h4 className="text-sm font-medium text-gray-500 mb-1">Phone</h4>
-                                <p className="text-gray-900 text-sm">{pet.phoneNum}</p>
+                              <div className="bg-white shadow rounded-lg p-3 sm:p-4">
+                                <h4 className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Phone</h4>
+                                <p className="text-gray-900 text-xs sm:text-sm">{pet.phoneNum}</p>
                               </div>
                             )}
                             {pet.location && (
-                              <div className="bg-white shadow rounded-lg p-4">
-                                <h4 className="text-sm font-medium text-gray-500 mb-1">Location</h4>
-                                <p className="text-gray-900 text-sm">{pet.location}</p>
+                              <div className="bg-white shadow rounded-lg p-3 sm:p-4">
+                                <h4 className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Location</h4>
+                                <p className="text-gray-900 text-xs sm:text-sm">{pet.location}</p>
                               </div>
                             )}
                             {pet.shopAddress && (
-                              <div className="bg-white shadow rounded-lg p-4">
-                                <h4 className="text-sm font-medium text-gray-500 mb-1">Shop Address</h4>
-                                <p className="text-gray-900 text-sm">{pet.shopAddress}</p>
+                              <div className="bg-white shadow rounded-lg p-3 sm:p-4">
+                                <h4 className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Shop Address</h4>
+                                <p className="text-gray-900 text-xs sm:text-sm">{pet.shopAddress}</p>
                               </div>
                             )}
                             {pet.vendor?.vendorShopName && (
-                              <div className="bg-white shadow rounded-lg p-4">
-                                <h4 className="text-sm font-medium text-gray-500 mb-1">Shop Name</h4>
-                                <p className="text-gray-900 text-sm">{pet.vendor.vendorShopName}</p>
+                              <div className="bg-white shadow rounded-lg p-3 sm:p-4">
+                                <h4 className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Shop Name</h4>
+                                <p className="text-gray-900 text-xs sm:text-sm">{pet.vendor.vendorShopName}</p>
                               </div>
                             )}
                           </div>
@@ -539,16 +608,16 @@ const MatingDetailsModal = ({
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="bg-white shadow rounded-lg p-4 space-y-4">
-                          <h3 className="text-lg font-medium text-gray-900 mb-4">Health Records</h3>
+                        <div className="bg-white shadow rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4">
+                          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-4">Health Records</h3>
                           {pet.vaccinationDetails && (
-                            <div className="bg-white shadow rounded-lg p-4">
-                              <h4 className="text-sm font-medium text-gray-500 mb-1">Vaccination Details</h4>
-                              <p className="text-gray-900 text-sm">{pet.vaccinationDetails}</p>
+                            <div className="bg-white shadow rounded-lg p-3 sm:p-4">
+                              <h4 className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Vaccination Details</h4>
+                              <p className="text-gray-900 text-xs sm:text-sm">{pet.vaccinationDetails}</p>
                             </div>
                           )}
                           {pet.vaccinationProof && pet.vaccinationProof.length > 0 && (
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                               {pet.vaccinationProof.map((proofUrl, index) => (
                                 <a
                                   key={index}
@@ -557,9 +626,9 @@ const MatingDetailsModal = ({
                                   rel="noopener noreferrer"
                                   className="block rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                                 >
-                                  <div className="p-3 border-b border-gray-200 flex items-center gap-2">
-                                    <DocumentTextIcon className="h-5 w-5 text-gray-600" />
-                                    <span className="text-sm font-medium text-gray-900">Certificate {index + 1}</span>
+                                  <div className="p-2 sm:p-3 border-b border-gray-200 flex items-center gap-2">
+                                    <DocumentTextIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+                                    <span className="text-xs sm:text-sm font-medium text-gray-900">Certificate {index + 1}</span>
                                   </div>
                                   <div className="aspect-[4/3] bg-gray-100">
                                     <img
@@ -579,23 +648,36 @@ const MatingDetailsModal = ({
                 </div>
 
                 {/* Footer with actions */}
-                <div className="px-6 py-4 border-t flex justify-between items-center">
-                  <button onClick={() => onAddToWishlist(pet._id)} className="flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded shadow-sm hover:bg-gray-50">
-                    <HeartIcon className={`h-5 w-5 mr-2 ${isWishlisted ? 'text-red-600 fill-red-500' : ''}`} />
-                    {isWishlisted ? 'Saved to Wishlist' : 'Add to Wishlist'}
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-t flex justify-between items-center">
+                  <button 
+                    onClick={() => onAddToWishlist(pet._id)} 
+                    className="flex items-center px-3 sm:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded shadow-sm hover:bg-gray-50 min-h-[44px]"
+                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    <HeartIcon className={`h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 ${isWishlisted ? 'text-red-600 fill-red-500' : ''}`} />
+                    <span className="text-xs sm:text-sm">
+                      {isWishlisted ? 'Saved' : 'Wishlist'}
+                    </span>
                   </button>
                   {!contactVisible ? (
-                    <button onClick={handleContactRequest} disabled={isLoading} className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded shadow-sm hover:bg-indigo-700 disabled:opacity-70">
-                      {isLoading ? 'Processing...' : (
-                        <>
-                          Pay <span className="ml-1 mr-1 text-gray-300 font-bold">₹9</span> to Contact Breeder
-                        </>
+                    <button 
+                      onClick={handleContactRequest} 
+                      disabled={isLoading} 
+                      className="flex items-center px-3 sm:px-6 py-2 bg-indigo-600 text-white rounded shadow-sm hover:bg-indigo-700 disabled:opacity-70 min-h-[44px]"
+                      aria-label="Pay to contact breeder"
+                    >
+                      {isLoading ? (
+                        <span className="text-xs sm:text-sm">Processing...</span>
+                      ) : (
+                        <span className="text-xs sm:text-sm">
+                          Pay <span className="ml-1 mr-1 text-gray-300 font-bold">₹9</span>
+                        </span>
                       )}
                     </button>
                   ) : (
-                    <span className="text-green-600 font-medium flex items-center">
-                      <CheckCircleIcon className="h-5 w-5 mr-1" />
-                      Breeder contact unlocked
+                    <span className="text-green-600 font-medium flex items-center text-xs sm:text-sm">
+                      <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1" />
+                      Contact unlocked
                     </span>
                   )}
                 </div>

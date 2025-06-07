@@ -68,6 +68,9 @@ const heroSlides = [
 const HomeDashboard = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideInterval = useRef();
+  const sliderRef = useRef(null);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -113,6 +116,30 @@ const HomeDashboard = () => {
     }
   };
 
+  // Handle touch events for swipe
+  const handleTouchStart = (e) => {
+    stopSlideTimer();
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 75) {
+      // Swipe left, go to next slide
+      nextSlide();
+    }
+
+    if (touchStart - touchEnd < -75) {
+      // Swipe right, go to previous slide
+      prevSlide();
+    }
+    
+    startSlideTimer();
+  };
+
   useEffect(() => {
     startSlideTimer();
     return () => stopSlideTimer();
@@ -141,18 +168,25 @@ const HomeDashboard = () => {
 
   return (
     <motion.div 
-      className="flex flex-col gap-y-24 py-8 "
+      className="flex flex-col gap-y-16 sm:gap-y-20 md:gap-y-24 py-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* Hero Section - A new redesign */}
-      <motion.section variants={itemVariants} className="relative h-[50vh] md:h-[80vh] w-full overflow-hidden rounded-3xl shadow-2xl">
+      {/* Hero Section - A new redesign with mobile responsiveness and touch scrolling */}
+      <motion.section 
+        variants={itemVariants} 
+        className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[80vh] w-full overflow-hidden rounded-xl sm:rounded-2xl md:rounded-3xl shadow-lg sm:shadow-xl md:shadow-2xl"
+        ref={sliderRef}
+      >
         <div 
           className="absolute inset-0 flex transition-transform duration-700 ease-in-out"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           onMouseEnter={stopSlideTimer}
           onMouseLeave={startSlideTimer}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           {heroSlides.map((slide, index) => (
             <div key={index} className="relative h-full w-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -162,74 +196,103 @@ const HomeDashboard = () => {
           ))}
         </div>
 
-        <div className="absolute inset-0 flex items-center justify-center text-center text-white p-8">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight tracking-tight">
-              {heroSlides[currentSlide].title}
-            </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-8">
-              {heroSlides[currentSlide].subtitle}
-            </p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              <Link to="/Petshop" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                Explore Pets for Sale <ArrowRightIcon className="h-5 w-5" />
-              </Link>
-              <Link to="/matingpage" className="bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:-translate-y-0.5">
-                Mating Services
-              </Link>
+        {/* Content container - modified for phone layout */}
+        <div className="absolute inset-0 flex sm:items-center justify-center text-center text-white p-4 sm:p-6 md:p-8">
+          <div className="max-w-3xl w-full flex flex-col justify-end items-center sm:block">
+            {/* Push buttons to bottom on phone screens */}
+            <div className="flex flex-col justify-end flex-grow sm:block">
+              {/* Title - moved to bottom on phone screens, just above links */}
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-extrabold sm:mb-4 leading-tight tracking-tight mb-3 sm:mt-0">
+                {heroSlides[currentSlide].title}
+              </h1>
+              {/* Subtitle - hidden on phone screens */}
+              <p className="hidden sm:block text-base sm:text-lg md:text-xl text-white/90 mb-4 sm:mb-6 md:mb-8">
+                {heroSlides[currentSlide].subtitle}
+              </p>
+              <div className="flex flex-wrap gap-2 justify-center  mb-4 sm:mb-4 sm:mt-0">
+                <Link to="/Petshop" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 sm:px-4 md:px-6 lg:px-8 py-1.5 sm:py-2 md:py-3 rounded-md sm:rounded-lg text-sm sm:text-base font-semibold transition-all duration-300 flex items-center gap-1 sm:gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:scale-95 min-h-[36px] sm:min-h-[44px] touch-manipulation">
+                  Explore <span className="hidden sm:inline">Pets for Sale</span> <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                </Link>
+                <Link to="/matingpage" className="bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 text-white px-3 sm:px-4 md:px-6 lg:px-8 py-1.5 sm:py-2 md:py-3 rounded-md sm:rounded-lg text-sm sm:text-base font-semibold transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 min-h-[36px] sm:min-h-[44px] touch-manipulation">
+                  Mating <span className="hidden sm:inline">Services</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        <button onClick={prevSlide} className="absolute top-1/2 left-4 -translate-y-1/2 bg-white/20 hover:bg-white/40 p-3 rounded-full text-white transition-all duration-300">
-          <ChevronLeftIcon className="h-6 w-6" />
+        {/* Navigation buttons - hidden on mobile/tablet, smaller on larger screens */}
+        <button 
+          onClick={prevSlide} 
+          className="hidden lg:block absolute top-1/2 left-4 -translate-y-1/2 bg-white/20 hover:bg-white/40 p-2 lg:p-3 rounded-full text-white transition-all duration-300 min-w-[36px] min-h-[36px] lg:min-w-[44px] lg:min-h-[44px] touch-manipulation"
+          aria-label="Previous slide"
+        >
+          <ChevronLeftIcon className="h-4 w-4 lg:h-5 lg:w-5" />
         </button>
-        <button onClick={nextSlide} className="absolute top-1/2 right-4 -translate-y-1/2 bg-white/20 hover:bg-white/40 p-3 rounded-full text-white transition-all duration-300">
-          <ChevronRightIcon className="h-6 w-6" />
+        <button 
+          onClick={nextSlide} 
+          className="hidden lg:block absolute top-1/2 right-4 -translate-y-1/2 bg-white/20 hover:bg-white/40 p-2 lg:p-3 rounded-full text-white transition-all duration-300 min-w-[36px] min-h-[36px] lg:min-w-[44px] lg:min-h-[44px] touch-manipulation"
+          aria-label="Next slide"
+        >
+          <ChevronRightIcon className="h-4 w-4 lg:h-5 lg:w-5" />
         </button>
 
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5">
+        {/* Slide indicators - smaller on mobile */}
+        <div className="absolute bottom-3 sm:bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-1.5">
           {heroSlides.map((_, index) => (
             <button 
               key={index} 
               onClick={() => setCurrentSlide(index)}
-              className={`h-2.5 rounded-full transition-all duration-300 ${currentSlide === index ? 'w-8 bg-white' : 'w-2.5 bg-white/50 hover:bg-white/75'}`}
+              className={`h-1.5 sm:h-2 md:h-2.5 rounded-full transition-all duration-300 ${
+                currentSlide === index 
+                  ? 'w-5 sm:w-6 md:w-8 bg-white' 
+                  : 'w-1.5 sm:w-2 md:w-2.5 bg-white/50 hover:bg-white/75'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
       </motion.section>
 
-      {/* Main Services Section - Redesigned to match the hero */}
+      {/* Main Services Section - Enhanced for mobile responsiveness */}
       <motion.section variants={itemVariants} className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <span className="bg-blue-100 text-blue-800 text-sm font-medium px-4 py-1.5 rounded-full">Premium Services</span>
-          <h2 className="text-4xl font-bold text-gray-900 mt-4 mb-4">Our Featured Services</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
+          <span className="bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 sm:py-1.5 rounded-full">Premium Services</span>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-3 sm:mt-4 mb-2 sm:mb-4">Our Featured Services</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base md:text-lg px-2">
             Discover our exclusive pet services designed for the modern pet lover.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Link to="/Petshop" className="relative h-[500px] rounded-3xl overflow-hidden shadow-2xl group text-white">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+          <Link 
+            to="/Petshop" 
+            className="relative h-[300px] sm:h-[400px] md:h-[500px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-lg sm:shadow-xl md:shadow-2xl group text-white touch-manipulation"
+            aria-label="Browse premium pets for sale"
+          >
             <img src={salesimg} alt="Pets for sale" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-            <div className="relative h-full flex flex-col justify-end p-8">
-              <h3 className="text-3xl font-bold mb-2">Premium Pets for Sale</h3>
-              <p className="text-lg text-white/90 mb-4">Discover our curated collection of healthy, well-bred pets.</p>
-              <div className="flex items-center font-semibold group-hover:underline">
-                Browse Collection <ArrowRightIcon className="h-5 w-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+            <div className="relative h-full flex flex-col justify-end p-4 sm:p-6 md:p-8">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Premium Pets for Sale</h3>
+              <p className="text-sm sm:text-base md:text-lg text-white/90 mb-3 sm:mb-4">Discover our curated collection of healthy, well-bred pets.</p>
+              <div className="flex items-center font-medium sm:font-semibold group-hover:underline min-h-[44px]">
+                <span className="text-sm sm:text-base">Browse Collection</span> <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 ml-1 sm:ml-2 transition-transform duration-300 group-hover:translate-x-1" />
               </div>
             </div>
           </Link>
           
-          <Link to="/matingpage" className="relative h-[500px] rounded-3xl overflow-hidden shadow-2xl group text-white">
+          <Link 
+            to="/matingpage" 
+            className="relative h-[300px] sm:h-[400px] md:h-[500px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-lg sm:shadow-xl md:shadow-2xl group text-white touch-manipulation"
+            aria-label="Explore mating services"
+          >
             <img src={matingimg} alt="Mating services" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-            <div className="relative h-full flex flex-col justify-end p-8">
-              <h3 className="text-3xl font-bold mb-2">Exclusive Mating Services</h3>
-              <p className="text-lg text-white/90 mb-4">Connect with quality breeding partners for healthier offspring.</p>
-              <div className="flex items-center font-semibold group-hover:underline">
-                Find Partners <ArrowRightIcon className="h-5 w-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+            <div className="relative h-full flex flex-col justify-end p-4 sm:p-6 md:p-8">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Exclusive Mating Services</h3>
+              <p className="text-sm sm:text-base md:text-lg text-white/90 mb-3 sm:mb-4">Connect with quality breeding partners for healthier offspring.</p>
+              <div className="flex items-center font-medium sm:font-semibold group-hover:underline min-h-[44px]">
+                <span className="text-sm sm:text-base">Find Partners</span> <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 ml-1 sm:ml-2 transition-transform duration-300 group-hover:translate-x-1" />
               </div>
             </div>
           </Link>
@@ -246,7 +309,7 @@ const HomeDashboard = () => {
                 alt="Happy pet owner" 
                 className="rounded-3xl shadow-2xl w-full h-auto"
               />
-              <div className="absolute -bottom-8 -right-8 bg-white p-5 rounded-2xl shadow-lg border animate-pulse">
+              <div className="absolute -bottom-8 -right-8 bg-white p-5 rounded-2xl shadow-lg border mr-4 sm:mr-0">
                 <div className="flex items-center gap-4">
                   <div className="bg-blue-100 p-3 rounded-full"><ShieldCheckIcon className="h-8 w-8 text-blue-600" /></div>
                   <div>
@@ -258,8 +321,8 @@ const HomeDashboard = () => {
             </div>
             <div>
               <span className="bg-purple-100 text-purple-800 text-sm font-medium px-4 py-1.5 rounded-full">Our Commitment</span>
-              <h2 className="text-4xl font-bold text-gray-900 mt-4 mb-6">The Premium Pet Platform You Can Trust</h2>
-              <p className="text-gray-600 text-lg mb-8">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-4 mb-6">The Premium Pet Platform You Can Trust</h2>
+              <p className="text-gray-600 text-sm sm:text-base md:text-lg mb-8">
                 We are setting new standards in the pet industry by focusing on quality, transparency, and the well-being of every pet.
               </p>
               <div className="space-y-6">
@@ -292,8 +355,8 @@ const HomeDashboard = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <span className="bg-red-100 text-red-800 text-sm font-medium px-4 py-1.5 rounded-full">Hot Deals</span>
-            <h2 className="text-4xl font-bold text-gray-900 mt-4 mb-4">Upcoming Special Launch Discounts</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-4 mb-4">Upcoming Special Launch Discounts</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base md:text-lg">
               Limited time offers on our entire range of premium pet products.
             </p>
           </div>
@@ -310,7 +373,7 @@ const HomeDashboard = () => {
                 </div>
                 <div className="p-6">
                   <category.icon className="h-8 w-8 text-gray-500 mb-4" />
-                  <h3 className="font-bold text-gray-900 text-xl mb-2">{category.name}</h3>
+                  <h3 className="font-bold text-gray-900 text-md sm:text-base md:text-lg mb-2">{category.name}</h3>
                   <p className="text-gray-600 mb-4">{category.description}</p>
                   <Link to="#" className="font-medium text-blue-600 hover:text-blue-800">Shop Now <ArrowRightIcon className="inline h-4 w-4" /></Link>
                 </div>

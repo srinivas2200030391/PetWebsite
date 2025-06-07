@@ -460,8 +460,8 @@ export default function PetStore() {
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 py-10 lg:px-8">
         <div className="border-b border-gray-200 pb-8 pt-16 md:pt-20">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Find Your New Friend</h1>
-            <p className="mt-4 text-lg text-gray-500">Browse our available pets or use filters to find the perfect match.</p>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Find Your New Friend</h1>
+            <p className="mt-4 text-md sm:text-lg text-gray-500">Browse our available pets or use filters to find the perfect match.</p>
         </div>
         
         <div className="pt-8 pb-24 lg:grid lg:grid-cols-4 lg:gap-x-8">

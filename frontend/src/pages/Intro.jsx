@@ -103,7 +103,7 @@ export default function Intro() {
 
           <motion.h1
             variants={itemVariants}
-            className="mt-4 text-5xl font-bold tracking-tight text-white sm:text-7xl"
+            className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-7xl"
             style={{ textShadow: "0 2px 15px rgba(0,0,0,0.4)" }}
           >
             <span className="bg-gradient-to-b from-white to-gray-300 bg-clip-text text-transparent">Your Pet's World,<br/>All in One Place.</span>
@@ -111,7 +111,7 @@ export default function Intro() {
 
           <motion.p
             variants={itemVariants}
-            className="mt-8 max-w-2xl mx-auto text-lg leading-8 text-white/80"
+            className="mt-8 max-w-2xl mx-auto text-[15px] sm:text-lg leading-8 text-white/80"
           >
             From finding your perfect companion with ethical breeders to shopping for all their needs, Petzu is the ultimate destination for pet lovers.
           </motion.p>
@@ -122,7 +122,7 @@ export default function Intro() {
           >
             <Link
               to="/signup"
-              className="transform rounded-full bg-white px-8 py-4 text-base font-semibold text-gray-900 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-gray-50 flex items-center gap-2"
+              className="transform rounded-full bg-white px-4 py-2 sm:px-8 sm:py-4 text-base font-semibold text-gray-900 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-gray-50 flex items-center gap-2"
             >
               Get Started <ArrowRightIcon className="h-5 w-5" />
             </Link>

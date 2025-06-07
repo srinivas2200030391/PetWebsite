@@ -140,12 +140,36 @@ const NavLinks = () => {
 };
 
 // Navigation links for mobile view
-const MobileNavLinks = () => (
+const MobileNavLinks = ({ close }) => (
   <div className="space-y-1">
-    <Link to="/home" className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">Home</Link>
-    <Link to="/petshop" className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">Pet Shop</Link>
-    <Link to="/matingpage" className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">Mating</Link>
-    <Link to="/my-pets" className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">My Pets</Link>
+    <Link 
+      to="/home" 
+      onClick={close}
+      className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
+    >
+      Home
+    </Link>
+    <Link 
+      to="/petshop" 
+      onClick={close}
+      className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
+    >
+      Pet Shop
+    </Link>
+    <Link 
+      to="/matingpage" 
+      onClick={close}
+      className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
+    >
+      Mating
+    </Link>
+    <Link 
+      to="/my-pets" 
+      onClick={close}
+      className="block px-3 py-2.5 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
+    >
+      My Pets
+    </Link>
     <Disclosure>
       {({ open }) => (
         <>
@@ -158,6 +182,7 @@ const MobileNavLinks = () => (
               <a
                 key={item.title}
                 href={item.href}
+                onClick={close}
                 className="group flex w-full items-start gap-3 rounded-lg p-3 text-sm hover:bg-gray-50 transition-all duration-200"
               >
                 <div className="flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-100 p-2 transition-colors duration-200 group-hover:bg-blue-100">
@@ -197,7 +222,7 @@ export default function Navbar() {
       className="fixed top-0 left-0 right-0 z-50"
     >
       <Disclosure as="nav" className="bg-white/80 backdrop-blur-md shadow-sm">
-        {({ open }) => (
+        {({ open, close }) => (
           <>
             <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
               <div className="flex h-20 items-center justify-between">
@@ -226,15 +251,17 @@ export default function Navbar() {
                   <Profile />
                 </div>
 
-                {/* Mobile Menu Button */}
+                {/* Mobile Menu Button - Enhanced with better touch target size */}
                 <div className="flex items-center lg:hidden">
                   <Link 
                     to="/home/wishlist" 
-                    className="p-2 mr-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                    onClick={close}
+                    className="p-2 mr-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    aria-label="Wishlist"
                   >
                     <HeartIcon className="h-6 w-6" />
                   </Link>
-                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-all duration-200">
+                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-all duration-200 min-w-[44px] min-h-[44px]" aria-label="Menu">
                     <span className="sr-only">Open main menu</span>
                     {open ? (
                       <XMarkIcon
@@ -261,21 +288,24 @@ export default function Navbar() {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1.0] }}
-                  className="lg:hidden border-t border-gray-200 bg-white shadow-lg overflow-hidden"
+                  className="lg:hidden border-t border-gray-200 bg-white shadow-lg overflow-hidden overscroll-contain"
                 >
                   <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                    <MobileNavLinks />
+                    <MobileNavLinks close={close} />
                   </div>
                   <div className="border-t border-gray-200 px-4 py-4">
                     <div className="flex items-center justify-between mb-4">
                       <span className="font-medium text-gray-800">My Account</span>
-                      <Profile />
+                      <Profile closeNavbar={close} />
                     </div>
 
                     {isAuthenticated ? (
                       <button
-                        onClick={logout}
-                        className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200"
+                        onClick={() => {
+                          close();
+                          logout();
+                        }}
+                        className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-red-600 hover:bg-red-700 active:bg-red-800 active:scale-95 transition-all duration-200 min-h-[44px]"
                       >
                         Logout
                       </button>
@@ -283,13 +313,15 @@ export default function Navbar() {
                       <div className="grid grid-cols-2 gap-3">
                         <Link
                           to="/login"
-                          className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
+                          onClick={close}
+                          className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 active:scale-95 transition-all duration-200 min-h-[44px]"
                         >
                           Log In
                         </Link>
                         <Link
                           to="/signup"
-                          className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
+                          onClick={close}
+                          className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 active:scale-95 transition-all duration-200 min-h-[44px]"
                         >
                           Sign Up
                         </Link>

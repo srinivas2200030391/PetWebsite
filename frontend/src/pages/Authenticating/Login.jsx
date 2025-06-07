@@ -142,7 +142,7 @@ export default function LoginPage() {
         transition={{ duration: 0.5, ease: "easeInOut" }}
       >
         {/* Left Panel: Form */}
-        <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+        <div className="flex flex-1 flex-col justify-center px-4 py-8 sm:py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
           <motion.div 
             variants={formVariants}
             initial="hidden"
@@ -151,16 +151,16 @@ export default function LoginPage() {
           >
             <div>
               <Link to="/">
-                <span className="text-3xl font-bold text-gray-900 tracking-tight">PETZU</span>
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">PETZU</span>
               </Link>
-              <h2 className="mt-8 text-3xl font-bold leading-9 tracking-tight text-gray-900">
+              <h2 className="mt-6 sm:mt-8 text-2xl sm:text-3xl font-bold leading-9 tracking-tight text-gray-900">
                 Welcome Back
               </h2>
             </div>
 
-            <div className="mt-10">
+            <div className="mt-8 sm:mt-10">
               <div>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                       Email address
@@ -174,7 +174,7 @@ export default function LoginPage() {
                         required
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                        className="block w-full rounded-md border-0 py-3 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -192,12 +192,13 @@ export default function LoginPage() {
                         required
                         value={formData.password}
                         onChange={handleInputChange}
-                        className="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                        className="block w-full rounded-md border-0 py-3 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 min-h-[44px]"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 min-w-[44px] min-h-[44px] touch-manipulation"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
                       >
                         {showPassword ? <EyeSlashIcon className="h-5 w-5"/> : <EyeIcon className="h-5 w-5"/>}
                       </button>
@@ -206,7 +207,7 @@ export default function LoginPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="text-sm leading-6">
-                      <a href="#" className="font-semibold text-blue-600 hover:text-blue-500">
+                      <a href="#" className="font-semibold text-blue-600 hover:text-blue-500 py-2 inline-block">
                         Forgot password?
                       </a>
                     </div>
@@ -216,21 +217,21 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:bg-blue-300 transition-all duration-300"
+                      className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:bg-blue-300 transition-all duration-300 active:scale-95 min-h-[44px] touch-manipulation"
                     >
                       {loading ? "Signing in..." : "Sign in"}
                     </button>
                   </div>
                 </form>
-                <p className="mt-2 text-sm leading-6 text-gray-500 text-center">
-                Don't have an account?{' '}
-                <Link to="/signup" className="font-semibold text-blue-600 hover:text-blue-500">
-                  Sign up
-                </Link>
-              </p>
+                <p className="mt-4 text-sm leading-6 text-gray-500 text-center">
+                  Don't have an account?{' '}
+                  <Link to="/signup" className="font-semibold text-blue-600 hover:text-blue-500 py-2 inline-block">
+                    Sign up
+                  </Link>
+                </p>
               </div>
 
-              <div className="mt-10">
+              <div className="mt-8 sm:mt-10">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center" aria-hidden="true">
                     <div className="w-full border-t border-gray-200" />
@@ -243,7 +244,7 @@ export default function LoginPage() {
                 <div className="mt-6">
                   <a
                     href="#"
-                    className="flex w-full items-center justify-center gap-3 rounded-md border bg-white px-3 py-2 text-sm font-semibold text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:ring-transparent"
+                    className="flex w-full items-center justify-center gap-3 rounded-md border bg-white px-3 py-3 text-sm font-semibold text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:ring-transparent active:bg-gray-100 active:scale-95 min-h-[44px] touch-manipulation"
                   >
                     <img src="https://www.material-tailwind.com/logos/logo-google.png" alt="Google" className="h-5 w-5" />
                     <span className="text-sm font-semibold leading-6">Google</span>
@@ -255,19 +256,26 @@ export default function LoginPage() {
         </div>
 
         {/* Right Panel: Image */}
-        <motion.div 
-          variants={imageVariants}
-          initial="hidden"
-          animate={transitionState === "initial" ? "visible" : "exit"}
-          className="relative hidden w-0 flex-1 lg:block"
-        >
-          <img
-            className="absolute inset-0 h-full w-full object-cover"
-            src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=2874&auto=format&fit=crop"
-            alt="Happy dog looking up"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"/>
-        </motion.div>
+        <div className="relative hidden lg:block lg:flex-1">
+          <motion.div 
+            variants={imageVariants}
+            initial="hidden"
+            animate={transitionState === "initial" ? "visible" : "exit"}
+            className="absolute inset-0"
+          >
+            <img
+              className="h-full w-full object-cover"
+              src="https://images.unsplash.com/photo-1615789591457-74a63395c990?q=80&w=1687&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              alt="Pet background"
+            />
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/40" />
+            <div className="absolute inset-0 bg-blue-900/20" />
+            <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+              <h3 className="text-2xl font-bold mb-2">Find Your Perfect Pet Companion</h3>
+              <p className="text-white/80">Join PETZU to discover adorable pets and quality services.</p>
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
     </div>
   );

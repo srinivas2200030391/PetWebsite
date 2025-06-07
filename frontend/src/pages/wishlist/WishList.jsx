@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import {
@@ -16,14 +16,18 @@ import {
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/20/solid";
 import config from "../../config";
 import toast from "react-hot-toast";
+import ZoomableImage from "../../components/ZoomableImage";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-// Image Carousel Component for Pet Cards
+// Image Carousel Component for Pet Cards with touch support
 const ImageCarousel = ({ images, className }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showZoomedImage, setShowZoomedImage] = useState(false);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   // Ensure images is an array and handle empty cases
   const displayImages = Array.isArray(images) && images.length > 0 
@@ -31,29 +35,70 @@ const ImageCarousel = ({ images, className }) => {
     : [];
 
   const nextImage = (e) => {
-    e.stopPropagation(); // Prevent event bubbling to parent elements
+    e?.stopPropagation(); // Prevent event bubbling to parent elements
     setCurrentIndex((prevIndex) =>
       prevIndex === displayImages.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   const prevImage = (e) => {
-    e.stopPropagation(); // Prevent event bubbling to parent elements
+    e?.stopPropagation(); // Prevent event bubbling to parent elements
     setCurrentIndex((prevIndex) =>
       prevIndex === 0 ? displayImages.length - 1 : prevIndex - 1
     );
   };
 
+  // Touch handlers for swipe functionality
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    // Minimum swipe distance (px)
+    const minSwipeDistance = 50;
+    const swipeDistance = touchStartX.current - touchEndX.current;
+    
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0) {
+        // Swipe left, go to next image
+        nextImage(e);
+      } else {
+        // Swipe right, go to previous image
+        prevImage(e);
+      }
+    } else {
+      // It's a tap, open zoom view
+      handleImageClick(e);
+    }
+  };
+  
+  const handleImageClick = (e) => {
+    e?.stopPropagation(); // Prevent bubbling to parent card
+    if (displayImages.length > 0) {
+      setShowZoomedImage(true);
+    }
+  };
+
   if (displayImages.length === 0) {
     return (
       <div className={classNames(className, "bg-gray-200 flex items-center justify-center")}>
-        <p className="text-gray-500">No Image</p>
+        <p className="text-gray-500 text-sm sm:text-base">No Image</p>
       </div>
     );
   }
 
   return (
-    <div className={classNames(className, "relative w-full overflow-hidden group")}>
+    <div 
+      className={classNames(className, "relative w-full overflow-hidden group cursor-zoom-in")}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onClick={handleImageClick}
+    >
       {displayImages.map((image, index) => (
         <div
           key={index}
@@ -74,14 +119,18 @@ const ImageCarousel = ({ images, className }) => {
         <>
           <button
             onClick={prevImage}
-            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 transform hover:scale-110">
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 transform hover:scale-110 hidden sm:block"
+            aria-label="Previous image"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
             onClick={nextImage}
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 transform hover:scale-110">
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 transform hover:scale-110 hidden sm:block"
+            aria-label="Next image"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -94,54 +143,123 @@ const ImageCarousel = ({ images, className }) => {
                 className={`w-2 h-2 rounded-full transition-all transform ${
                   index === currentIndex ? "bg-white scale-125" : "bg-white/50 hover:bg-white/80"
                 }`}
+                aria-label={`Go to image ${index + 1}`}
               />
             ))}
           </div>
         </>
       )}
+      
+      {/* Zoomable Image Gallery Modal */}
+      <ZoomableImage
+        src={displayImages[currentIndex]}
+        galleryImages={displayImages}
+        initialIndex={currentIndex}
+        showZoomIcon={false}
+        aspectRatio={false}
+        className="hidden" // Hide the component, we just want to use its modal
+        isModalOpen={showZoomedImage}
+        onModalClose={() => setShowZoomedImage(false)}
+      />
     </div>
   );
 };
 
 const ModalImageGallery = ({ images }) => {
     const [selectedImage, setSelectedImage] = useState(images[0]);
+    const [showZoomedImage, setShowZoomedImage] = useState(false);
+    const touchStartX = useRef(0);
+    const touchEndX = useRef(0);
+    const imageIndex = images.indexOf(selectedImage);
   
     useEffect(() => {
         setSelectedImage(images[0]);
     }, [images]);
 
+    // Touch handlers for swipe functionality
+    const handleTouchStart = (e) => {
+      touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchMove = (e) => {
+      touchEndX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e) => {
+      // Minimum swipe distance (px)
+      const minSwipeDistance = 50;
+      const swipeDistance = touchStartX.current - touchEndX.current;
+      
+      if (Math.abs(swipeDistance) > minSwipeDistance) {
+        if (swipeDistance > 0 && imageIndex < images.length - 1) {
+          // Swipe left, go to next image
+          setSelectedImage(images[imageIndex + 1]);
+        } else if (swipeDistance < 0 && imageIndex > 0) {
+          // Swipe right, go to previous image
+          setSelectedImage(images[imageIndex - 1]);
+        }
+      } else {
+        // It's a tap, open zoom view
+        handleImageClick(e);
+      }
+    };
+    
+    const handleImageClick = (e) => {
+      e?.stopPropagation();
+      setShowZoomedImage(true);
+    };
+
     if (!images || images.length === 0) {
       return (
         <div className="aspect-square w-full bg-gray-200 rounded-lg flex items-center justify-center">
-          <p className="text-gray-500">No Images</p>
+          <p className="text-gray-500 text-sm sm:text-base">No Images</p>
         </div>
       );
     }
   
     return (
-      <div className="flex flex-col gap-4">
-        <div className="aspect-square w-full overflow-hidden rounded-xl">
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div 
+          className="aspect-square w-full overflow-hidden rounded-xl cursor-zoom-in"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onClick={handleImageClick}
+        >
           <img src={selectedImage} alt="Selected pet" className="w-full h-full object-cover" />
         </div>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-5 gap-1 sm:gap-2">
           {images.slice(0, 5).map((image, index) => (
             <button
               key={index}
               onClick={() => setSelectedImage(image)}
               className={classNames(
-                "aspect-square w-full rounded-lg overflow-hidden transition-all",
+                "aspect-square w-full rounded-lg overflow-hidden transition-all min-h-[44px]",
                 selectedImage === image ? "ring-2 ring-indigo-500 ring-offset-2" : "hover:opacity-80"
               )}
+              aria-label={`View image ${index + 1}`}
             >
               <img src={image} alt={`Pet thumbnail ${index + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
+        
+        {/* Zoomable Image Gallery Modal */}
+        <ZoomableImage
+          src={selectedImage}
+          galleryImages={images}
+          initialIndex={imageIndex}
+          showZoomIcon={false}
+          aspectRatio={false}
+          className="hidden" // Hide the component, we just want to use its modal
+          isModalOpen={showZoomedImage}
+          onModalClose={() => setShowZoomedImage(false)}
+        />
       </div>
     );
   };
 
-// Pet Details Modal - Redesigned
+// Pet Details Modal - Redesigned with mobile responsiveness
 const PetDetailsModal = ({
   pet,
   isOpen,
@@ -202,7 +320,7 @@ const PetDetailsModal = ({
   const LockedFeature = ({ icon: Icon, text }) => (
     <div className="flex items-center gap-3">
       <Icon className="h-5 w-5 text-gray-400" />
-      <span className="text-gray-500">{text}</span>
+      <span className="text-xs sm:text-sm text-gray-500">{text}</span>
     </div>
   );
 
@@ -210,7 +328,7 @@ const PetDetailsModal = ({
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <DialogBackdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
       <div className="fixed inset-0 z-50 w-screen overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4">
+        <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
           <DialogPanel className="relative mx-auto w-full max-w-6xl rounded-2xl bg-white shadow-2xl">
             {/* Pet Type Badge */}
             {isMatingPet && (
@@ -220,40 +338,47 @@ const PetDetailsModal = ({
             )}
             
             <div className="absolute top-4 right-4 z-10">
-              <button onClick={onClose} className="p-2 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors">
+              <button 
+                onClick={onClose} 
+                className="p-2 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors"
+                aria-label="Close dialog"
+              >
                 <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2">
-              <div className="p-4">
+              <div className="p-3 sm:p-4">
                 <ModalImageGallery images={petImages} />
               </div>
 
-              <div className="flex flex-col p-8">
+              <div className="flex flex-col p-4 sm:p-6 lg:p-8">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
                     {isMatingPet 
                       ? `${pet.breed || pet.breedName}` 
                       : pet.name}
                   </h3>
-                  <button className="flex items-center justify-center mx-auto bg-gray-100 hover:bg-gray-200 p-3 rounded-full">
+                  <button 
+                    className="flex items-center justify-center mx-auto bg-gray-100 hover:bg-gray-200 p-3 rounded-full"
+                    aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                  >
                     <HeartIconSolid className={`h-6 w-6 transition-colors duration-200 ${isWishlisted ? "text-red-500" : "text-gray-400 hover:text-red-500"}`} />
                   </button>
                 </div>
                 
                 {!isMatingPet && (
-                  <p className="text-lg text-gray-600 mb-4">{pet.breed}</p>
+                  <p className="text-base sm:text-lg text-gray-600 mb-3 sm:mb-4">{pet.breed}</p>
                 )}
 
                 {/* Only show price for regular pets */}
                 {!isMatingPet && (
-                  <div className="flex items-center text-4xl font-bold text-gray-800 mb-6">
-                    <CurrencyRupeeIcon className="h-8 w-8 mr-1" />
+                  <div className="flex items-center text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-4 sm:mb-6">
+                    <CurrencyRupeeIcon className="h-6 w-6 sm:h-8 sm:w-8 mr-1" />
                     {typeof pet.price === 'number' ? pet.price.toLocaleString('en-IN') : pet.price}
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 mb-6 text-base">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 mb-4 sm:mb-6 text-xs sm:text-sm md:text-base">
                   <p><strong className="font-semibold text-gray-600">Age:</strong> {pet.age} {isMatingPet ? 'years' : ''}</p>
                   <p><strong className="font-semibold text-gray-600">Gender:</strong> {pet.gender}</p>
                   {(pet.breedLineage || (isMatingPet && pet.breed)) && <p><strong className="font-semibold text-gray-600">Lineage:</strong> {pet.breedLineage || pet.breed}</p>}
@@ -263,20 +388,20 @@ const PetDetailsModal = ({
                   {pet.location && <p><strong className="font-semibold text-gray-600">Location:</strong> {pet.location}</p>}
                 </div>
                 
-                <div className="mb-6">
-                  <h4 className="font-semibold text-gray-800 mb-2">About {isMatingPet ? "This Pet" : pet.name}</h4>
-                  <p className="text-gray-600 text-sm leading-relaxed">{isMatingPet ? pet.breedLineage : pet.details || "No details available for this pet."}</p>
+                <div className="mb-4 sm:mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-1 sm:mb-2">About {isMatingPet ? "This Pet" : pet.name}</h4>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">{isMatingPet ? pet.breedLineage : pet.details || "No details available for this pet."}</p>
                 </div>
 
                 {pet.characteristics && !isMatingPet && (
                   <div className="mb-auto">
-                    <h4 className="font-semibold text-gray-800 mb-2">Characteristics</h4>
-                    <div className="flex flex-wrap gap-2">
+                    <h4 className="font-semibold text-gray-800 mb-1 sm:mb-2">Characteristics</h4>
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
                       {typeof pet.characteristics === 'string' ? 
                         pet.characteristics.split(",").map((char) => (
-                          <span key={char} className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full">{char.trim()}</span>
+                          <span key={char} className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2 py-1 sm:px-2.5 sm:py-1 rounded-full">{char.trim()}</span>
                         )) :
-                        <span className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                        <span className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2 py-1 sm:px-2.5 sm:py-1 rounded-full">
                           {isMatingPet ? 'Mating Service' : 'Pet'}
                         </span>
                       }
@@ -284,15 +409,15 @@ const PetDetailsModal = ({
                   </div>
                 )}
                 
-                <div className="mt-8">
+                <div className="mt-4 sm:mt-8">
                   {paymentStatus ? (
-                    <div className={`rounded-xl p-6 border space-y-5 ${
+                    <div className={`rounded-xl p-4 sm:p-6 border space-y-3 sm:space-y-5 ${
                       isMatingPet ? 'bg-purple-50/60 border-purple-200' : 'bg-green-50/60 border-green-200'
                     }`}>
-                      <h4 className={`text-lg font-semibold flex items-center gap-2 ${
+                      <h4 className={`text-base sm:text-lg font-semibold flex items-center gap-2 ${
                         isMatingPet ? 'text-purple-800' : 'text-green-800'
                       }`}>
-                        <SparklesIcon className={`h-6 w-6 ${isMatingPet ? 'text-purple-600' : 'text-green-600'}`} />
+                        <SparklesIcon className={`h-5 w-5 sm:h-6 sm:w-6 ${isMatingPet ? 'text-purple-600' : 'text-green-600'}`} />
                         {isMatingPet ? 'Breeder Contact Information' : 'Exclusive Details Unlocked'}
                       </h4>
                       
@@ -301,7 +426,7 @@ const PetDetailsModal = ({
                         {(pet.breederName || pet.vendorName) && 
                           <div className="flex items-start gap-3">
                             <UserCircleIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
-                            <span className="text-gray-700 text-sm">
+                            <span className="text-gray-700 text-xs sm:text-sm">
                               <strong className="text-gray-900 block">{isMatingPet ? 'Breeder' : 'Vendor'}:</strong> 
                               {pet.breederName || pet.vendorName}
                             </span>
@@ -311,7 +436,7 @@ const PetDetailsModal = ({
                         {(pet.phoneNumber || pet.phoneNum) && 
                           <div className="flex items-start gap-3">
                             <PhoneIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
-                            <span className="text-gray-700 text-sm">
+                            <span className="text-gray-700 text-xs sm:text-sm">
                               <strong className="text-gray-900 block">Contact:</strong> 
                               {pet.phoneNumber || pet.phoneNum}
                             </span>
@@ -321,7 +446,7 @@ const PetDetailsModal = ({
                         {pet.location && 
                           <div className="flex items-start gap-3">
                             <MapPinIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
-                            <span className="text-gray-700 text-sm">
+                            <span className="text-gray-700 text-xs sm:text-sm">
                               <strong className="text-gray-900 block">Location:</strong> 
                               {pet.location}
                             </span>
@@ -331,7 +456,7 @@ const PetDetailsModal = ({
                         {pet.shopAddress && 
                           <div className="flex items-start gap-3">
                             <MapPinIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
-                            <span className="text-gray-700 text-sm">
+                            <span className="text-gray-700 text-xs sm:text-sm">
                               <strong className="text-gray-900 block">Shop Address:</strong> 
                               {pet.shopAddress}
                             </span>
@@ -346,7 +471,7 @@ const PetDetailsModal = ({
                         {pet.vaccinationDetails && 
                           <div className="flex items-start gap-3">
                             <ShieldCheckIcon className={`h-5 w-5 mt-0.5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} />
-                            <span className="text-gray-700 text-sm">
+                            <span className="text-gray-700 text-xs sm:text-sm">
                               <strong className="text-gray-900 block">Vaccination Details:</strong> 
                               {pet.vaccinationDetails}
                             </span>
@@ -360,7 +485,7 @@ const PetDetailsModal = ({
                               href={pet.vaccinationProof} 
                               target="_blank" 
                               rel="noopener noreferrer" 
-                              className={`hover:underline font-medium text-sm ${isMatingPet ? 'text-purple-700' : 'text-green-700'}`}
+                              className={`hover:underline font-medium text-xs sm:text-sm ${isMatingPet ? 'text-purple-700' : 'text-green-700'}`}
                             >
                               View Vaccination Proof
                             </a>
@@ -373,7 +498,7 @@ const PetDetailsModal = ({
                         <>
                           <div className={`border-t ${isMatingPet ? 'border-purple-200' : 'border-green-200'}`}></div>
                           <div className="space-y-2">
-                            <h5 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
+                            <h5 className="font-semibold text-gray-900 text-xs sm:text-sm flex items-center gap-2">
                               <VideoCameraIcon className={`h-5 w-5 ${isMatingPet ? 'text-purple-500' : 'text-green-500'}`} /> 
                               {isMatingPet ? 'Mating Videos' : 'Pet Videos'}
                             </h5>
@@ -384,7 +509,7 @@ const PetDetailsModal = ({
                                   key={idx} 
                                   target="_blank" 
                                   rel="noopener noreferrer" 
-                                  className={`px-3 py-1 rounded-full text-xs font-semibold hover:opacity-80 ${
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold hover:opacity-80 min-h-[36px] min-w-[44px] flex items-center justify-center ${
                                     isMatingPet 
                                       ? 'bg-purple-200 text-purple-800 hover:bg-purple-300' 
                                       : 'bg-green-200 text-green-800 hover:bg-green-300'
@@ -399,12 +524,12 @@ const PetDetailsModal = ({
                       )}
                     </div>
                   ) : (
-                    <div className="bg-gray-50 rounded-xl p-6 border">
-                      <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
-                        <LockClosedIcon className="h-6 w-6 text-gray-500" />
+                    <div className="bg-gray-50 rounded-xl p-4 sm:p-6 border">
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 mb-3 sm:mb-4">
+                        <LockClosedIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-500" />
                         {isMatingPet ? 'Contact Breeder' : 'Unlock Exclusive Details'}
                       </h4>
-                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 mb-4 sm:mb-6">
                         <LockedFeature icon={UserCircleIcon} text={isMatingPet ? "Breeder's Name" : "Owner's Name"} />
                         <LockedFeature icon={PhoneIcon} text="Contact Number" />
                         <LockedFeature icon={MapPinIcon} text="Exact Location & Address" />
@@ -414,7 +539,7 @@ const PetDetailsModal = ({
                       <button 
                         onClick={handlePayment} 
                         className={classNames(
-                          "w-full text-white font-bold py-3 px-4 rounded-lg transition-transform text-base shadow-lg hover:shadow-xl", 
+                          "w-full text-white font-bold py-3 px-4 rounded-lg transition-transform text-sm sm:text-base shadow-lg hover:shadow-xl min-h-[44px]", 
                           isAvailable 
                             ? isMatingPet 
                               ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:-translate-y-0.5" 
@@ -475,12 +600,12 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
       </div>
       
       <div className="relative">
-        <ImageCarousel images={sampleImages} className="h-72" />
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 via-black/40 to-transparent">
-          <h3 className="text-xl font-bold text-white leading-tight">
+        <ImageCarousel images={sampleImages} className="h-56 sm:h-64 md:h-72" />
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/70 via-black/40 to-transparent">
+          <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">
             {isMatingPet ? `${pet.breed || pet.breedName} (Mating)` : pet.name}
           </h3>
-          <p className="text-sm text-white/90">
+          <p className="text-xs sm:text-sm text-white/90">
             {isMatingPet 
               ? `${pet.gender}, ${pet.age} years${pet.petQuality ? `, ${pet.petQuality}` : ''}` 
               : pet.breed}
@@ -488,19 +613,19 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
         </div>
       </div>
 
-      <div className="p-4 flex justify-between items-center">
+      <div className="p-3 sm:p-4 flex justify-between items-center">
         <div>
           {/* Only show price for regular pets */}
           {!isMatingPet && (
-            <p className="text-xl font-bold text-gray-800">
+            <p className="text-lg sm:text-xl font-bold text-gray-800">
               ₹{typeof pet.price === 'number' ? pet.price.toLocaleString('en-IN') : pet.price}
             </p>
           )}
           
-          <div className="flex flex-wrap gap-2 mt-1">
+          <div className="flex flex-wrap gap-1 sm:gap-2 mt-1">
             {/* Status badge */}
             <span className={classNames(
-              "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
+              "inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-semibold",
               isAvailable ? 
                 (isMatingPet ? "bg-purple-100 text-purple-800" : "bg-green-100 text-green-800") : 
                 "bg-gray-100 text-gray-800"
@@ -510,14 +635,14 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
             
             {/* Pet location badge */}
             {pet.location && (
-              <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-blue-700">
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-semibold bg-blue-50 text-blue-700">
                 {pet.location}
               </span>
             )}
             
             {/* PetQuality badge for mating pets */}
             {isMatingPet && pet.petQuality && (
-              <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-purple-50 text-purple-700">
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-semibold bg-purple-50 text-purple-700">
                 {pet.petQuality}
               </span>
             )}
@@ -526,14 +651,14 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
         
         <button
           onClick={(e) => { e.stopPropagation(); onAddToWishlist(pet._id); }}
-          className={`p-2.5 rounded-full transition-all duration-300 ${
+          className={`p-2 sm:p-2.5 rounded-full transition-all duration-300 min-h-[44px] min-w-[44px] flex items-center justify-center ${
             isWishlisted 
               ? "bg-red-50 text-red-500" 
               : "bg-gray-100 text-gray-600 hover:text-red-500 hover:bg-red-50"
           }`}
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
-          <HeartIconSolid className="h-6 w-6" />
+          <HeartIconSolid className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
       </div>
     </div>
@@ -747,18 +872,18 @@ export default function PetStore() {
           </div>
         </Dialog>
 
-        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-extrabold tracking-tight text-gray-900">
+        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900">
               Your Wishlist
             </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-500">
+            <p className="mt-3 sm:mt-4 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg text-gray-500">
               Your collection of saved pets for adoption and mating services.
             </p>
             
             {!loading && pets.length > 0 && (
-              <div className="mt-6 flex flex-wrap justify-center gap-4">
-                <span className="text-sm text-gray-500">
+              <div className="mt-4 sm:mt-6 flex flex-wrap justify-center gap-4">
+                <span className="text-xs sm:text-sm text-gray-500">
                   {regularPetsCount} pets for adoption • {matingPetsCount} mating pets
                 </span>
               </div>
@@ -766,12 +891,12 @@ export default function PetStore() {
           </div>
           
           {!loading && pets.length > 0 && (
-            <div className="mb-8 flex justify-center">
+            <div className="mb-6 sm:mb-8 flex justify-center">
               <div className="inline-flex rounded-md shadow-sm" role="group">
                 <button
                   type="button"
                   onClick={() => setSortOption("all")}
-                  className={`px-4 py-2 text-sm font-medium ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium ${
                     sortOption === "all"
                       ? "bg-indigo-600 text-white"
                       : "bg-white text-gray-700 hover:bg-gray-50"
@@ -782,7 +907,7 @@ export default function PetStore() {
                 <button
                   type="button"
                   onClick={() => setSortOption("adoption")}
-                  className={`px-4 py-2 text-sm font-medium ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium ${
                     sortOption === "adoption"
                       ? "bg-indigo-600 text-white"
                       : "bg-white text-gray-700 hover:bg-gray-50"
@@ -793,7 +918,7 @@ export default function PetStore() {
                 <button
                   type="button"
                   onClick={() => setSortOption("mating")}
-                  className={`px-4 py-2 text-sm font-medium ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium ${
                     sortOption === "mating"
                       ? "bg-purple-600 text-white"
                       : "bg-white text-gray-700 hover:bg-gray-50"
@@ -819,13 +944,13 @@ export default function PetStore() {
                 <p className="text-red-500">{error}</p>
               </div>
             ) : pets.length === 0 ? (
-              <div className="text-center py-24">
-                <HeartIconSolid className="mx-auto h-12 w-12 text-gray-300" />
-                <h3 className="mt-2 text-xl font-medium text-gray-900">Your wishlist is empty</h3>
-                <p className="mt-1 text-gray-500">Find a pet you love and save it here.</p>
+              <div className="text-center py-16 sm:py-24">
+                <HeartIconSolid className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-300" />
+                <h3 className="mt-2 text-lg sm:text-xl font-medium text-gray-900">Your wishlist is empty</h3>
+                <p className="mt-1 text-sm sm:text-base text-gray-500">Find a pet you love and save it here.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-y-10 gap-x-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-y-8 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {filteredPets.map((pet) => (
                   <PetCard
                     key={pet._id}

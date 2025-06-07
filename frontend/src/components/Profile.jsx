@@ -15,7 +15,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function ProfileMenu() {
+export default function ProfileMenu({ closeNavbar }) {
   const { logout } = useAuthStore();
   const [userName, setUserName] = useState('User');
   const [userEmail, setUserEmail] = useState('');
@@ -40,14 +40,15 @@ export default function ProfileMenu() {
 
   return (
     <Menu as="div" className="relative inline-block text-left">
-      {({ open }) => (
+      {({ open, close }) => (
         <>
           <div>
             <Menu.Button 
               className={classNames(
                 "flex items-center gap-1 rounded-full bg-white border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
                 "transition-all duration-200 ease-in-out p-0.5 pr-3",
-                "hover:bg-gray-50 hover:shadow-md",
+                "hover:bg-gray-50 hover:shadow-md active:scale-95",
+                "min-w-[44px] min-h-[44px] touch-manipulation",
                 open ? "shadow-md ring-2 ring-blue-500 ring-opacity-50" : ""
               )}
             >
@@ -84,22 +85,26 @@ export default function ProfileMenu() {
             leaveFrom="transform opacity-100 scale-100 translate-y-0"
             leaveTo="transform opacity-0 scale-95 translate-y-1"
           >
-            <Menu.Items className="absolute right-0 z-10 mt-3 w-64 origin-top-right rounded-xl bg-white shadow-2xl ring-1 ring-black/5 focus:outline-none divide-y divide-gray-100 overflow-hidden">
+            <Menu.Items className="absolute right-0 z-10 sm:mt-3 sm:top-auto bottom-12 sm:bottom-auto mt-1 w-64 origin-top-right sm:origin-top-right origin-bottom-right rounded-xl bg-white shadow-2xl ring-1 ring-black/5 focus:outline-none divide-y divide-gray-100 overflow-hidden">
               {/* User Profile Header */}
-              <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-blue-50 to-indigo-50">
                 <p className="text-sm font-medium text-gray-900">{userName}</p>
                 <p className="text-xs text-gray-500 truncate mt-0.5">{userEmail}</p>
               </div>
               
-              <div className="py-2">
+              <div className="py-1 sm:py-2">
                 {menuItems.map((item) => (
                   <Menu.Item key={item.name}>
                     {({ active }) => (
                       <Link
                         to={item.href}
+                        onClick={() => {
+                          close();
+                          if (closeNavbar) closeNavbar();
+                        }}
                         className={classNames(
                           active ? 'bg-blue-50' : '',
-                          'flex items-center gap-3 px-6 py-2.5 text-sm transition-colors duration-150 ease-in-out'
+                          'flex items-center gap-3 px-4 sm:px-6 py-2.5 text-sm transition-colors duration-150 ease-in-out min-h-[44px]'
                         )}
                       >
                         <span className={classNames(
@@ -117,15 +122,20 @@ export default function ProfileMenu() {
                 ))}
               </div>
               
-              <div className="py-2 bg-gray-50">
+              <div className="py-1 sm:py-2 bg-gray-50">
                 <Menu.Item>
                   {({ active }) => (
                     <a
                       href="/"
-                      onClick={logout}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        close();
+                        if (closeNavbar) closeNavbar();
+                        logout();
+                      }}
                       className={classNames(
                         active ? 'bg-red-50' : '',
-                        'w-full flex items-center gap-3 px-6 py-2.5 text-sm transition-colors duration-150 ease-in-out'
+                        'w-full flex items-center gap-3 px-4 sm:px-6 py-2.5 text-sm transition-colors duration-150 ease-in-out min-h-[44px]'
                       )}
                     >
                       <span className={classNames(

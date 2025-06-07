@@ -339,7 +339,7 @@ export default function MatingPage() {
   }
 
   return (
-    <motion.div className="bg-gray-50 min-h-screen" variants={pageTransition} initial="hidden" animate="visible">
+    <motion.div className="bg-gray-50 min-h-screen pt-10 sm:pt-0" variants={pageTransition} initial="hidden" animate="visible">
       <Dialog open={mobileFiltersOpen} onClose={setMobileFiltersOpen} className="relative z-50 lg:hidden">
         <DialogBackdrop className="fixed inset-0 bg-black bg-opacity-25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0" />
         <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 transform transition duration-300 ease-in-out data-[closed]:translate-x-full">
@@ -392,8 +392,8 @@ export default function MatingPage() {
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="border-b border-gray-200 pb-8 pt-16 md:pt-20">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Find a Mate for Your Pet</h1>
-          <p className="mt-4 text-lg text-gray-500">Browse available pets for mating or use filters to find the perfect match.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">Find a Mate for Your Pet</h1>
+          <p className="mt-4 text-md sm:text-lg text-gray-500">Browse available pets for mating or use filters to find the perfect match.</p>
               </div>
 
         <div className="pt-8 pb-24 lg:grid lg:grid-cols-4 lg:gap-x-8">
