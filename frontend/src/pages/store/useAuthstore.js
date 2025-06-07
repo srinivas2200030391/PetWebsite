@@ -68,7 +68,7 @@ export const useAuthStore = create((set, get) => ({
         method: "POST",
         credentials: "include", // 💌 ensures cookies are sent
       });
-
+  
       window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);

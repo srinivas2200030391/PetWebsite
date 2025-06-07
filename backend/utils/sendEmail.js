@@ -14,7 +14,7 @@ export const sendEmail = async (to, subject, htmlContent) => {
   });
 
   const mailOptions = {
-    from: `"OTP Angel 😇" <${process.env.EMAIL_USER}>`,
+    from: `"PetZu" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html: htmlContent,

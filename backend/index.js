@@ -35,6 +35,12 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieparser());
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
+
 app.use("/api/cart", cartRoute);
 app.use("/api/boarding",BoardingRoute);
 app.use("/api/auth", authRoutes);
@@ -45,15 +51,20 @@ app.use("/api/hospitalcard", hospitalCardRoute);
 app.use("/api/vendor", vendorRoute); // Assuming you have a vendor route
 app.use("/api/payments", paymentRoute);
 app.use("/api/matingpets", userMatingPetRoute);
-app.use("/api/aboutpet", aboutPetRoute);
 app.use("/api/mypet", myPetRoutes);
 app.use("/api/pethealth", petHealthRoutes);
 app.use("/api/cages", cageRoutes);
 // app.use("/api/bookings", BoardingRoute);
 
+// Add a debug route to verify the server is working correctly
+app.get("/api/debug", (req, res) => {
+  res.json({ success: true, message: "Server is working correctly", routes: app._router.stack.filter(r => r.route).map(r => ({ path: r.route.path, methods: Object.keys(r.route.methods) })) });
+});
+
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   connectDB();

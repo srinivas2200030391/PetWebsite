@@ -6,45 +6,55 @@ import { sendEmail } from "../utils/sendEmail.js";
 
 export const signup = async (req, res) => {
   try {
-    const user = req.body;
-    console.log(user);
-    const gmail = user.gmail;
-    const userPresent = await User.findOne({ email: gmail }); // use email in DB
-
-    if (userPresent) {
-      return res.status(400).json({ message: "user already exists" });
+    const userData = req.body;
+    console.log("Signup request data:", userData);
+    
+    // Extract email from the request
+    const email = userData.email;
+    
+    // Check if user already exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+    //check if phone number exists
+    const phoneExists = await User.findOne({ phone: userData.phone });
+    if (phoneExists) {
+      return res.status(400).json({ message: "Phone number already exists" });
     }
 
     // Hash the password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(user.password, salt);
-    user.password = hashedPassword;
-
-    // Map fields to match your schema
-    const mappedUser = {
-      ...user,
-      fullname: user.fullName,
-      email: user.gmail,
-    };
-    delete mappedUser.fullName;
-    delete mappedUser.gmail;
-
-    const newUser = new User(mappedUser);
-    console.log("new user", newUser);
-
+    const hashedPassword = await bcrypt.hash(userData.password, salt);
+    
+    // Create a new user with properly mapped fields
+    const newUser = new User({
+      fullname: userData.fullName,
+      email: userData.email,
+      phone: userData.phone,
+      username: userData.username,
+      password: hashedPassword,
+      userType: "Client"
+    });
+    
+    console.log("Creating new user:", newUser);
+    
+    // Save the user to the database
     await newUser.save();
 
-    generatetoken(newUser._id, res); // moved after save
+    // Generate a token for the new user
+    generatetoken(newUser._id, res);
 
     res.status(201).json({
       message: "User created successfully",
       data: {
         ...newUser.toObject(),
+        password: undefined // Don't send password back to client
       },
     });
   } catch (error) {
-    console.log(`error in signup controller ${error.message}`);
-    res.status(500).json({ message: "internal server error" });
+    console.error(`Error in signup controller: ${error.message}`);
+    res.status(500).json({ message: "Internal server error: " + error.message });
   }
 };
 
@@ -151,36 +161,66 @@ export const checkauth = async (req, res) => {
 };
 
 export const getOtp = async (req, res) => {
-  const { email } = req.body;
+  const { email, phone } = req.body;
 
   try {
     if (!email) {
       return res
         .status(400)
-        .json({ message: "Please provide an email, darling 💌" });
+        .json({ message: "Please provide an email" });
+    }
+    if (!phone) {
+      return res
+        .status(400)
+        .json({ message: "Please provide a phone number" });
     }
 
     const user = await User.findOne({ email });
+    const phoneExists = await User.findOne({ phone });
+
+    if (user) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+    if (phoneExists) {
+      return res.status(400).json({ message: "Phone number already exists" });
+    }
 
     const otp = Math.floor(100000 + Math.random() * 900000);
-    if (user) {
-      user.otp = otp;
-      await user.save();
-    }
+    
     const html = `
-      <div style="font-family: Arial; padding: 20px;">
-        <h2>Hello lovely 💖</h2>
-        <p>Your OTP is: <b>${otp}</b></p>
-        <p>Use it within 5 minutes, okay? 💋</p>
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333; background-color: #f7f7f7; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); overflow: hidden;">
+          <div style="background-color: #4CAF50; color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px;">PetZu Verification Code</h1>
+          </div>
+          <div style="padding: 30px;">
+            <h2 style="font-size: 20px; color: #333;">Your One-Time Password (OTP)</h2>
+            <p style="color: #555;">Hello,</p>
+            <p style="color: #555;">Please use the following code to complete your action. This code is valid for 5 minutes.</p>
+            <div style="text-align: center; margin: 20px 0;">
+              <span style="display: inline-block; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #333; background-color: #f2f2f2; padding: 15px 25px; border-radius: 5px;">${otp}</span>
+            </div>
+            <p style="color: #555;">If you did not request this code, please disregard this email. Your account is secure.</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="font-size: 12px; color: #999; text-align: center;">
+              &copy; ${new Date().getFullYear()} PetZu. All Rights Reserved.
+            </p>
+          </div>
+        </div>
       </div>
     `;
 
-    await sendEmail(email, "Your OTP Code 💘", html);
+    await sendEmail(email, "Your OTP Code", html);
 
-    res.status(200).json({ message: "OTP sent to your email 💌", otp: otp });
+    // Send the OTP to the client for verification
+    res.status(200).json({ 
+      success: true,
+      message: `OTP sent to your email - ${email}`,
+      otp: otp  // Send OTP to client
+    });
   } catch (error) {
     console.error(`getOtp error: ${error.message}`);
-    res.status(500).json({ message: "Internal server error 💔" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -206,7 +246,7 @@ export const verifyOtp = async (req, res) => {
     user.otp = null;
     await user.save();
 
-    res.status(200).json({ message: "OTP verified! You’re in, honey 🍯" });
+    res.status(200).json({ message: "OTP verified! You're in, honey 🍯" });
   } catch (error) {
     console.error(`verifyOtp error: ${error.message}`);
     res.status(500).json({ message: "Internal server error 💔" });

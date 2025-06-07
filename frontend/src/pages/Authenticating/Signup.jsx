@@ -36,11 +36,13 @@ export default function SignupPage() {
     if (!formData.fullName.trim()) return toast.error("Full name is required");
     if (!formData.phoneNumber.trim())
       return toast.error("Phone number is required");
-    if (
-      !/^\+?[\d\s\-\(\)]{10,}$/.test(formData.phoneNumber.replace(/\s/g, ""))
-    ) {
-      return toast.error("Invalid phone number format");
+    
+    // Stricter phone number validation - must be exactly 10 digits
+    const phoneDigits = formData.phoneNumber.replace(/\D/g, "");
+    if (phoneDigits.length !== 10) {
+      return toast.error("Phone number must be exactly 10 digits");
     }
+    
     if (!formData.gmail.trim()) return toast.error("Gmail is required");
     if (!/^[^\s@]+@gmail\.com$/.test(formData.gmail)) {
       return toast.error("Please enter a valid Gmail address");
@@ -58,15 +60,20 @@ export default function SignupPage() {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const response = await axios.post(`${config.baseURL}/api/auth/getotp`, { email: formData.gmail });
-      if (response.status === 200) {
-        setGeneratedOtp(response.data.otp);
+      const response = await axios.post(`${config.baseURL}/api/auth/getotp`, { email: formData.gmail, phone: formData.phoneNumber });
+      if (response.status === 200 && response.data.success) {
+        // Store OTP and convert to string to ensure consistent comparison later
+        const receivedOtp = response.data.otp ? response.data.otp.toString() : "";
+        setGeneratedOtp(receivedOtp);
+        console.log("OTP received and stored:", receivedOtp);
+        
         setShowOtpModal(true);
-        toast.success("OTP sent successfully!");
+        toast.success("OTP sent to your email!");
       } else {
         toast.error(response.data.message || "Failed to send OTP");
       }
     } catch (error) {
+      console.error("OTP request error:", error);
       toast.error(error.response?.data?.message || "Failed to send OTP");
     } finally {
       setIsLoading(false);
@@ -76,16 +83,35 @@ export default function SignupPage() {
   const verifyOtpAndSignup = async () => {
     if (formData.otp.length !== 6) return toast.error("OTP must be 6 digits.");
     setIsLoading(true);
+    
     try {
-      if (generatedOtp.toString() === formData.otp) {
-        const signupResponse = await axios.post(`${config.baseURL}/api/auth/signup`, formData);
+      // First verify that OTP matches
+      if (formData.otp !== generatedOtp.toString()) {
+        toast.error("Invalid OTP. Please enter the correct code.");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Proceed with signup only if OTP is correct
+      const signupData = {
+        fullName: formData.fullName,
+        email: formData.gmail,
+        phone: formData.phoneNumber,
+        username: formData.username,
+        password: formData.password,
+      };
+      
+      const signupResponse = await axios.post(`${config.baseURL}/api/auth/signup`, signupData);
+      
+      if (signupResponse.data) {
         toast.success("Account created successfully!");
         setShowOtpModal(false);
         navigate("/login");
       } else {
-        toast.error("Invalid OTP. Please try again.");
+        toast.error("Failed to create account");
       }
     } catch (error) {
+      console.error("Signup error:", error);
       toast.error(error.response?.data?.message || "Failed to create account");
     } finally {
       setIsLoading(false);
