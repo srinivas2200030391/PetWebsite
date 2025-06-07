@@ -507,7 +507,11 @@ const PetDetailsModal = ({
                   </button>
                   {!hasPaid ? (
                     <button onClick={handlePayment} disabled={isLoading} className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded shadow-sm hover:bg-indigo-700 disabled:opacity-70">
-                      {isLoading ? 'Processing...' : 'Pay to Contact Breeder'}
+                      {isLoading ? 'Processing...' : (
+                        <>
+                          Pay <span className="ml-1 mr-1 text-gray-300 font-bold">₹9</span> to Contact Breeder
+                        </>
+                      )}
                     </button>
                   ) : (
                     <span className="text-green-600 font-medium flex items-center"><CheckCircleIcon className="h-5 w-5 mr-1" />Premium Unlocked</span>
