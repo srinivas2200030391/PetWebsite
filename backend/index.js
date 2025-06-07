@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 8000;
 
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL || "http://localhost:5173", "https://petzu.vercel.app"], // Use frontend URL from .env or fallback
+    origin: [process.env.FRONTEND_URL , "http://localhost:5173", "https://petzu.vercel.app"], // Use frontend URL from .env or fallback
     credentials: true, // Allow credentials (cookies, auth headers)
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
   })
