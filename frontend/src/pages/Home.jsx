@@ -8,7 +8,7 @@ import Cart from "./Cart";
 import salesimg from "../assets/salesimg.jpg";
 import matingimg from "../assets/matingimg.jpeg";
 import WishList from "./wishlist/WishList";
-import Payments from "./payments/payments";
+import Payments from "./payments/Payments";
 import MyProfile from './profile/MyProfile';
 import { 
   ArrowRightIcon, 
