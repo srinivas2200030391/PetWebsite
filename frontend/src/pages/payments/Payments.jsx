@@ -392,7 +392,6 @@ const PetDetailsModal = ({
 
 // Regular Pet Card Component - Redesigned
 const PetCard = ({ pet, onViewDetails }) => {
-  const [showZoomedImage, setShowZoomedImage] = useState(false);
   const petImages = pet.images || [pet.imageUrl];
 
   return (
@@ -403,7 +402,7 @@ const PetCard = ({ pet, onViewDetails }) => {
       className="overflow-hidden rounded-xl shadow-md bg-white hover:shadow-lg transition-all duration-300"
     >
       <div className="relative">
-        <div className="aspect-[4/3] cursor-zoom-in" onClick={() => setShowZoomedImage(true)}>
+        <div className="aspect-[4/3]" onClick={() => onViewDetails(pet, "adoption")}>
           <img 
             src={petImages[0]} 
             alt={pet.name || pet.breed} 
@@ -454,18 +453,6 @@ const PetCard = ({ pet, onViewDetails }) => {
           </button>
         </div>
       </div>
-      
-      {/* Zoomable Image Modal */}
-      <ZoomableImage
-        src={petImages[0]}
-        galleryImages={petImages}
-        initialIndex={0}
-        showZoomIcon={false}
-        aspectRatio={false}
-        className="hidden" // Hide the component, we just want to use its modal
-        isModalOpen={showZoomedImage}
-        onModalClose={() => setShowZoomedImage(false)}
-      />
     </motion.div>
   );
 };
@@ -473,7 +460,6 @@ const PetCard = ({ pet, onViewDetails }) => {
 // Mating Pet Card Component - Redesigned
 const MatingPetCard = ({ pet, onViewDetails }) => {
   const [isHovering, setIsHovering] = useState(false);
-  const [showZoomedImage, setShowZoomedImage] = useState(false);
   
   const petImages = Array.isArray(pet.photosAndVideos) && pet.photosAndVideos.length > 0
     ? pet.photosAndVideos
@@ -494,7 +480,7 @@ const MatingPetCard = ({ pet, onViewDetails }) => {
       onMouseLeave={() => setIsHovering(false)}
     >
       <div className="relative">
-        <div className="aspect-[4/3] cursor-zoom-in" onClick={() => setShowZoomedImage(true)}>
+        <div className="aspect-[4/3]" onClick={() => onViewDetails(pet, "mating")}>
           {petImages.length > 0 ? (
             <img 
               src={petImages[0]} 
@@ -583,20 +569,6 @@ const MatingPetCard = ({ pet, onViewDetails }) => {
           </button>
         </div>
       </div>
-      
-      {/* Zoomable Image Modal */}
-      {petImages.length > 0 && (
-        <ZoomableImage
-          src={petImages[0]}
-          galleryImages={petImages}
-          initialIndex={0}
-          showZoomIcon={false}
-          aspectRatio={false}
-          className="hidden" // Hide the component, we just want to use its modal
-          isModalOpen={showZoomedImage}
-          onModalClose={() => setShowZoomedImage(false)}
-        />
-      )}
     </motion.div>
   );
 };

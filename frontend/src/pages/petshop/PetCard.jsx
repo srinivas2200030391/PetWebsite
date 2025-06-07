@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { HeartIcon as HeartOutlineIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid"; 
 import PropTypes from "prop-types";
-import ZoomableImage from "../../components/ZoomableImage";
 
 const itemAnimation = {
   hidden: { opacity: 0, y: 20 },
@@ -19,7 +18,7 @@ const itemAnimation = {
   },
 };
 
-// Card Image Carousel with swipe functionality
+// Card Image Carousel with swipe functionality but no zoom
 const CardImageCarousel = ({ images, onClick }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef(0);
@@ -73,7 +72,7 @@ const CardImageCarousel = ({ images, onClick }) => {
       }
     } else {
       // If it's a tap (not a swipe), trigger the onClick handler
-      if (onClick) onClick(displayImages, currentIndex);
+      if (onClick) onClick();
     }
   };
 
@@ -83,7 +82,7 @@ const CardImageCarousel = ({ images, onClick }) => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onClick={() => onClick && onClick(displayImages, currentIndex)}
+      onClick={onClick}
     >
       <AnimatePresence initial={false} mode="wait">
         <motion.div
@@ -125,8 +124,6 @@ const CardImageCarousel = ({ images, onClick }) => {
 
 const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDetails, wishlist = [] }) => {
   const [isHovering, setIsHovering] = useState(false);
-  const [showGallery, setShowGallery] = useState(false);
-  const [galleryIndex, setGalleryIndex] = useState(0);
   const isWishlisted = wishlist?.includes(pet._id) || false;
 
   const petImages = Array.isArray(pet.images) && pet.images.length > 0
@@ -152,12 +149,6 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
     ? "bg-green-100 text-green-700 border-green-200"
     : "bg-red-100 text-red-700 border-red-200";
 
-  // Handle image click to open gallery
-  const handleImageClick = (images, index) => {
-    setGalleryIndex(index);
-    setShowGallery(true);
-  };
-
   return (
     <motion.div
       variants={itemAnimation}
@@ -169,7 +160,7 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
       <div className="relative aspect-[4/3]">
         <CardImageCarousel 
           images={petImages} 
-          onClick={handleImageClick}
+          onClick={() => onViewDetails(pet)}
         />
         <AnimatePresence>
           {isHovering && (
@@ -240,18 +231,6 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
           </button>
         </div>
       </div>
-
-      {/* Image Gallery Modal */}
-      <ZoomableImage
-        src={petImages[0] || ''}
-        galleryImages={petImages}
-        initialIndex={galleryIndex}
-        showZoomIcon={false}
-        aspectRatio={false}
-        className="hidden" // Hide the component, we just want to use its modal
-        isModalOpen={showGallery}
-        onModalClose={() => setShowGallery(false)}
-      />
     </motion.div>
   );
 };

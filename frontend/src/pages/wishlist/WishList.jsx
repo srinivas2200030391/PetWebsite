@@ -25,7 +25,6 @@ function classNames(...classes) {
 // Image Carousel Component for Pet Cards with touch support
 const ImageCarousel = ({ images, className }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showZoomedImage, setShowZoomedImage] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
@@ -70,16 +69,6 @@ const ImageCarousel = ({ images, className }) => {
         // Swipe right, go to previous image
         prevImage(e);
       }
-    } else {
-      // It's a tap, open zoom view
-      handleImageClick(e);
-    }
-  };
-  
-  const handleImageClick = (e) => {
-    e?.stopPropagation(); // Prevent bubbling to parent card
-    if (displayImages.length > 0) {
-      setShowZoomedImage(true);
     }
   };
 
@@ -93,11 +82,10 @@ const ImageCarousel = ({ images, className }) => {
 
   return (
     <div 
-      className={classNames(className, "relative w-full overflow-hidden group cursor-zoom-in")}
+      className={classNames(className, "relative w-full overflow-hidden group")}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onClick={handleImageClick}
     >
       {displayImages.map((image, index) => (
         <div
@@ -149,18 +137,6 @@ const ImageCarousel = ({ images, className }) => {
           </div>
         </>
       )}
-      
-      {/* Zoomable Image Gallery Modal */}
-      <ZoomableImage
-        src={displayImages[currentIndex]}
-        galleryImages={displayImages}
-        initialIndex={currentIndex}
-        showZoomIcon={false}
-        aspectRatio={false}
-        className="hidden" // Hide the component, we just want to use its modal
-        isModalOpen={showZoomedImage}
-        onModalClose={() => setShowZoomedImage(false)}
-      />
     </div>
   );
 };
