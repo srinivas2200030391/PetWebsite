@@ -19,13 +19,15 @@ export default function ProfileMenu() {
   const { logout } = useAuthStore();
   const [userName, setUserName] = useState('User');
   const [userEmail, setUserEmail] = useState('');
+  const [userProfilePic, setUserProfilePic] = useState('');
   
   useEffect(() => {
     // Get user data from localStorage if available
     const userData = JSON.parse(localStorage.getItem('user'));
     if (userData?.data) {
-      setUserName(userData.data.userName || userData.data.name || 'User');
+      setUserName(userData.data.fullname || userData.data.name || 'User');
       setUserEmail(userData.data.email || '');
+      setUserProfilePic(userData.data.profilepic || '');
     }
   }, []);
 
@@ -53,7 +55,7 @@ export default function ProfileMenu() {
               <div className="relative overflow-hidden rounded-full">
                 <img
                   className="h-8 w-8 rounded-full object-cover transition-transform duration-200"
-                  src="https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-image-182145777.jpg"
+                  src={userProfilePic}
                   alt="User profile"
                 />
                 <div className={classNames(
