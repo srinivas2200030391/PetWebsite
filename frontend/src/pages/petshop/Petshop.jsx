@@ -182,7 +182,7 @@ export default function PetStore() {
         setLoading(false);
         if (!initialLoadComplete) {
             setInitialLoadComplete(true);
-            toast.success("Pet catalogue loaded!"); // Success toast after initial full load
+            
         }
       }
     }, 500), 
@@ -195,9 +195,20 @@ export default function PetStore() {
     if (userData?._id && !initialLoadComplete) { // Fetch only if user is loaded AND initial load hasn't happened
         debouncedFetchPets(); // No specific config needed as it always fetches all
     }
-    // This effect should primarily run once userData is available to fetch the initial dataset.
-    // It no longer depends on filter/sort states for re-fetching.
-  }, [userData, initialLoadComplete, debouncedFetchPets]);
+    
+    // Add window function to update payments list from modal
+    window.updatePaymentsList = (petId) => {
+      if (petId && !payments.includes(petId)) {
+        console.log("Adding paid pet to payments list:", petId);
+        setPayments(prev => [...prev, petId]);
+      }
+    };
+    
+    // Cleanup function to remove the window function
+    return () => {
+      delete window.updatePaymentsList;
+    };
+  }, [userData, initialLoadComplete, debouncedFetchPets, payments]);
 
   // Effect for all client-side filtering, sorting, and searching
   useEffect(() => {

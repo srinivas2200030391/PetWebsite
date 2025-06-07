@@ -3,12 +3,13 @@ import crypto from "crypto";
 import Payment from "../models/userPayment.model.js"; // Import the Payment model
 import User from "../models/user.model.js"; // Import the User model
 import AboutPet from "../models/aboutpet.model.js"; // Import the AboutPet model
+import MatingPet from "../models/matingPet.model.js"; // Import the MatingPet model
 
 const paymentController = {
   // Create a new order
   createOrder: async (req, res) => {
     try {
-      const { amount, currency = "INR", receipt, userId, petId } = req.body;
+      const { amount, currency = "INR", receipt, userId, petId, serviceType = "adoption" } = req.body;
       console.log("Request Body:", req.body);
 
       if (!amount) {
@@ -43,6 +44,7 @@ const paymentController = {
         amount: amount, // Store amount
         status: "Pending", // Set initial status to Pending
         paymentMethod: "UPI", // Default payment method (you can update this later)
+        serviceType, // Store the service type (adoption, mating, etc.)
       });
       console.log("Payment Record:", paymentRecord); // Log payment record before saving
       await paymentRecord.save()
@@ -70,6 +72,7 @@ const paymentController = {
         razorpay_signature,
         userId,
         petId,
+        serviceType
       } = req.body;
 
       if (
@@ -104,14 +107,28 @@ const paymentController = {
 
         // Update user's payment array
         const user = await User.findById(userId);
-        const pet = await AboutPet.findById(petId);
-
-        if (!user || !pet) {
+        if (!user) {
           return res
             .status(404)
-            .json({ success: false, message: "User or Pet not found" });
+            .json({ success: false, message: "User not found" });
         }
 
+        // Try to find the pet in AboutPet model first
+        let pet = await AboutPet.findById(petId);
+        
+        // If not found in AboutPet, try to find in MatingPet model
+        if (!pet) {
+          pet = await MatingPet.findById(petId);
+        }
+
+        // Verify pet exists in either model
+        if (!pet) {
+          return res
+            .status(404)
+            .json({ success: false, message: "Pet not found in any collection" });
+        }
+
+        // Add to user's payments if not already there
         if (!user.payments.includes(petId)) {
           user.payments.push(petId);
         }

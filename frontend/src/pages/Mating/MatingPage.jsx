@@ -153,7 +153,7 @@ export default function MatingPage() {
         setLoading(false);
         if (!initialLoadComplete) {
           setInitialLoadComplete(true);
-          toast.success("Mating pet catalogue loaded!");
+          
         }
       }
     }, 500),
@@ -223,8 +223,8 @@ export default function MatingPage() {
         setWishlist(wishlistRes.data || []);
         
         // Extract pet IDs from payment data
-        const paidPetIds = paymentsRes.data.map(payment => payment.petId);
-        setPayments(paidPetIds || []);
+        console.log("MatingPage - Raw payment data:", paymentsRes.data);
+        setPayments(paymentsRes.data || []);
       } catch (err) {
         console.error("Error fetching wishlist or payments:", err);
         setWishlist([]);
@@ -261,7 +261,9 @@ export default function MatingPage() {
   const handleViewDetails = (pet) => { setSelectedPet(pet); setIsDetailsModalOpen(true); };
 
   const handlePaymentComplete = (petId) => {
+    // Add the newly paid petId to the payments array
     if (!payments.includes(petId)) {
+      console.log("Adding new paid pet to payments array:", petId);
       setPayments(prev => [...prev, petId]);
     }
   };

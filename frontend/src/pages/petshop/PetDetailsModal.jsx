@@ -2,13 +2,29 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
-import { HeartIcon, XMarkIcon, ShieldCheckIcon, ArrowRightIcon, CheckCircleIcon, PhotoIcon, DocumentTextIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { 
+  HeartIcon, 
+  XMarkIcon, 
+  ShieldCheckIcon, 
+  ArrowRightIcon, 
+  CheckCircleIcon, 
+  PhotoIcon, 
+  DocumentTextIcon, 
+  ChevronLeftIcon, 
+  ChevronRightIcon,
+  MapPinIcon,
+  PhoneIcon,
+  CalendarIcon,
+  TagIcon,
+  BuildingStorefrontIcon
+} from "@heroicons/react/24/outline";
+import { StarIcon } from "@heroicons/react/20/solid";
 import config from "../../config";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageCarousel from "./ImageCarousel";
 import PropTypes from "prop-types";
 
-// Pet Details Modal
+// Animation variants
 const backdropAnimation = {
   hidden: { opacity: 0 },
   visible: {
@@ -104,13 +120,13 @@ const AutoRotatingCarousel = ({ images }) => {
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden group">
+    <div className="relative w-full h-full overflow-hidden group bg-gray-100">
       <AnimatePresence initial={false} mode="wait">
         <motion.img
           key={currentIndex}
           src={images[currentIndex]}
           alt={`Pet image ${currentIndex + 1}`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain object-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -170,8 +186,17 @@ const PetDetailsModal = ({
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
+  const [hasPaid, setHasPaid] = useState(false);
   const RAZORPAY_KEY_ID = "rzp_test_BbYHp3Xn5nnaxa";
   
+  // Effect to initialize payment status from props when component mounts or payments change
+  useEffect(() => {
+    if (payments && pet?._id) {
+      const isPaid = payments.includes(pet._id);
+      setHasPaid(isPaid);
+    }
+  }, [payments, pet?._id]);
+
   useEffect(() => {
     if (!window.Razorpay) {
       const script = document.createElement("script");
@@ -191,7 +216,6 @@ const PetDetailsModal = ({
 
   if (!pet) return null;
   const isWishlisted = wishlist.includes(pet._id);
-  let hasPaid = payments.includes(pet._id);
   
   // Refined logic for images passed to the carousel
   let imagesForCarousel = [];
@@ -213,13 +237,14 @@ const PetDetailsModal = ({
       const { data } = await axios.post(
         `${config.baseURL}/api/payments/create`,
         {
-          amount: pet.price,
+          amount: 9, // Special price - 9 rupees instead of full price
           currency: "INR",
           receipt: `rcpt_${pet._id.slice(-6)}_${Date.now()
             .toString()
             .slice(-6)}`,
           userId,
           petId: pet._id,
+          serviceType: "adoption"
         }
       );
 
@@ -238,6 +263,8 @@ const PetDetailsModal = ({
         order_id: order.id,
         handler: async function (response) {
           try {
+            console.log("Payment response received, verifying...");
+            
             const verifyRes = await axios.post(
               `${config.baseURL}/api/payments/verify`,
               {
@@ -246,19 +273,32 @@ const PetDetailsModal = ({
                 razorpay_signature: response.razorpay_signature,
                 userId,
                 petId: pet._id,
+                serviceType: "adoption"
               }
             );
 
             if (verifyRes.data.success) {
               toast.success("Payment successful!");
               setPaymentStatus(true);
-              hasPaid = true;
+              setHasPaid(true);
+              // Switch to contact tab to show details immediately
+              setActiveTab('contact');
+              
+              // If we have an onPaymentComplete callback, call it
+              if (typeof onAddToWishlist === 'function' && !payments.includes(pet._id)) {
+                // Force update the parent component's payments list
+                if (window.updatePaymentsList) {
+                  window.updatePaymentsList(pet._id);
+                }
+              }
             } else {
               toast.error("Payment verification failed");
             }
           } catch (err) {
             console.error("Verification error:", err);
-            toast.error("Couldn't verify payment");
+            // Show more specific error message
+            const errorMessage = err.response?.data?.message || err.message || "Couldn't verify payment";
+            toast.error(errorMessage);
           } finally {
             setIsLoading(false);
           }
@@ -307,472 +347,171 @@ const PetDetailsModal = ({
               animate="visible"
               exit="exit"
               className="w-full max-w-5xl">
-              <DialogPanel className="mx-auto overflow-hidden rounded-2xl bg-white shadow-2xl">
-                {/* Modern header with pet info and close button */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5">
-                  <div className="flex items-center justify-between">
+              <DialogPanel className="mx-auto w-full max-w-5xl rounded-lg bg-white shadow-lg">
+                {/* Header */}
+                <div className="px-6 py-4 border-b">
+                  <div className="flex justify-between items-center">
                     <div>
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="bg-blue-200 text-blue-900 text-xs font-bold px-2.5 py-1 rounded-full">
-                          ID: {pet.petId || pet._id?.substring(0, 8) || "N/A"}
-                        </span>
-                        
-                      </div>
-                      <h1 className="text-2xl font-bold text-white">
-                        {pet.breed || "Unknown Breed"}
-                      </h1>
-                      <div className="flex items-center text-white/80 mt-1">
-                        {pet.gender && <span>{pet.gender}</span>}
-                        {pet.age && (
-                          <>
-                            <span className="mx-2">•</span>
-                            <span>{pet.age} {pet.ageUnit || "years old"}</span>
-                          </>
-                        )}
-                        {pet.petQuality && (
-                          <>
-                            <span className="mx-2">•</span>
-                            <span>{pet.petQuality}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-4">
-                      {pet.price && (
-                        <div className="bg-white/10 backdrop-blur-sm flex md:flex-row flex-col items-center justify-center gap-2 rounded-lg px-4 py-2">
-                          <p className="text-xs text-white/80">Price :</p>
-                          <p className="text-xl font-bold text-white">₹{pet.price}</p>
+                      <h2 className="text-xl font-semibold text-gray-900">{pet.name || pet.breed}</h2>
+                      {!hasPaid && (
+                        <div className="flex items-center mt-1 space-x-2">
+                          <span className="text-sm line-through text-gray-400">₹99</span>
+                          <span className="text-sm font-bold text-gray-900">₹9</span>
+                          <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 text-xs rounded">Special Offer</span>
                         </div>
                       )}
-                      <button
-                        onClick={onClose}
-                        className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
-                      >
-                        <XMarkIcon className="h-5 w-5" />
-                      </button>
                     </div>
+                    <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-700">
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
-                
-                {/* Tabs navigation */}
-                <div className="border-b border-gray-200">
-                  <div className="flex px-6">
+                {/* Tabs */}
+                <div className="px-6 border-b">
+                  <div className="flex space-x-6">
                     <button
                       onClick={() => setActiveTab('details')}
-                      className={`py-4 px-4 relative ${
-                        activeTab === 'details' 
-                          ? 'text-indigo-600 font-medium' 
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
+                      className={`py-3 text-sm font-medium ${activeTab === 'details' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
                     >
                       Details
-                      {activeTab === 'details' && (
-                        <motion.div 
-                          layoutId="activeTab"
-                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" 
-                        />
-                      )}
                     </button>
-                    
                     {hasPaid && (
                       <button
                         onClick={() => setActiveTab('contact')}
-                        className={`py-4 px-4 relative ${
-                          activeTab === 'contact' 
-                            ? 'text-indigo-600 font-medium' 
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
+                        className={`py-3 text-sm font-medium ${activeTab === 'contact' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
                       >
                         Contact Info
-                        {activeTab === 'contact' && (
-                          <motion.div 
-                            layoutId="activeTab"
-                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" 
-                          />
-                        )}
                       </button>
                     )}
-                    
                     {hasPaid && (
                       <button
                         onClick={() => setActiveTab('health')}
-                        className={`py-4 px-4 relative ${
-                          activeTab === 'health' 
-                            ? 'text-indigo-600 font-medium' 
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
+                        className={`py-3 text-sm font-medium ${activeTab === 'health' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
                       >
                         Health Records
-                        {activeTab === 'health' && (
-                          <motion.div 
-                            layoutId="activeTab"
-                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" 
-                          />
-                        )}
-                      </button>
-                    )}
-
-                    {hasPaid && pet.videos && pet.videos.length > 0 && (
-                      <button
-                        onClick={() => setActiveTab('media')}
-                        className={`py-4 px-4 relative ${
-                          activeTab === 'media' 
-                            ? 'text-indigo-600 font-medium' 
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Media
-                        {activeTab === 'media' && (
-                          <motion.div 
-                            layoutId="activeTab"
-                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" 
-                          />
-                        )}
                       </button>
                     )}
                   </div>
                 </div>
-
-                {/* Tab content */}
-                <div className="p-6">
+                {/* Content */}
+                <div className="px-6 py-6">
                   <AnimatePresence mode="wait">
                     {activeTab === 'details' && (
-                      <motion.div
-                        key="details"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                      >
-                        {/* Left column */}
-                        <div className="space-y-6">
-                          {/* Image carousel with auto-rotation */}
-                          <motion.div 
-                            custom={1}
-                            variants={contentAnimation}
-                            initial="hidden" 
-                            animate="visible"
-                            className="overflow-hidden rounded-lg border border-gray-200 shadow-sm bg-gray-50"
-                          >
-                            <div className="aspect-[4/3]">
-                              <AutoRotatingCarousel images={imagesForCarousel} />
-                            </div>
-                          </motion.div>
-                          
-                          {/* Characteristics */}
-                          {pet.characteristics && (
-                            <motion.div 
-                              custom={3}
-                              variants={contentAnimation}
-                              initial="hidden" 
-                              animate="visible"
-                            >
-                              <h3 className="text-lg font-medium text-gray-900 mb-3">Characteristics</h3>
-                              <div className="flex flex-wrap gap-2">
-                                {pet.characteristics.split(",").map((trait, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-full">
-                                    {trait.trim()}
-                                  </span>
-                                ))}
+                      <motion.div key="details" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                          <div className="md:col-span-4 space-y-4">
+                            <div className="bg-white shadow rounded-lg overflow-hidden">
+                              <div className="w-full h-80 md:h-96">
+                                <AutoRotatingCarousel images={imagesForCarousel} />
                               </div>
-                            </motion.div>
-                          )}
-                        </div>
-
-                        {/* Right column */}
-                        <div className="space-y-6">
-                          {/* Info grid */}
-                          <motion.div 
-                            custom={2}
-                            variants={contentAnimation}
-                            initial="hidden" 
-                            animate="visible"
-                          >
-                            <h3 className="text-lg font-medium text-gray-900 mb-3">Pet Information</h3>
-                            <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
-                              <dl className="divide-y divide-gray-200">
-                                {pet.breed && (
-                                  <div className="grid grid-cols-3 px-4 py-3">
-                                    <dt className="text-sm font-medium text-gray-500">Breed</dt>
-                                    <dd className="text-sm text-gray-900 col-span-2">{pet.breed}</dd>
-                                  </div>
-                                )}
-                                {pet.age && (
-                                  <div className="grid grid-cols-3 px-4 py-3">
-                                    <dt className="text-sm font-medium text-gray-500">Age</dt>
-                                    <dd className="text-sm text-gray-900 col-span-2">{pet.age} {pet.ageUnit || "years old"}</dd>
-                                  </div>
-                                )}
-                                {pet.gender && (
-                                  <div className="grid grid-cols-3 px-4 py-3">
-                                    <dt className="text-sm font-medium text-gray-500">Gender</dt>
-                                    <dd className="text-sm text-gray-900 col-span-2">{pet.gender}</dd>
-                                  </div>
-                                )}
-                                {pet.height && (
-                                  <div className="grid grid-cols-3 px-4 py-3">
-                                    <dt className="text-sm font-medium text-gray-500">Height</dt>
-                                    <dd className="text-sm text-gray-900 col-span-2">{pet.height}</dd>
-                                  </div>
-                                )}
-                                {pet.lifeSpan && (
-                                  <div className="grid grid-cols-3 px-4 py-3">
-                                    <dt className="text-sm font-medium text-gray-500">Lifespan</dt>
-                                    <dd className="text-sm text-gray-900 col-span-2">{pet.lifeSpan}</dd>
-                                  </div>
-                                )}
-                                {pet.petQuality && (
-                                  <div className="grid grid-cols-3 px-4 py-3">
-                                    <dt className="text-sm font-medium text-gray-500">Quality</dt>
-                                    <dd className="text-sm text-gray-900 col-span-2">{pet.petQuality}</dd>
-                                  </div>
-                                )}
-                              </dl>
                             </div>
-                          </motion.div>
-                          
-                          {/* Pet details */}
-                          {pet.details && (
-                            <motion.div 
-                              custom={4}
-                              variants={contentAnimation}
-                              initial="hidden" 
-                              animate="visible"
-                            >
-                              <h3 className="text-lg font-medium text-gray-900 mb-3">Details</h3>
-                              <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-                                <p className="text-sm text-gray-700">{pet.details}</p>
+                            {!hasPaid && (
+                              <div className="bg-white shadow rounded-lg p-4">
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">Vaccination Preview</h3>
+                                <p className="text-gray-500 italic text-sm">
+                                  This pet has vaccination records available. Pay to view complete details.
+                                </p>
                               </div>
-                            </motion.div>
-                          )}
-
-                          {!hasPaid && (
-                            <motion.div 
-                              custom={5}
-                              variants={contentAnimation}
-                              initial="hidden" 
-                              animate="visible"
-                              className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-5 text-white"
-                            >
-                              <h3 className="text-lg font-semibold flex items-center gap-2">
-                                <ShieldCheckIcon className="h-5 w-5" />
-                                Premium Information
-                              </h3>
-                              <p className="mt-2 text-sm text-white/90">
-                                Unlock complete access to:
-                              </p>
-                              <ul className="mt-3 space-y-2">
-                                <li className="flex items-center text-sm">
-                                  <CheckCircleIcon className="h-4 w-4 mr-2 text-indigo-200" />
-                                  Contact information & location
-                                </li>
-                                <li className="flex items-center text-sm">
-                                  <CheckCircleIcon className="h-4 w-4 mr-2 text-indigo-200" />
-                                  Health & vaccination records
-                                </li>
-                                <li className="flex items-center text-sm">
-                                  <CheckCircleIcon className="h-4 w-4 mr-2 text-indigo-200" />
-                                  Video content & more
-                                </li>
-                              </ul>
-                            </motion.div>
-                          )}
+                            )}
+                          </div>
+                          <div className="md:col-span-8 space-y-4">
+                            <div className="bg-white shadow rounded-lg p-4">
+                              <h3 className="text-lg font-medium text-gray-900 mb-4">Pet Information</h3>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4">
+                                {pet.breed && (<><dt className="text-gray-500 text-sm">Breed</dt><dd className="text-gray-900 text-sm">{pet.breed}</dd></>)}
+                                {pet.age && (<><dt className="text-gray-500 text-sm">Age</dt><dd className="text-gray-900 text-sm">{pet.age} {pet.ageUnit || 'years'}</dd></>)}
+                                {pet.gender && (<><dt className="text-gray-500 text-sm">Gender</dt><dd className="text-gray-900 text-sm">{pet.gender}</dd></>)}
+                                {pet.petQuality && (<><dt className="text-gray-500 text-sm">Quality</dt><dd className="text-gray-900 text-sm">{pet.petQuality}</dd></>)}
+                                {pet.location && (<><dt className="text-gray-500 text-sm">Location</dt><dd className="text-gray-900 text-sm">{pet.location}</dd></>)}
+                              </div>
+                            </div>
+                            {pet.breedLineage && (
+                              <div className="bg-white shadow rounded-lg p-4">
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">Breed Lineage</h3>
+                                <p className="text-gray-700 text-sm">{pet.breedLineage}</p>
+                              </div>
+                            )}
+                            {!hasPaid && (
+                              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-4 text-white shadow">
+                                <h3 className="text-lg font-medium mb-3">Breeder Contact Info</h3>
+                                <ul className="space-y-2 text-sm list-disc list-inside">
+                                  <li>Breeder name and contact details</li>
+                                  <li>Shop address and location</li>
+                                  <li>Complete vaccination records</li>
+                                </ul>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </motion.div>
                     )}
-
                     {activeTab === 'contact' && hasPaid && (
-                      <motion.div
-                        key="contact"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="space-y-6"
-                      >
-                        <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-5">
-                          <h3 className="text-lg font-medium text-indigo-800 mb-4">Contact Information</h3>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <motion.div key="contact" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                        <div className="bg-white shadow rounded-lg p-4 space-y-4">
+                          <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {pet.breederName && (
-                              <div className="bg-white rounded-lg p-4 shadow-sm border border-indigo-100">
+                              <div className="bg-white shadow rounded-lg p-4">
                                 <h4 className="text-sm font-medium text-gray-500 mb-1">Breeder</h4>
-                                <p className="text-base text-gray-900">{pet.breederName}</p>
+                                <p className="text-gray-900 text-sm">{pet.breederName}</p>
                               </div>
                             )}
-                            
                             {pet.phoneNumber && (
-                              <div className="bg-white rounded-lg p-4 shadow-sm border border-indigo-100">
+                              <div className="bg-white shadow rounded-lg p-4">
                                 <h4 className="text-sm font-medium text-gray-500 mb-1">Phone</h4>
-                                <p className="text-base text-gray-900">{pet.phoneNumber}</p>
+                                <p className="text-gray-900 text-sm">{pet.phoneNumber}</p>
                               </div>
                             )}
-                            
                             {pet.location && (
-                              <div className="bg-white rounded-lg p-4 shadow-sm border border-indigo-100">
+                              <div className="bg-white shadow rounded-lg p-4">
                                 <h4 className="text-sm font-medium text-gray-500 mb-1">Location</h4>
-                                <p className="text-base text-gray-900">{pet.location}</p>
+                                <p className="text-gray-900 text-sm">{pet.location}</p>
                               </div>
                             )}
-                            
                             {pet.shopAddress && (
-                              <div className="bg-white rounded-lg p-4 shadow-sm border border-indigo-100">
+                              <div className="bg-white shadow rounded-lg p-4">
                                 <h4 className="text-sm font-medium text-gray-500 mb-1">Shop Address</h4>
-                                <p className="text-base text-gray-900">{pet.shopAddress}</p>
+                                <p className="text-gray-900 text-sm">{pet.shopAddress}</p>
                               </div>
                             )}
                           </div>
                         </div>
                       </motion.div>
                     )}
-
                     {activeTab === 'health' && hasPaid && (
-                      <motion.div
-                        key="health"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="space-y-6"
-                      >
-                        <div className="bg-green-50 border border-green-100 rounded-lg p-5">
-                          <h3 className="text-lg font-medium text-green-800 mb-4">Health Records</h3>
-                          
+                      <motion.div key="health" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                        <div className="bg-white shadow rounded-lg p-4 space-y-4">
+                          <h3 className="text-lg font-medium text-gray-900 mb-4">Health Records</h3>
                           {pet.vaccinationDetails && (
-                            <div className="bg-white rounded-lg p-4 shadow-sm border border-green-100 mb-4">
+                            <div className="bg-white shadow rounded-lg p-4">
                               <h4 className="text-sm font-medium text-gray-500 mb-1">Vaccination Details</h4>
-                              <p className="text-base text-gray-900">{pet.vaccinationDetails}</p>
-                              
-                              {pet.vaccinationProof && (
-                                <a
-                                  href={pet.vaccinationProof}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center mt-3 text-sm font-medium text-green-600 hover:text-green-800"
-                                >
-                                  <DocumentTextIcon className="h-4 w-4 mr-1" />
-                                  View Vaccination Certificate
-                                </a>
-                              )}
+                              <p className="text-gray-900 text-sm">{pet.vaccinationDetails}</p>
                             </div>
                           )}
-                          
-                          {pet.breedLineage && (
-                            <div className="bg-white rounded-lg p-4 shadow-sm border border-green-100">
-                              <h4 className="text-sm font-medium text-gray-500 mb-1">Breed Lineage</h4>
-                              <p className="text-base text-gray-900">{pet.breedLineage}</p>
-                            </div>
+                          {pet.vaccinationProof && (
+                            <a href={pet.vaccinationProof} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                              <DocumentTextIcon className="h-5 w-5 mr-1" />
+                              View Vaccination Certificate
+                            </a>
                           )}
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {activeTab === 'media' && hasPaid && pet.videos && pet.videos.length > 0 && (
-                      <motion.div
-                        key="media"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="space-y-6"
-                      >
-                        <div className="bg-purple-50 border border-purple-100 rounded-lg p-5">
-                          <h3 className="text-lg font-medium text-purple-800 mb-4">Media Gallery</h3>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {pet.videos.map((video, idx) => (
-                              <a
-                                key={idx}
-                                href={video}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center bg-white border border-purple-100 rounded-lg p-4 shadow-sm hover:bg-purple-50 transition-colors"
-                              >
-                                <div className="bg-purple-100 p-3 rounded-lg mr-4">
-                                  <PhotoIcon className="h-6 w-6 text-purple-600" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-gray-900">Pet Video {idx + 1}</p>
-                                  <p className="text-sm text-gray-500">Click to view</p>
-                                </div>
-                                <ArrowRightIcon className="h-5 w-5 text-purple-500 ml-auto" />
-                              </a>
-                            ))}
-                          </div>
                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
-
-                {/* Footer with actions */}
-                <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAddToWishlist(pet._id);
-                      }}
-                      className={`flex items-center justify-center px-4 py-2 rounded-lg border text-sm font-medium ${
-                        isWishlisted
-                          ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
-                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                      }`}
-                    >
-                      <HeartIcon
-                        className={`h-5 w-5 mr-2 transition-colors ${
-                          isWishlisted ? "text-red-600 fill-red-500" : ""
-                        }`}
-                      />
-                      {isWishlisted ? "Saved to Wishlist" : "Add to Wishlist"}
+                {/* Footer */}
+                <div className="px-6 py-4 border-t flex justify-between items-center">
+                  <button onClick={() => onAddToWishlist(pet._id)} className="flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded shadow-sm hover:bg-gray-50">
+                    <HeartIcon className={`h-5 w-5 mr-2 ${wishlist.includes(pet._id) ? 'text-red-600 fill-red-500' : ''}`} />
+                    {wishlist.includes(pet._id) ? 'Saved to Wishlist' : 'Add to Wishlist'}
+                  </button>
+                  {!hasPaid ? (
+                    <button onClick={handlePayment} disabled={isLoading} className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded shadow-sm hover:bg-indigo-700 disabled:opacity-70">
+                      {isLoading ? 'Processing...' : 'Pay to Contact Breeder'}
                     </button>
-                    
-                    {!hasPaid ? (
-                      <button
-                        onClick={handlePayment}
-                        disabled={isLoading}
-                        className="relative inline-flex items-center justify-center sm:px-8 px-6 py-2.5 rounded-lg overflow-hidden group bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-70"
-                      >
-                        <span className="relative flex items-center gap-2">
-                          {isLoading ? (
-                            <>
-                              <svg
-                                className="animate-spin h-5 w-5 text-white"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24">
-                                <circle
-                                  className="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"></circle>
-                                <path
-                                  className="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Processing...
-                            </>
-                          ) : (
-                            <>
-                              <ShieldCheckIcon className="h-5 w-5" />
-                              Unlock Premium Details
-                            </>
-                          )}
-                        </span>
-                      </button>
-                    ) : (
-                      <div className="text-sm text-green-600 font-medium flex items-center">
-                        <CheckCircleIcon className="h-5 w-5 mr-1" />
-                        Premium access unlocked
-                      </div>
-                    )}
-                  </div>
+                  ) : (
+                    <span className="text-green-600 font-medium flex items-center"><CheckCircleIcon className="h-5 w-5 mr-1" />Premium Unlocked</span>
+                  )}
                 </div>
               </DialogPanel>
             </motion.div>

@@ -41,6 +41,11 @@ const PaymentSchema = new mongoose.Schema({
     enum: ["Credit Card", "Debit Card", "UPI", "Net Banking"],
     default: "UPI", // Default can be set to your preference
   },
+  serviceType: {
+    type: String,
+    enum: ["adoption", "mating", "other"],
+    default: "adoption",
+  }
 });
 
 const Payment = mongoose.model("Payment", PaymentSchema);
