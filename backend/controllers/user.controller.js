@@ -19,6 +19,7 @@ const userController = {
       ourUser.address = [];
       ourUser.userType = "Client";
       ourUser.phone = "9999999999";
+      ourUser.username = ourUser.username.toLowerCase();
       const newUser = await User.create(ourUser);
       res.status(201).json(newUser);
     } catch (error) {

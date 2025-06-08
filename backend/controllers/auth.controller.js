@@ -22,6 +22,10 @@ export const signup = async (req, res) => {
     if (phoneExists) {
       return res.status(400).json({ message: "Phone number already exists" });
     }
+    const usernameExists = await User.findOne({ username: userData.username });
+    if (usernameExists) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
 
     // Hash the password
     const salt = await bcrypt.genSalt(10);
@@ -161,7 +165,7 @@ export const checkauth = async (req, res) => {
 };
 
 export const getOtp = async (req, res) => {
-  const { email, phone } = req.body;
+  const { email, phone, username } = req.body;
 
   try {
     if (!email) {
@@ -174,36 +178,43 @@ export const getOtp = async (req, res) => {
         .status(400)
         .json({ message: "Please provide a phone number" });
     }
+    if (!username) {
+      return res
+        .status(400)
+        .json({ message: "Please provide a username" });
+    }
 
     const user = await User.findOne({ email });
     const phoneExists = await User.findOne({ phone });
-
+    const usernameExists = await User.findOne({ username });
     if (user) {
       return res.status(400).json({ message: "Email already exists" });
     }
     if (phoneExists) {
       return res.status(400).json({ message: "Phone number already exists" });
     }
-
+    if (usernameExists) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
     const otp = Math.floor(100000 + Math.random() * 900000);
     
     const html = `
-      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333; background-color: #f7f7f7; margin: 0; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); overflow: hidden;">
-          <div style="background-color: #4CAF50; color: white; padding: 20px; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px;">PetZu Verification Code</h1>
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333; background-color: #f8f9fa; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e9ecef;">
+          <div style="background-color: #2c3e50; color: white; padding: 24px; text-align: center;">
+            <h1 style="margin: 0; font-size: 22px; font-weight: 500;">PetZu Account Verification</h1>
           </div>
           <div style="padding: 30px;">
-            <h2 style="font-size: 20px; color: #333;">Your One-Time Password (OTP)</h2>
-            <p style="color: #555;">Hello,</p>
-            <p style="color: #555;">Please use the following code to complete your action. This code is valid for 5 minutes.</p>
-            <div style="text-align: center; margin: 20px 0;">
-              <span style="display: inline-block; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #333; background-color: #f2f2f2; padding: 15px 25px; border-radius: 5px;">${otp}</span>
+            <h2 style="font-size: 18px; color: #2c3e50; margin-top: 0;">Verification Code</h2>
+            <p style="color: #5a6a7e; margin-bottom: 16px;">Dear User,</p>
+            <p style="color: #5a6a7e; margin-bottom: 20px;">Please use the following verification code to complete your registration process. This code will expire in 5 minutes.</p>
+            <div style="text-align: center; margin: 24px 0;">
+              <span style="display: inline-block; font-size: 26px; font-weight: 600; letter-spacing: 4px; color: #2c3e50; background-color: #f1f3f5; padding: 12px 20px; border-radius: 4px; border: 1px solid #e4e7eb;">${otp}</span>
             </div>
-            <p style="color: #555;">If you did not request this code, please disregard this email. Your account is secure.</p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="font-size: 12px; color: #999; text-align: center;">
-              &copy; ${new Date().getFullYear()} PetZu. All Rights Reserved.
+            <p style="color: #5a6a7e; margin-bottom: 16px;">If you did not request this verification code, please disregard this email and ensure your account is secure.</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 24px 0;">
+            <p style="font-size: 12px; color: #7f8c9d; text-align: center; margin-bottom: 0;">
+              &copy; ${new Date().getFullYear()} PetZu Inc. All Rights Reserved.
             </p>
           </div>
         </div>

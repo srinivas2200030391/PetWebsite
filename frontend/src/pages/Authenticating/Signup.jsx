@@ -80,7 +80,7 @@ export default function SignupPage() {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const response = await axios.post(`${config.baseURL}/api/auth/getotp`, { email: formData.gmail, phone: formData.phoneNumber });
+      const response = await axios.post(`${config.baseURL}/api/auth/getotp`, { email: formData.gmail, phone: formData.phoneNumber, username: formData.username });
       if (response.status === 200 && response.data.success) {
         // Store OTP and convert to string to ensure consistent comparison later
         const receivedOtp = response.data.otp ? response.data.otp.toString() : "";
