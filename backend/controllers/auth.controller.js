@@ -107,8 +107,8 @@ export const logout = (req, res) => {
     console.log("Logging out user:");
     res.cookie("jwt", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== "development", // This is important
-      sameSite: "strict",
+      secure: true, 
+      sameSite: "none",
       expires: new Date(0),
       path: "/", // Make sure path matches how you set it
     });

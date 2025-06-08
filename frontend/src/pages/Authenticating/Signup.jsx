@@ -33,26 +33,46 @@ export default function SignupPage() {
   const navigate = useNavigate();
 
   const validateForm = () => {
-    if (!formData.fullName.trim()) return toast.error("Full name is required");
-    if (!formData.phoneNumber.trim())
-      return toast.error("Phone number is required");
+    if (!formData.fullName.trim()) {
+      toast.error("Full name is required");
+      return false;
+    }
+    if (!formData.phoneNumber.trim()) {
+      toast.error("Phone number is required");
+      return false;
+    }
     
     // Stricter phone number validation - must be exactly 10 digits
     const phoneDigits = formData.phoneNumber.replace(/\D/g, "");
     if (phoneDigits.length !== 10) {
-      return toast.error("Phone number must be exactly 10 digits");
+      toast.error("Phone number must be exactly 10 digits");
+      return false;
     }
     
-    if (!formData.gmail.trim()) return toast.error("Gmail is required");
-    if (!/^[^\s@]+@gmail\.com$/.test(formData.gmail)) {
-      return toast.error("Please enter a valid Gmail address");
+    if (!formData.gmail.trim()) {
+      toast.error("Gmail is required");
+      return false;
     }
-    if (!formData.username.trim()) return toast.error("Username is required");
-    if (formData.username.length < 3)
-      return toast.error("Username must be at least 3 characters");
-    if (!formData.password) return toast.error("Password is required");
-    if (formData.password.length < 6)
-      return toast.error("Password must be at least 6 characters");
+    if (!/^[^\s@]+@gmail\.com$/.test(formData.gmail)) {
+      toast.error("Please enter a valid Gmail address");
+      return false;
+    }
+    if (!formData.username.trim()) {
+      toast.error("Username is required");
+      return false;
+    }
+    if (formData.username.length < 3) {
+      toast.error("Username must be at least 3 characters");
+      return false;
+    }
+    if (!formData.password) {
+      toast.error("Password is required");
+      return false;
+    }
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return false;
+    }
     return true;
   };
 

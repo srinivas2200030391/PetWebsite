@@ -21,6 +21,10 @@ export const useAuthStore = create((set, get) => ({
   
       const res = await axios.get(`${config.baseURL}/api/auth/check`, {
         withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
   
       if (res.data) {
@@ -64,9 +68,12 @@ export const useAuthStore = create((set, get) => ({
       localStorage.removeItem("authData");
 
       // Call backend to clear the HttpOnly cookie
-      await fetch(`${config.baseURL}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include", // 💌 ensures cookies are sent
+      await axios.post(`${config.baseURL}/api/auth/logout`, {}, {
+        withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
   
       window.location.href = "/";
@@ -81,6 +88,10 @@ export const useAuthStore = create((set, get) => ({
       set({ isLoggingIn: true });
       const res = await axios.post(`${config.baseURL}/api/auth/login`, data, {
         withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
       if (res.data) {
         // Update auth state synchronously
