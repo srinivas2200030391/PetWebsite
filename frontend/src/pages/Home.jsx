@@ -21,6 +21,28 @@ import {
   ChevronRightIcon
 } from "@heroicons/react/24/outline";
 
+// A custom hook to check for mobile viewport
+const useIsMobile = (breakpoint = 1024) => {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < breakpoint
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < breakpoint);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
+const MotionLink = motion(Link);
+
 const pageVariants = {
   hidden: { opacity: 0, y: 50, scale: 0.98 },
   visible: {
@@ -137,6 +159,7 @@ const heroSlides = [
 ];
 
 const HomeDashboard = () => {
+  const isMobile = useIsMobile();
   const [[currentSlide, direction], setSlide] = useState([0, 0]);
   const slideInterval = useRef();
   const sliderRef = useRef(null);
@@ -331,31 +354,27 @@ const HomeDashboard = () => {
       {/* Main Services Section - Enhanced for mobile responsiveness */}
       <motion.section 
         className="container mx-auto px-4"
-        initial="hidden"
+        initial={isMobile ? "visible" : "hidden"}
         whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={itemVariants}
+        viewport={{ once: true, amount: 0.2 }}
+        variants={containerVariants}
       >
-        <div className="text-center mb-8 sm:mb-12 md:mb-16">
+        <motion.div variants={itemVariants} className="text-center mb-8 sm:mb-12 md:mb-16">
           <span className="bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 sm:py-1.5 rounded-full">Premium Services</span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-3 sm:mt-4 mb-2 sm:mb-4">Our Featured Services</h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base md:text-lg px-2">
             Discover our exclusive pet services designed for the modern pet lover.
           </p>
-        </div>
+        </motion.div>
 
         <motion.div
           className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
+          variants={itemVariants}
         >
-          <motion.custom
+          <MotionLink
             to="/Petshop" 
-            variants={itemVariants}
             className="relative h-[300px] sm:h-[400px] md:h-[500px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-lg sm:shadow-xl md:shadow-2xl group text-white touch-manipulation"
             aria-label="Browse premium pets for sale"
-            as={Link}
           >
             <img src={salesimg} alt="Pets for sale" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
@@ -366,14 +385,12 @@ const HomeDashboard = () => {
                 <span className="text-sm sm:text-base">Browse Collection</span> <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 ml-1 sm:ml-2 transition-transform duration-300 group-hover:translate-x-1" />
               </div>
             </div>
-          </motion.custom>
+          </MotionLink>
           
-          <motion.custom
+          <MotionLink
             to="/matingpage" 
-            variants={itemVariants}
             className="relative h-[300px] sm:h-[400px] md:h-[500px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-lg sm:shadow-xl md:shadow-2xl group text-white touch-manipulation"
             aria-label="Explore mating services"
-            as={Link}
           >
             <img src={matingimg} alt="Mating services" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
@@ -384,14 +401,14 @@ const HomeDashboard = () => {
                 <span className="text-sm sm:text-base">Find Partners</span> <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 ml-1 sm:ml-2 transition-transform duration-300 group-hover:translate-x-1" />
               </div>
             </div>
-          </motion.custom>
+          </MotionLink>
         </motion.div>
       </motion.section>
 
       {/* Why Choose Us Section - Redesigned */}
       <motion.section 
         className="py-20 bg-white"
-        initial="hidden"
+        initial={isMobile ? "visible" : "hidden"}
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={itemVariants}
@@ -453,7 +470,7 @@ const HomeDashboard = () => {
       {/* Special Launch Discounts - Redesigned */}
       <motion.section 
         className="py-20 bg-gray-50 rounded-3xl"
-        initial="hidden"
+        initial={isMobile ? "visible" : "hidden"}
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={itemVariants}
@@ -502,7 +519,7 @@ const HomeDashboard = () => {
       {/* CTA Section */}
       <motion.section 
         className="container mx-auto px-4 py-16"
-        initial="hidden"
+        initial={isMobile ? "visible" : "hidden"}
         whileInView="visible"
         viewport={{ once: true, amount: 0.3 }}
         variants={itemVariants}
