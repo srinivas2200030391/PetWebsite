@@ -83,8 +83,7 @@ const AutoRotatingCarousel = ({ images }) => {
   const [showZoomedImage, setShowZoomedImage] = useState(false);
   const timerRef = useRef(null);
   const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const hasMoved = useRef(false);
+  const touchEndX = useRef(0);
   const carouselRef = useRef(null);
 
   const resetTimer = () => {
@@ -127,44 +126,39 @@ const AutoRotatingCarousel = ({ images }) => {
   // Touch handlers for swipe functionality
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    hasMoved.current = false;
+    touchEndX.current = e.touches[0].clientX;
   };
 
   const handleTouchMove = (e) => {
-    if (hasMoved.current) return;
-    const moveX = Math.abs(e.touches[0].clientX - touchStartX.current);
-    const moveY = Math.abs(e.touches[0].clientY - touchStartY.current);
-
-    if (moveX > 10 || moveY > 10) {
-      hasMoved.current = true;
-    }
+    touchEndX.current = e.touches[0].clientX;
   };
 
   const handleTouchEnd = (e) => {
-    if (hasMoved.current) {
-      const touchEndX = e.changedTouches[0].clientX;
-      const touchEndY = e.changedTouches[0].clientY;
-      const swipeDistanceX = touchEndX - touchStartX.current;
-      const swipeDistanceY = touchEndY - touchStartY.current;
-      const minSwipeDistance = 50;
-      
-      if (Math.abs(swipeDistanceX) > minSwipeDistance && Math.abs(swipeDistanceX) > Math.abs(swipeDistanceY)) {
-        if (swipeDistanceX > 0) {
-          handlePrev(e);
-        } else {
-          handleNext(e);
-        }
-      }
-      return;
-    }
+    // Calculate swipe distance
+    const swipeDistance = Math.abs(touchStartX.current - touchEndX.current);
     
-    e.preventDefault();
+    // If there was significant movement, it's a swipe - handle navigation
+    if (swipeDistance > 20) {
+      e.stopPropagation();
+      if (touchStartX.current - touchEndX.current > 0) {
+        // Swipe left, go to next image
+        handleNext(e);
+      } else {
+        // Swipe right, go to previous image
+        handlePrev(e);
+      }
+    }
+    // Otherwise it might be a tap - but do nothing here
+    // We'll handle taps with a separate click handler
+  };
+  
+  const handleImageClick = (e) => {
+    e.stopPropagation();
     openZoomView(e);
   };
   
   const openZoomView = (e) => {
-    e?.stopPropagation();
+    if (e) e.stopPropagation();
     setShowZoomedImage(true);
     // Pause auto-rotation when zoomed
     clearInterval(timerRef.current);
@@ -181,14 +175,10 @@ const AutoRotatingCarousel = ({ images }) => {
   return (
     <div 
       ref={carouselRef}
-      className="relative w-full h-full overflow-hidden group cursor-zoom-in"
+      className="relative w-full h-full overflow-hidden group"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onClick={(e) => {
-        if ('ontouchstart' in window) return;
-        openZoomView(e);
-      }}
     >
       <AnimatePresence initial={false} custom={direction}>
         <motion.img
@@ -205,6 +195,7 @@ const AutoRotatingCarousel = ({ images }) => {
             x: { type: "spring", stiffness: 300, damping: 30 },
             opacity: { duration: 0.2 },
           }}
+          onClick={handleImageClick}
         />
       </AnimatePresence>
       

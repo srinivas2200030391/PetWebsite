@@ -11,8 +11,11 @@ const ImageGalleryModal = ({ images, isOpen, onClose, initialIndex = 0 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const touchEndX = useRef(0);
+  const touchEndY = useRef(0);
   const imageRef = useRef(null);
+  const lastTapTimeRef = useRef(0);
 
   // Reset zoom and position when image changes or modal closes/opens
   useEffect(() => {
@@ -110,9 +113,12 @@ const ImageGalleryModal = ({ images, isOpen, onClose, initialIndex = 0 }) => {
   // Touch handlers for swipe navigation and panning
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
     
+    // For panning when zoomed
     if (scale > 1) {
-      // For panning when zoomed
       setIsDragging(true);
       setStartPos({ 
         x: e.touches[0].clientX - position.x, 
@@ -123,6 +129,7 @@ const ImageGalleryModal = ({ images, isOpen, onClose, initialIndex = 0 }) => {
 
   const handleTouchMove = (e) => {
     touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
     
     if (isDragging && scale > 1) {
       // Pan the image when zoomed
@@ -135,16 +142,29 @@ const ImageGalleryModal = ({ images, isOpen, onClose, initialIndex = 0 }) => {
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
     setIsDragging(false);
+    
+    // Check for double tap
+    const now = Date.now();
+    const isDoubleTap = now - lastTapTimeRef.current < 300;
+    lastTapTimeRef.current = now;
+    
+    if (isDoubleTap) {
+      handleDoubleTap(e);
+      return;
+    }
     
     // Only handle swipe when not zoomed
     if (scale === 1) {
-      const swipeDistance = touchStartX.current - touchEndX.current;
+      const deltaX = touchEndX.current - touchStartX.current;
+      const deltaY = touchEndY.current - touchStartY.current;
       
-      // Detect swipe (minimum 50px movement)
-      if (Math.abs(swipeDistance) > 50) {
-        if (swipeDistance > 0) {
+      // Only consider horizontal swipe if the movement is mostly horizontal
+      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.5;
+      
+      if (isHorizontalSwipe && Math.abs(deltaX) > 50) {
+        if (deltaX < 0) {
           // Swipe left, go to next image
           nextImage();
         } else {
@@ -155,7 +175,16 @@ const ImageGalleryModal = ({ images, isOpen, onClose, initialIndex = 0 }) => {
     }
   };
 
-  // Handle zoom on double click
+  // Handle zoom on double tap (mobile)
+  const handleDoubleTap = () => {
+    if (scale === 1) {
+      zoomIn();
+    } else {
+      resetZoom();
+    }
+  };
+
+  // Handle zoom on double click (desktop)
   const handleDoubleClick = (e) => {
     if (scale === 1) {
       // Calculate position to zoom into where user clicked
@@ -273,7 +302,7 @@ const ImageGalleryModal = ({ images, isOpen, onClose, initialIndex = 0 }) => {
             <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex justify-between px-4">
               <button
                 onClick={prevImage}
-                className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors min-h-[44px] min-w-[44px]"
+                className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors min-h-[44px] min-w-[44px] hidden md:block"
                 aria-label="Previous image"
               >
                 <ChevronLeftIcon className="h-6 w-6" />
@@ -281,7 +310,7 @@ const ImageGalleryModal = ({ images, isOpen, onClose, initialIndex = 0 }) => {
               
               <button
                 onClick={nextImage}
-                className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors min-h-[44px] min-w-[44px]"
+                className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors min-h-[44px] min-w-[44px] hidden md:block"
                 aria-label="Next image"
               >
                 <ChevronRightIcon className="h-6 w-6" />

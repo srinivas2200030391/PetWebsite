@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import ImageGalleryModal from "./ImageGalleryModal";
 import { MagnifyingGlassPlusIcon } from "@heroicons/react/24/outline";
@@ -15,6 +15,16 @@ const ZoomableImage = ({
   onModalClose = null
 }) => {
   const [internalModalOpen, setInternalModalOpen] = useState(false);
+  const touchStartY = useRef(0);
+  const touchEndY = useRef(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const isTouchDevice = useRef(false);
+  
+  useEffect(() => {
+    // Detect touch device
+    isTouchDevice.current = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  }, []);
   
   // If no gallery images provided, use the single image
   const imagesToShow = galleryImages.length > 0 ? galleryImages : [src];
@@ -32,8 +42,35 @@ const ZoomableImage = ({
     }
   };
   
+  // Handle touch start for mobile
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
+  };
+  
+  // Handle touch move for mobile
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
+  };
+  
+  // Handle touch end for mobile
+  const handleTouchEnd = (e) => {
+    // Calculate distance
+    const distanceX = Math.abs(touchEndX.current - touchStartX.current);
+    const distanceY = Math.abs(touchEndY.current - touchStartY.current);
+    
+    // Only consider it a tap if there was minimal movement
+    if (distanceX < 10 && distanceY < 10) {
+      handleClick(e);
+    }
+  };
+  
   // Handle click to open modal
-  const handleClick = () => {
+  const handleClick = (e) => {
+    e.stopPropagation();
     if (!isControlled) {
       setInternalModalOpen(true);
     }
@@ -42,8 +79,11 @@ const ZoomableImage = ({
   return (
     <>
       <div 
-        className={`relative group cursor-zoom-in overflow-hidden ${aspectRatio ? 'aspect-square' : ''} ${className}`}
-        onClick={handleClick}
+        className={`relative group overflow-hidden ${aspectRatio ? 'aspect-square' : ''} ${className}`}
+        onClick={isTouchDevice.current ? undefined : handleClick}
+        onTouchStart={isTouchDevice.current ? handleTouchStart : undefined}
+        onTouchMove={isTouchDevice.current ? handleTouchMove : undefined}
+        onTouchEnd={isTouchDevice.current ? handleTouchEnd : undefined}
       >
         <img
           src={src}
