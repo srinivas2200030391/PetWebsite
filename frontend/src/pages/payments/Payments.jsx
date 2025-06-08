@@ -18,7 +18,7 @@ const ImageCarousel = ({ images }) => {
   const [showZoomedImage, setShowZoomedImage] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
-  
+
   // Handle empty images array
   if (!images || images.length === 0) {
     return (

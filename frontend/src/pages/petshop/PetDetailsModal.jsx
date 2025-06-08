@@ -76,9 +76,27 @@ const contentAnimation = {
   }),
 };
 
+const carouselVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction) => ({
+    zIndex: 0,
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+};
+
 // Enhanced ImageCarousel with auto-rotate functionality, touch support, and zoom capability
 const AutoRotatingCarousel = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
   const [showZoomedImage, setShowZoomedImage] = useState(false);
   const timerRef = useRef(null);
   const touchStartX = useRef(0);
@@ -91,7 +109,7 @@ const AutoRotatingCarousel = ({ images }) => {
     }
     if (images && images.length > 1) {
       timerRef.current = setInterval(() => {
-        setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
+        handleNext();
       }, 4000);
     }
   };
@@ -103,18 +121,21 @@ const AutoRotatingCarousel = ({ images }) => {
 
   const handlePrev = (e) => {
     e?.stopPropagation();
+    setDirection(-1);
     setCurrentIndex(prevIndex => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
     resetTimer();
   };
 
   const handleNext = (e) => {
     e?.stopPropagation();
+    setDirection(1);
     setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
     resetTimer();
   };
 
   const handleDotClick = (index, e) => {
     e?.stopPropagation();
+    setDirection(index > currentIndex ? 1 : -1);
     setCurrentIndex(index);
     resetTimer();
   };
@@ -171,16 +192,21 @@ const AutoRotatingCarousel = ({ images }) => {
       onTouchEnd={handleTouchEnd}
       onClick={openZoomView}
     >
-      <AnimatePresence initial={false} mode="wait">
+      <AnimatePresence initial={false} custom={direction}>
         <motion.img
           key={currentIndex}
           src={images[currentIndex]}
           alt={`Pet image ${currentIndex + 1}`}
           className="w-full h-full object-contain object-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          custom={direction}
+          variants={carouselVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{
+            x: { type: "spring", stiffness: 300, damping: 30 },
+            opacity: { duration: 0.2 },
+          }}
         />
       </AnimatePresence>
       

@@ -64,8 +64,8 @@ export default function Appointment() {
                   />
                 </div>
               </div>
-              {/* Pet Gender */}
-              <div className="sm:col-span-1">
+                {/* Pet Gender */}
+                <div className="sm:col-span-1">
                 <label htmlFor="petGender" className="block text-sm font-medium leading-6 text-gray-900">
                   Pet Gender
                 </label>
@@ -82,8 +82,8 @@ export default function Appointment() {
                   </select>
                 </div>
               </div>
-              {/* Pet availability */}
-              <div className="sm:col-span-1">
+                {/* Pet availability */}
+                <div className="sm:col-span-1">
                 <label htmlFor="petAvailability" className="block text-sm font-medium leading-6 text-gray-900">
                   Pet Availability
                 </label>

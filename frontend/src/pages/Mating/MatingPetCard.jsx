@@ -43,36 +43,43 @@ const MatingPetCard = ({ pet = { photosAndVideos: [] }, onAddToWishlist, onViewD
       onMouseLeave={() => setIsHovering(false)}
       layout
     >
-      <div className="relative aspect-[4/3]">
-        <ImageCarousel images={petImages} />
+      <div className="relative aspect-[4/3] group">
+        <ImageCarousel 
+          images={petImages} 
+          onClick={() => onViewDetails(pet)}
+        />
+        
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddToWishlist(pet._id);
+          }}
+          className={`absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md z-20 
+            transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100 
+            ${isWishlisted ? "text-red-500" : "text-gray-700 hover:text-red-500"}`}
+          aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+        >
+          {isWishlisted ? <HeartSolidIcon className="h-6 w-6" /> : <HeartOutlineIcon className="h-6 w-6" />}
+        </button>
+
         <AnimatePresence>
           {isHovering && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/50 flex items-center justify-center gap-4 p-4"
+              className="absolute inset-0 bg-black/50 hidden md:flex items-center justify-center pointer-events-none"
             >
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewDetails(pet);
                 }}
-                className="p-3 rounded-full bg-white/90 hover:bg-white text-gray-700 hover:text-indigo-600 transition-colors shadow-md"
+                className="pointer-events-auto p-3 rounded-full bg-white/90 hover:bg-white text-gray-700 hover:text-indigo-600 transition-colors shadow-md"
                 aria-label="View Details"
               >
                 <EyeIcon className="h-6 w-6" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToWishlist(pet._id);
-                }}
-                className={`p-3 rounded-full bg-white/90 hover:bg-white transition-colors shadow-md ${isWishlisted ? "text-red-500 hover:text-red-600" : "text-gray-700 hover:text-red-500"}`}
-                aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-              >
-                {isWishlisted ? <HeartSolidIcon className="h-6 w-6" /> : <HeartOutlineIcon className="h-6 w-6" />}
               </button>
             </motion.div>
           )}
@@ -100,11 +107,8 @@ const MatingPetCard = ({ pet = { photosAndVideos: [] }, onAddToWishlist, onViewD
 
         <div className="mt-auto pt-2 border-t border-gray-100">
           <button
-            onClick={(e) => {
-              e.stopPropagation(); 
-              onViewDetails(pet);
-            }}
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+            onClick={() => onViewDetails(pet)}
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors min-h-[44px]"
           >
             View Details
           </button>
@@ -125,10 +129,10 @@ MatingPetCard.propTypes = {
     gender: PropTypes.string,
     petQuality: PropTypes.string,
     location: PropTypes.string,
-  }).isRequired,
+  }),
   onAddToWishlist: PropTypes.func.isRequired,
   onViewDetails: PropTypes.func.isRequired,
-  wishlist: PropTypes.arrayOf(PropTypes.string),
+  wishlist: PropTypes.array,
 };
 
 export default MatingPetCard; 

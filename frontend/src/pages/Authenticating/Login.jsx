@@ -224,11 +224,11 @@ export default function LoginPage() {
                   </div>
                 </form>
                 <p className="mt-4 text-sm leading-6 text-gray-500 text-center">
-                  Don't have an account?{' '}
+                Don't have an account?{' '}
                   <Link to="/signup" className="font-semibold text-blue-600 hover:text-blue-500 py-2 inline-block">
-                    Sign up
-                  </Link>
-                </p>
+                  Sign up
+                </Link>
+              </p>
               </div>
 
               <div className="mt-8 sm:mt-10">
@@ -257,24 +257,24 @@ export default function LoginPage() {
 
         {/* Right Panel: Image */}
         <div className="relative hidden lg:block lg:flex-1">
-          <motion.div 
-            variants={imageVariants}
-            initial="hidden"
-            animate={transitionState === "initial" ? "visible" : "exit"}
+        <motion.div 
+          variants={imageVariants}
+          initial="hidden"
+          animate={transitionState === "initial" ? "visible" : "exit"}
             className="absolute inset-0"
-          >
-            <img
+        >
+          <img
               className="h-full w-full object-cover"
               src="https://images.unsplash.com/photo-1615789591457-74a63395c990?q=80&w=1687&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="Pet background"
-            />
+          />
             <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/40" />
             <div className="absolute inset-0 bg-blue-900/20" />
             <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
               <h3 className="text-2xl font-bold mb-2">Find Your Perfect Pet Companion</h3>
               <p className="text-white/80">Join PETZU to discover adorable pets and quality services.</p>
             </div>
-          </motion.div>
+        </motion.div>
         </div>
       </motion.div>
     </div>
