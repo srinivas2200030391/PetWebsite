@@ -17,10 +17,44 @@ import { HeartIcon as HeartIconSolid } from "@heroicons/react/20/solid";
 import config from "../../config";
 import toast from "react-hot-toast";
 import ZoomableImage from "../../components/ZoomableImage";
+import { motion, AnimatePresence } from "framer-motion";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
+
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  in: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "anticipate" } },
+  out: { opacity: 0, y: -20, transition: { duration: 0.3 } },
+};
+
+const gridVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+const modalBackdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.2, delay: 0.1 } },
+};
+
+const modalPanelVariants = {
+  hidden: { opacity: 0, scale: 0.9, y: 30 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 30, duration: 0.4 } },
+  exit: { opacity: 0, scale: 0.9, y: 30, transition: { duration: 0.2 } },
+};
 
 // Image Carousel Component for Pet Cards with touch support
 const ImageCarousel = ({ images, className }) => {
@@ -33,18 +67,24 @@ const ImageCarousel = ({ images, className }) => {
     ? images.slice(0, 4) // Limit to 4 images maximum
     : [];
 
+  const paginate = (newDirection) => {
+    let newIndex = currentIndex + newDirection;
+    if (newIndex < 0) {
+      newIndex = displayImages.length - 1;
+    } else if (newIndex >= displayImages.length) {
+      newIndex = 0;
+    }
+    setCurrentIndex(newIndex);
+  };
+
   const nextImage = (e) => {
     e?.stopPropagation(); // Prevent event bubbling to parent elements
-    setCurrentIndex((prevIndex) =>
-      prevIndex === displayImages.length - 1 ? 0 : prevIndex + 1
-    );
+    paginate(1);
   };
 
   const prevImage = (e) => {
     e?.stopPropagation(); // Prevent event bubbling to parent elements
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? displayImages.length - 1 : prevIndex - 1
-    );
+    paginate(-1);
   };
 
   // Touch handlers for swipe functionality
@@ -87,42 +127,43 @@ const ImageCarousel = ({ images, className }) => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {displayImages.map((image, index) => (
-        <div
-          key={index}
-          className={`absolute w-full h-full transition-all duration-500 ${
-            index === currentIndex 
-              ? "opacity-100 scale-100" 
-              : "opacity-0 scale-95"
-          }`}>
-          <img
-            src={image}
-            alt={`Pet image ${index + 1}`}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ))}
+      <AnimatePresence initial={false}>
+        <motion.img
+          key={currentIndex}
+          src={displayImages[currentIndex]}
+          alt={`Pet image ${currentIndex + 1}`}
+          className="absolute w-full h-full object-cover"
+          initial={{ opacity: 0.5, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0.5, scale: 0.95 }}
+          transition={{ duration: 0.4, ease: [0.43, 0.13, 0.23, 0.96] }}
+        />
+      </AnimatePresence>
 
       {displayImages.length > 1 && (
         <>
-          <button
+          <motion.button
             onClick={prevImage}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 transform hover:scale-110 hidden sm:block"
             aria-label="Previous image"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={nextImage}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 transform hover:scale-110 hidden sm:block"
             aria-label="Next image"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </button>
+          </motion.button>
           <div className="absolute bottom-3 left-0 right-0 flex justify-center space-x-2">
             {displayImages.map((_, index) => (
               <button
@@ -302,10 +343,24 @@ const PetDetailsModal = ({
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <DialogBackdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+      <motion.div
+        as={DialogBackdrop}
+        variants={modalBackdropVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+      />
       <div className="fixed inset-0 z-50 w-screen overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
-          <DialogPanel className="relative mx-auto w-full max-w-6xl rounded-2xl bg-white shadow-2xl">
+          <DialogPanel
+            as={motion.div}
+            variants={modalPanelVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="relative mx-auto w-full max-w-6xl rounded-2xl bg-white shadow-2xl"
+          >
             {/* Pet Type Badge */}
             {isMatingPet && (
               <div className="absolute top-4 left-4 z-10 bg-purple-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg">
@@ -334,12 +389,14 @@ const PetDetailsModal = ({
                       ? `${pet.breed || pet.breedName}` 
                       : pet.name}
                   </h3>
-                  <button 
+                  <motion.button 
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     className="flex items-center justify-center mx-auto bg-gray-100 hover:bg-gray-200 p-3 rounded-full"
                     aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                   >
                     <HeartIconSolid className={`h-6 w-6 transition-colors duration-200 ${isWishlisted ? "text-red-500" : "text-gray-400 hover:text-red-500"}`} />
-                  </button>
+                  </motion.button>
                 </div>
                 
                 {!isMatingPet && (
@@ -512,14 +569,16 @@ const PetDetailsModal = ({
                         <LockedFeature icon={ShieldCheckIcon} text="Vaccination Details & Proof" />
                         <LockedFeature icon={VideoCameraIcon} text={isMatingPet ? "Mating Videos" : "Pet Videos"} />
                       </div>
-                      <button 
+                      <motion.button 
                         onClick={handlePayment} 
+                        whileHover={{ y: -2, boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)" }}
+                        whileTap={{ scale: 0.98 }}
                         className={classNames(
-                          "w-full text-white font-bold py-3 px-4 rounded-lg transition-transform text-sm sm:text-base shadow-lg hover:shadow-xl min-h-[44px]", 
+                          "w-full text-white font-bold py-3 px-4 rounded-lg transition-transform text-sm sm:text-base shadow-lg min-h-[44px]", 
                           isAvailable 
                             ? isMatingPet 
-                              ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:-translate-y-0.5" 
-                              : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:-translate-y-0.5" 
+                              ? "bg-gradient-to-r from-purple-600 to-indigo-600" 
+                              : "bg-gradient-to-r from-blue-600 to-indigo-600" 
                             : "bg-gray-400 cursor-not-allowed"
                         )} 
                         disabled={isLoading || !isAvailable}
@@ -532,7 +591,7 @@ const PetDetailsModal = ({
                               ? "Pay to Contact Breeder" 
                               : "Pay to Unlock Pet Details"
                         }
-                      </button>
+                      </motion.button>
                     </div>
                   )}
                 </div>
@@ -556,14 +615,16 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
     : [pet.imageUrl].filter(Boolean);
 
   return (
-    <div
+    <motion.div
+      variants={cardVariants}
+      layout
       onClick={isAvailable ? () => onViewDetails(pet) : (e) => e.preventDefault()}
+      whileHover={isAvailable ? { y: -6, scale: 1.02 } : {}}
+      transition={{ type: "spring", stiffness: 400, damping: 15 }}
       className={classNames(
-        "group relative rounded-2xl overflow-hidden shadow-lg border transition-all duration-300 bg-white",
-        isMatingPet 
-          ? "border-purple-300 hover:border-purple-500" 
-          : "border-gray-200/80 hover:border-indigo-300",
-        isAvailable ? "hover:shadow-2xl hover:-translate-y-1.5 cursor-pointer" : "opacity-60 grayscale"
+        "group relative rounded-2xl overflow-hidden shadow-lg border bg-white",
+        isMatingPet ? "border-purple-200" : "border-gray-200/80",
+        isAvailable ? "cursor-pointer" : "opacity-60 grayscale"
       )}
     >
       {/* Pet Type Badge */}
@@ -625,8 +686,11 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
           </div>
         </div>
         
-        <button
+        <motion.button
           onClick={(e) => { e.stopPropagation(); onAddToWishlist(pet._id); }}
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.9, rotate: -5 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
           className={`p-2 sm:p-2.5 rounded-full transition-all duration-300 min-h-[44px] min-w-[44px] flex items-center justify-center ${
             isWishlisted 
               ? "bg-red-50 text-red-500" 
@@ -635,9 +699,9 @@ const PetCard = ({ pet, onAddToWishlist, onViewDetails, wishlist }) => {
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
           <HeartIconSolid className="h-5 w-5 sm:h-6 sm:w-6" />
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -819,7 +883,7 @@ export default function PetStore() {
   const regularPetsCount = useMemo(() => pets.filter(p => p.petType !== "mating").length, [pets]);
 
   return (
-    <div className="bg-white">
+    <motion.div className="bg-white" variants={pageVariants} initial="initial" animate="in" exit="out">
       <div>
         {/* Mobile filter dialog - can be removed if not needed */}
         <Dialog
@@ -850,12 +914,20 @@ export default function PetStore() {
 
         <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
           <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900">
               Your Wishlist
-            </h1>
-            <p className="mt-3 sm:mt-4 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg text-gray-500">
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-3 sm:mt-4 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg text-gray-500">
               Your collection of saved pets for adoption and mating services.
-            </p>
+            </motion.p>
             
             {!loading && pets.length > 0 && (
               <div className="mt-4 sm:mt-6 flex flex-wrap justify-center gap-4">
@@ -868,9 +940,14 @@ export default function PetStore() {
           
           {!loading && pets.length > 0 && (
             <div className="mb-6 sm:mb-8 flex justify-center">
-              <div className="inline-flex rounded-md shadow-sm" role="group">
-                <button
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="inline-flex rounded-md shadow-sm" role="group">
+                <motion.button
                   type="button"
+                  whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}
                   onClick={() => setSortOption("all")}
                   className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium ${
                     sortOption === "all"
@@ -879,9 +956,10 @@ export default function PetStore() {
                   } border border-gray-200 rounded-l-lg`}
                 >
                   All Pets
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
+                  whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}
                   onClick={() => setSortOption("adoption")}
                   className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium ${
                     sortOption === "adoption"
@@ -890,9 +968,10 @@ export default function PetStore() {
                   } border-t border-b border-gray-200`}
                 >
                   Adoption
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
+                  whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}
                   onClick={() => setSortOption("mating")}
                   className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium ${
                     sortOption === "mating"
@@ -901,8 +980,8 @@ export default function PetStore() {
                   } border border-gray-200 rounded-r-lg`}
                 >
                   Mating
-                </button>
-              </div>
+                </motion.button>
+              </motion.div>
             </div>
           )}
 
@@ -926,7 +1005,12 @@ export default function PetStore() {
                 <p className="mt-1 text-sm sm:text-base text-gray-500">Find a pet you love and save it here.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-y-8 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <motion.div 
+                className="grid grid-cols-1 gap-y-8 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                variants={gridVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 {filteredPets.map((pet) => (
                   <PetCard
                     key={pet._id}
@@ -936,20 +1020,25 @@ export default function PetStore() {
                     wishlist={wishlist}
                   />
                 ))}
-              </div>
+              </motion.div>
             )}
             
-            {selectedPet && <PetDetailsModal
-              pet={selectedPet}
-              isOpen={isDetailsModalOpen}
-              onClose={() => setIsDetailsModalOpen(false)}
-              wishlist={wishlist}
-              payments={payments}
-              userId={userData._id}
-            />}
+            <AnimatePresence>
+              {selectedPet && isDetailsModalOpen && (
+                <PetDetailsModal
+                  key={selectedPet._id}
+                  pet={selectedPet}
+                  isOpen={isDetailsModalOpen}
+                  onClose={() => setIsDetailsModalOpen(false)}
+                  wishlist={wishlist}
+                  payments={payments}
+                  userId={userData._id}
+                />
+              )}
+            </AnimatePresence>
           </section>
         </main>
       </div>
-    </div>
+    </motion.div>
   );
 }

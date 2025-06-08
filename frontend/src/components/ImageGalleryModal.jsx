@@ -1,11 +1,44 @@
-import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
+import { useState, useEffect, useRef, Fragment } from "react";
+import { Dialog } from "@headlessui/react";
 import { XMarkIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon, ArrowsPointingOutIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import PropTypes from "prop-types";
 
+const backdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.3 } },
+};
+
+const modalVariants = {
+  hidden: { scale: 0.95, opacity: 0 },
+  visible: { scale: 1, opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
+  exit: { scale: 0.95, opacity: 0, transition: { duration: 0.2, ease: "easeIn" } },
+};
+
+const imageVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 0,
+    scale: 0.8,
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
+  },
+  exit: (direction) => ({
+    zIndex: 0,
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 0,
+    scale: 0.8,
+    transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
+  }),
+};
+
 const ImageGalleryModal = ({ images, isOpen, onClose, initialIndex = 0 }) => {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [[currentIndex, direction], setCurrentIndex] = useState([initialIndex, 0]);
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -210,145 +243,115 @@ const ImageGalleryModal = ({ images, isOpen, onClose, initialIndex = 0 }) => {
     }
   };
 
+  const paginate = (newDirection) => {
+    if (images.length <= 1) return;
+    setCurrentIndex([currentIndex + newDirection, newDirection]);
+  };
+
+  const imageIndex = (currentIndex % images.length + images.length) % images.length;
+
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <DialogBackdrop className="fixed inset-0 bg-black/90 backdrop-blur-sm" />
-      
-      <div className="fixed inset-0 z-50 overflow-hidden">
-        <DialogPanel className="h-full w-full flex flex-col">
-          {/* Header with controls */}
-          <div className="flex justify-between items-center py-2 px-4 bg-black/30">
-            <div className="text-white text-sm sm:text-base">
-              {images.length > 1 && (
-                <span>{`${currentIndex + 1} / ${images.length}`}</span>
-              )}
-            </div>
-            
-            <div className="flex gap-2 sm:gap-3">
-              <button 
-                onClick={zoomOut} 
-                className="p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
-                aria-label="Zoom out"
-              >
-                <MagnifyingGlassMinusIcon className="h-5 w-5" />
-              </button>
-              
-              <button 
-                onClick={zoomIn} 
-                className="p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
-                aria-label="Zoom in"
-              >
-                <MagnifyingGlassPlusIcon className="h-5 w-5" />
-              </button>
-              
-              <button 
-                onClick={resetZoom} 
-                className="p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
-                aria-label="Reset zoom"
-              >
-                <ArrowsPointingOutIcon className="h-5 w-5" />
-              </button>
-              
-              <button 
-                onClick={onClose} 
-                className="p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
-                aria-label="Close gallery"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-          
-          {/* Main image container */}
-          <div 
-            className="flex-grow flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onDoubleClick={handleDoubleClick}
-            onWheel={handleWheel}
+    <AnimatePresence>
+      {isOpen && (
+        <Dialog open={isOpen} as="div" className="relative z-50" onClose={onClose}>
+          <motion.div
+            variants={backdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+          />
+
+          <motion.div
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 z-50 overflow-hidden"
           >
-            <AnimatePresence initial={false} mode="wait">
-              <motion.div
-                key={currentIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                style={{ 
-                  transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
-                  transformOrigin: 'center',
-                  transition: isDragging ? 'none' : 'transform 0.3s'
-                }}
-                className="max-h-full max-w-full"
-              >
-                <img 
-                  ref={imageRef}
-                  src={images[currentIndex]} 
-                  alt={`Image ${currentIndex + 1}`} 
-                  className="max-h-[calc(100vh-100px)] max-w-full object-contain select-none"
-                  draggable="false"
-                />
-              </motion.div>
-            </AnimatePresence>
-          </div>
-          
-          {/* Navigation buttons for multiple images */}
-          {images.length > 1 && (
-            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex justify-between px-4">
-              <button
-                onClick={prevImage}
-                className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors min-h-[44px] min-w-[44px] hidden md:block"
-                aria-label="Previous image"
-              >
-                <ChevronLeftIcon className="h-6 w-6" />
-              </button>
-              
-              <button
-                onClick={nextImage}
-                className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors min-h-[44px] min-w-[44px] hidden md:block"
-                aria-label="Next image"
-              >
-                <ChevronRightIcon className="h-6 w-6" />
-              </button>
-            </div>
-          )}
-          
-          {/* Thumbnail strip at bottom */}
-          {images.length > 1 && (
-            <div className="py-2 px-4 bg-black/30 overflow-x-auto">
-              <div className="flex gap-2 justify-center">
-                {images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setCurrentIndex(index);
-                      resetZoom();
-                    }}
-                    className={`flex-shrink-0 h-12 w-12 sm:h-16 sm:w-16 rounded-md overflow-hidden transition ${
-                      index === currentIndex 
-                        ? 'ring-2 ring-white ring-offset-1 ring-offset-black' 
-                        : 'opacity-60 hover:opacity-100'
-                    }`}
-                    aria-label={`View image ${index + 1}`}
+            <Dialog.Panel as={motion.div} layout className="h-full w-full flex flex-col">
+              {/* Header and Controls */}
+              <motion.div className="flex justify-between items-center py-2 px-4 bg-black/30 z-20">
+                <div className="text-white text-sm sm:text-base">
+                  {images.length > 1 && (
+                    <span>{`${currentIndex + 1} / ${images.length}`}</span>
+                  )}
+                </div>
+                
+                <div className="flex gap-2 sm:gap-3">
+                  <button 
+                    onClick={zoomOut} 
+                    className="p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+                    aria-label="Zoom out"
                   >
-                    <img 
-                      src={image} 
-                      alt={`Thumbnail ${index + 1}`} 
-                      className="h-full w-full object-cover"
-                    />
+                    <MagnifyingGlassMinusIcon className="h-5 w-5" />
                   </button>
-                ))}
+                  
+                  <button 
+                    onClick={zoomIn} 
+                    className="p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+                    aria-label="Zoom in"
+                  >
+                    <MagnifyingGlassPlusIcon className="h-5 w-5" />
+                  </button>
+                  
+                  <button 
+                    onClick={resetZoom} 
+                    className="p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+                    aria-label="Reset zoom"
+                  >
+                    <ArrowsPointingOutIcon className="h-5 w-5" />
+                  </button>
+                  
+                  <button 
+                    onClick={onClose} 
+                    className="p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+                    aria-label="Close gallery"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
+              </motion.div>
+
+              <div className="flex-1 flex items-center justify-center relative overflow-hidden">
+                <AnimatePresence initial={false} custom={direction}>
+                  <motion.img
+                    key={currentIndex}
+                    src={images[imageIndex]}
+                    custom={direction}
+                    variants={imageVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    ref={imageRef}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    onDoubleClick={handleDoubleClick}
+                    onWheel={handleWheel}
+                    className="absolute max-h-full max-w-full object-contain cursor-grab active:cursor-grabbing"
+                    style={{ scale, x: position.x, y: position.y }}
+                    draggable="false"
+                  />
+                </AnimatePresence>
+
+                {/* Prev/Next buttons */}
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => paginate(-1)} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/40">
+                  <ChevronLeftIcon className="h-6 w-6 text-white" />
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => paginate(1)} className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/40">
+                  <ChevronRightIcon className="h-6 w-6 text-white" />
+                </motion.button>
               </div>
-            </div>
-          )}
-        </DialogPanel>
-      </div>
-    </Dialog>
+            </Dialog.Panel>
+          </motion.div>
+        </Dialog>
+      )}
+    </AnimatePresence>
   );
 };
 

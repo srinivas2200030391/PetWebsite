@@ -41,7 +41,8 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
   return (
     <motion.div
       variants={itemAnimation}
-      className="h-full flex flex-col bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300 ease-in-out"
+      whileHover={{ scale: 1.03, y: -5, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+      className="h-full flex flex-col bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       layout
@@ -76,7 +77,9 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
               transition={{ duration: 0.2 }}
               className="absolute inset-0 bg-black/50 hidden md:flex items-center justify-center pointer-events-none"
             >
-              <button
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewDetails(pet);
@@ -85,7 +88,7 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
                 aria-label="View Details"
               >
                 <EyeIcon className="h-6 w-6" />
-              </button>
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -115,12 +118,14 @@ const PetCard = ({ pet = { images: [], price: '0' }, onAddToWishlist, onViewDeta
         </div>
 
         <div className="mt-auto pt-2 border-t border-gray-100">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => onViewDetails(pet)}
             className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors min-h-[44px]"
           >
             View Details
-          </button>
+          </motion.button>
         </div>
       </div>
     </motion.div>

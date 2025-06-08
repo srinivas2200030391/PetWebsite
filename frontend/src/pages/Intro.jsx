@@ -51,6 +51,12 @@ const SnowEffect = () => {
   );
 };
 
+const pageVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
+  exit: { opacity: 0, transition: { duration: 0.3, ease: "easeInOut" } },
+};
+
 const containerVariants = {
   hidden: {},
   visible: {
@@ -74,7 +80,13 @@ const itemVariants = {
 
 export default function Intro() {
   return (
-    <div className="relative min-h-screen bg-gray-900">
+    <motion.div 
+      className="relative min-h-screen bg-gray-900"
+      variants={pageVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
@@ -141,6 +153,6 @@ export default function Intro() {
           </motion.div>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

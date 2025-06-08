@@ -1,15 +1,14 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./pages/Footer";
 import Intro from "./pages/Intro";
 import Login from "./pages/Authenticating/Login";
 import Signup from "./pages/Authenticating/Signup";
+import AuthLayout from "./pages/Authenticating/AuthLayout";
 import Home from "./pages/Home";
 import Petshop from "./pages/petshop/Petshop";
-import ProductOverview from "./pages/petshop/ProductOverView";
 import MatingPage from "./pages/Mating/MatingPage";
-import MatingPetsList from "./pages/Mating/MatingPetsList";
 import Form from "./components/AppointmentFrom";
 import PetSaleForm from "./components/PetSaleForm";
 import MatingForm from "./components/MatingForm";
@@ -31,14 +30,20 @@ import HealthCarepage from "./pages/Health_Care/HealthCarepage";
 import Vets from "./pages/Health_Care/Vets";
 import PetDetail from "./pages/petshop/PetDetail";
 import NewBoardingRequest from "./pages/boarding/NewBoardingRequest";
-import PrivateRoute from "./components/PrivateRoute"; // 🍭 import it
+import PrivateRoute from "./components/PrivateRoute";
 import MyPet from './pages/My_Pet/MyPet';
 import PetDetails from './pages/My_Pet/PetDetails';
 import PetHealth from './pages/My_Pet/PetHealth';
-import ScrollToTop from "./components/ScrollToTop";
+import { AnimatePresence } from "framer-motion";
+import ForgotPassword from "./pages/Authenticating/ForgotPassword";
+import BottomNavbar from "./components/BottomNavbar";
 
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
+  const location = useLocation();
+  
+  const authRoutes = ["/login", "/signup", "/forgot-password"];
+  const showNavAndFooter = !authRoutes.includes(location.pathname);
 
   useEffect(() => {
     checkAuth();
@@ -61,8 +66,12 @@ const App = () => {
     return (
       <ProductProvider>
         <div className="min-h-screen">
-          <Navbar />
-          <Routes>
+          {showNavAndFooter && <Navbar />}
+          <AnimatePresence 
+            mode="wait"
+            onExitComplete={() => window.scrollTo(0, 0)}
+          >
+            <Routes location={location} key={location.pathname}>
             {/* Private Routes */}
             <Route
               path="/home/*"
@@ -85,14 +94,6 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <Petshop />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/productoverview"
-              element={
-                <PrivateRoute>
-                  <ProductOverview />
                 </PrivateRoute>
               }
             />
@@ -257,14 +258,6 @@ const App = () => {
               }
             />
             <Route
-              path="/matingpetslist"
-              element={
-                <PrivateRoute>
-                  <MatingPetsList />
-                </PrivateRoute>
-              }
-            />
-            <Route
               path="/healthcare"
               element={
                 <PrivateRoute>
@@ -280,25 +273,26 @@ const App = () => {
                 </PrivateRoute>
               }
             />
+
+              {/* Authentication Routes */}
+              <Route element={<AuthLayout />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+              </Route>
     
             {/* Public Routes */}
             <Route path="/" element={<Intro />} />
             <Route path="/intro" element={<Intro />} />
-            <Route
-              path="/login"
-              element={!authUser ? <Login /> : <Navigate to="/home" />}
-            />
-            <Route
-              path="/signup"
-              element={!authUser ? <Signup /> : <Navigate to="/home" />}
-            />
     
             {/* Catch-all */}
-            <Route path="*" element={<Navigate to="/home" />} />
+              <Route path="*" element={<Navigate to={authUser ? "/home" : "/"} />} />
           </Routes>
-          <Toaster />
-          {authUser && <Footer />}
+          </AnimatePresence>
+          {showNavAndFooter && <BottomNavbar />}
+          {showNavAndFooter && <Footer />}
         </div>
+        <Toaster />
       </ProductProvider>
     );
     
@@ -307,7 +301,6 @@ const App = () => {
 export default function AppWrapper() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
       <App />
     </BrowserRouter>
   );

@@ -7,14 +7,60 @@ import axios from "axios";
 import config from "../../config";
 import { EyeIcon, EyeSlashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
-const formVariants = {
+// Animation variants
+const formContainerVariants = {
   hidden: { opacity: 0, x: 50 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.5, staggerChildren: 0.05, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    x: -50,
+    transition: { duration: 0.3, ease: "easeInOut" }
+  }
 };
 
-const imageVariants = {
-  hidden: { opacity: 0, x: -50 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.2 } },
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+const PasswordStrengthIndicator = ({ password = '' }) => {
+  const getStrength = () => {
+    let score = 0;
+    if (!password) return score;
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return score;
+  };
+
+  const strength = getStrength();
+  const strengthLabel = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'][strength];
+  const color = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-lime-500', 'bg-green-500', 'bg-emerald-500'][strength];
+
+  if (!password) return null;
+
+  return (
+    <motion.div variants={itemVariants} className="space-y-2 pt-2">
+      <div className="flex justify-between items-center text-xs">
+        <p className="font-medium text-gray-600">Password strength</p>
+        <p className={`font-bold ${['text-red-500', 'text-orange-500', 'text-yellow-500', 'text-lime-500', 'text-green-500', 'text-emerald-500'][strength]}`}>{strengthLabel}</p>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-1.5">
+        <motion.div
+          className={`h-1.5 rounded-full ${color}`}
+          initial={{ width: '0%' }}
+          animate={{ width: `${(strength / 5) * 100}%` }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+        />
+      </div>
+    </motion.div>
+  );
 };
 
 export default function SignupPage() {
@@ -26,6 +72,7 @@ export default function SignupPage() {
     password: "",
     otp: "",
   });
+  const [errors, setErrors] = useState({});
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -33,47 +80,49 @@ export default function SignupPage() {
   const navigate = useNavigate();
 
   const validateForm = () => {
+    const newErrors = {};
     if (!formData.fullName.trim()) {
-      toast.error("Full name is required");
-      return false;
+      newErrors.fullName = "Full name is required";
     }
     if (!formData.phoneNumber.trim()) {
-      toast.error("Phone number is required");
-      return false;
+      newErrors.phoneNumber = "Phone number is required";
+    } else {
+      const phoneDigits = formData.phoneNumber.replace(/\D/g, "");
+      if (phoneDigits.length !== 10) {
+        newErrors.phoneNumber = "Phone number must be exactly 10 digits";
+      }
     }
-    
-    // Stricter phone number validation - must be exactly 10 digits
-    const phoneDigits = formData.phoneNumber.replace(/\D/g, "");
-    if (phoneDigits.length !== 10) {
-      toast.error("Phone number must be exactly 10 digits");
-      return false;
-    }
-    
     if (!formData.gmail.trim()) {
-      toast.error("Gmail is required");
-      return false;
-    }
-    if (!/^[^\s@]+@gmail\.com$/.test(formData.gmail)) {
-      toast.error("Please enter a valid Gmail address");
-      return false;
+      newErrors.gmail = "Gmail is required";
+    } else if (!/^[^\s@]+@gmail\.com$/.test(formData.gmail)) {
+      newErrors.gmail = "Please enter a valid Gmail address";
     }
     if (!formData.username.trim()) {
-      toast.error("Username is required");
-      return false;
-    }
-    if (formData.username.length < 3) {
-      toast.error("Username must be at least 3 characters");
-      return false;
+      newErrors.username = "Username is required";
+    } else if (formData.username.length < 3) {
+      newErrors.username = "Username must be at least 3 characters long.";
+    } else if (formData.username.length > 20) {
+      newErrors.username = "Username cannot be more than 20 characters long.";
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      newErrors.username = "Invalid username format";
     }
     if (!formData.password) {
-      toast.error("Password is required");
-      return false;
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters.";
+    } else {
+      let score = 0;
+      if (formData.password.length >= 12) score++;
+      if (/[A-Z]/.test(formData.password)) score++;
+      if (/[0-9]/.test(formData.password)) score++;
+      if (/[^A-Za-z0-9]/.test(formData.password)) score++;
+      if (score < 3) { // Corresponds to 'Good' strength, requires at least 3 of the criteria
+        newErrors.password = "Password is not strong enough";
+      }
     }
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return false;
-    }
-    return true;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const sendOtp = async () => {
@@ -82,18 +131,14 @@ export default function SignupPage() {
     try {
       const response = await axios.post(`${config.baseURL}/api/auth/getotp`, { email: formData.gmail, phone: formData.phoneNumber, username: formData.username });
       if (response.status === 200 && response.data.success) {
-        // Store OTP and convert to string to ensure consistent comparison later
         const receivedOtp = response.data.otp ? response.data.otp.toString() : "";
         setGeneratedOtp(receivedOtp);
-        console.log("OTP received and stored:", receivedOtp);
-        
         setShowOtpModal(true);
         toast.success("OTP sent to your email!");
       } else {
         toast.error(response.data.message || "Failed to send OTP");
       }
     } catch (error) {
-      console.error("OTP request error:", error);
       toast.error(error.response?.data?.message || "Failed to send OTP");
     } finally {
       setIsLoading(false);
@@ -105,14 +150,12 @@ export default function SignupPage() {
     setIsLoading(true);
     
     try {
-      // First verify that OTP matches
       if (formData.otp !== generatedOtp.toString()) {
         toast.error("Invalid OTP. Please enter the correct code.");
         setIsLoading(false);
         return;
       }
       
-      // Proceed with signup only if OTP is correct
       const signupData = {
         fullName: formData.fullName,
         email: formData.gmail,
@@ -124,14 +167,13 @@ export default function SignupPage() {
       const signupResponse = await axios.post(`${config.baseURL}/api/auth/signup`, signupData);
       
       if (signupResponse.data) {
-        toast.success("Account created successfully!");
+        toast.success("Account created successfully! Please log in.");
         setShowOtpModal(false);
         navigate("/login");
       } else {
         toast.error("Failed to create account");
       }
     } catch (error) {
-      console.error("Signup error:", error);
       toast.error(error.response?.data?.message || "Failed to create account");
     } finally {
       setIsLoading(false);
@@ -141,6 +183,9 @@ export default function SignupPage() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleSubmit = (e) => {
@@ -152,136 +197,138 @@ export default function SignupPage() {
     e.preventDefault();
     verifyOtpAndSignup();
   };
+
+  const handleGoogleSignup = () => {
+    const toastId = toast.loading("Redirecting to Google...");
+    setTimeout(() => {
+      toast.dismiss(toastId);
+      toast.error("Google sign-up is not yet implemented.", { duration: 3000 });
+    }, 2000);
+  };
   
   return (
     <>
       <motion.div
-        className="flex min-h-screen bg-white"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.75 }}
+        className="mx-auto w-full max-w-sm lg:w-96"
+        variants={formContainerVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
       >
-        {/* Left Panel: Image */}
-        <motion.div 
-          variants={imageVariants}
-          initial="hidden"
-          animate="visible"
-          className="relative hidden w-0 flex-1 lg:block"
-        >
-          <img
-            className="absolute inset-0 h-full w-full object-cover"
-            src="https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=2835&auto=format&fit=crop"
-            alt="A cute pug"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"/>
+        <motion.div variants={itemVariants}>
+            <Link to="/">
+            <span className="text-3xl font-bold tracking-tight text-gray-900">PETZU</span>
+            </Link>
+            <h2 className="mt-8 text-3xl font-bold leading-9 tracking-tight text-gray-900">
+            Create an account
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+            Join our pet-loving community. It's free!
+            </p>
         </motion.div>
 
-        {/* Right Panel: Form */}
-        <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-          <motion.div 
-            variants={formVariants}
-            initial="hidden"
-            animate="visible"
-            className="mx-auto w-full max-w-sm lg:w-96"
-          >
-            <div>
-              <Link to="/">
-                <span className="text-3xl font-bold text-gray-900 tracking-tight">PETZU</span>
-              </Link>
-              <h2 className="mt-8 text-3xl font-bold leading-9 tracking-tight text-gray-900">
-                Create an account
-              </h2>
-            </div>
-
-            <div className="mt-10">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                    <input name="fullName" type="text" placeholder="Full Name" required onChange={handleInputChange} className="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"/>
-                    <input name="username" type="text" placeholder="Username" required onChange={handleInputChange} className="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"/>
-                </div>
-                <input name="gmail" type="email" placeholder="Email Address" required onChange={handleInputChange} className="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"/>
-                <input name="phoneNumber" type="tel" placeholder="Phone Number" required onChange={handleInputChange} className="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"/>
-                <div className="relative">
-                  <input name="password" type={showPassword ? 'text' : 'password'} placeholder="Password" required onChange={handleInputChange} className="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"/>
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
-                      {showPassword ? <EyeSlashIcon className="h-5 w-5"/> : <EyeIcon className="h-5 w-5"/>}
-                  </button>
-                </div>
-
-                <button type="submit" disabled={isLoading} className="mt-6 flex w-full justify-center rounded-md bg-blue-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 disabled:bg-blue-300 transition-all">
-                  {isLoading ? 'Sending OTP...' : 'Create Account'}
-                </button>
-              </form>
-
-              <p className="mt-2 text-sm leading-6 text-gray-500 text-center">
-                Already have an account?{' '}
-                <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-500">
-                  Sign in
-                </Link>
-              </p>
-              <div className="mt-8">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-                  <div className="relative flex justify-center text-sm font-medium"><span className="bg-white px-6 text-gray-500">Or</span></div>
-                </div>
-                <div className="mt-6">
-                  <a href="#" className="flex w-full items-center justify-center gap-3 rounded-md border bg-white px-3 py-2 text-sm font-semibold text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                    <img src="https://www.material-tailwind.com/logos/logo-google.png" alt="Google" className="h-5 w-5" />
-                    <span>Sign up with Google</span>
-                  </a>
-                </div>
+        <motion.div variants={itemVariants} className="mt-10">
+            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <input name="fullName" type="text" placeholder="Full Name" required value={formData.fullName} onChange={handleInputChange} className="block w-full rounded-lg border-gray-300 py-3 px-4 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"/>
+                {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
               </div>
-
+              <div>
+                <input name="username" type="text" placeholder="Username " required value={formData.username} onChange={handleInputChange} className="block w-full rounded-lg border-gray-300 py-3 px-4 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"/>
+                {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
+              </div>
             </div>
-          </motion.div>
-        </div>
+            <div>
+              <input name="gmail" type="email" placeholder="Email Address" required value={formData.gmail} onChange={handleInputChange} className="block w-full rounded-lg border-gray-300 py-3 px-4 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"/>
+              {errors.gmail && <p className="text-red-500 text-xs mt-1">{errors.gmail}</p>}
+            </div>
+            <div>
+              <input name="phoneNumber" type="tel" placeholder="Phone Number" required value={formData.phoneNumber} onChange={handleInputChange} className="block w-full rounded-lg border-gray-300 py-3 px-4 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"/>
+              {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+            </div>
+            <div className="relative">
+                <input name="password" type={showPassword ? 'text' : 'password'} placeholder="Password" required value={formData.password} onChange={handleInputChange} className="block w-full rounded-lg border-gray-300 py-3 px-4 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"/>
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
+                    {showPassword ? <EyeSlashIcon className="h-5 w-5"/> : <EyeIcon className="h-5 w-5"/>}
+                </button>
+            </div>
+            {errors.password && <p className="text-red-500 text-xs -mt-2 mb-2">{errors.password}</p>}
+
+            <PasswordStrengthIndicator password={formData.password} />
+
+            <motion.button type="submit" disabled={isLoading} className="flex w-full justify-center rounded-lg bg-blue-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                {isLoading ? 'Sending OTP...' : 'Create Account'}
+            </motion.button>
+            </form>
+            
+            <p className="mt-8 text-center text-sm text-gray-500">
+            Already have an account?{' '}
+            <Link to="/login" className="font-semibold leading-6 text-blue-600 hover:text-blue-500">
+                Sign in
+            </Link>
+            </p>
+
+            <div className="mt-8">
+            <div className="relative">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-300" /></div>
+                <div className="relative flex justify-center text-sm font-medium"><span className="bg-gray-50 px-4 text-gray-500">Or</span></div>
+            </div>
+            <div className="mt-6">
+                <motion.button onClick={handleGoogleSignup} className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-100 focus-visible:ring-transparent" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <img src="https://www.material-tailwind.com/logos/logo-google.png" alt="Google" className="h-5 w-5" />
+                <span>Sign up with Google</span>
+                </motion.button>
+            </div>
+            </div>
+        </motion.div>
       </motion.div>
 
       {/* OTP Modal */}
       <Transition appear show={showOtpModal} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={() => setShowOtpModal(false)}>
+        <Dialog as="div" className="relative z-50 font-sans" onClose={() => setShowOtpModal(false)}>
           <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
           </Transition.Child>
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
               <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title as="h3" className="text-lg font-bold leading-6 text-gray-900 flex justify-between items-center">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title as="h3" className="text-xl font-bold leading-6 text-gray-900 flex justify-between items-center">
                     Verify Your Account
-                    <button onClick={() => setShowOtpModal(false)} className="p-1 rounded-full hover:bg-gray-100">
-                      <XMarkIcon className="h-5 w-5 text-gray-500"/>
+                    <button onClick={() => setShowOtpModal(false)} className="p-1 rounded-full hover:bg-gray-100 transition-colors">
+                      <XMarkIcon className="h-6 w-6 text-gray-500"/>
                     </button>
                   </Dialog.Title>
                   <div className="mt-4">
-                    <p className="text-sm text-gray-500">
-                      Enter the 6-digit verification code sent to {formData.gmail}.
+                    <p className="text-sm text-gray-600">
+                      Enter the 6-digit verification code sent to <span className="font-medium text-gray-800">{formData.gmail}</span>.
                     </p>
-                    <form onSubmit={handleOtpSubmit} className="mt-4 space-y-4">
+                    <form onSubmit={handleOtpSubmit} className="mt-6 space-y-4">
                       <input
                         name="otp"
                         type="text"
                         maxLength="6"
                         value={formData.otp}
                         onChange={(e) => setFormData(prev => ({ ...prev, otp: e.target.value.replace(/\D/g, "") }))}
-                        className="w-full text-center text-2xl tracking-[0.5em] font-mono rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="_ _ _ _ _ _"
+                        className="w-full text-center text-3xl tracking-[0.3em] font-mono rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-3"
+                        placeholder="______"
                       />
                        <p className="text-xs text-center text-gray-500">
                         Didn't receive the code?{' '}
-                        <button type="button" onClick={sendOtp} disabled={isLoading} className="font-medium text-blue-600 hover:underline">
+                        <button type="button" onClick={sendOtp} disabled={isLoading} className="font-medium text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline">
                           Resend OTP
                         </button>
                       </p>
                     </form>
                   </div>
-                  <div className="mt-6 flex justify-end gap-3">
-                    <button type="button" onClick={() => setShowOtpModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200">
+                  <div className="mt-8 flex justify-end gap-3">
+                    <motion.button type="button" onClick={() => setShowOtpModal(false)} className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 border border-transparent rounded-lg hover:bg-gray-200 transition-colors" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       Cancel
-                    </button>
-                    <button type="button" onClick={handleOtpSubmit} disabled={isLoading} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-blue-300">
+                    </motion.button>
+                    <motion.button type="button" onClick={handleOtpSubmit} disabled={isLoading} className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       {isLoading ? 'Verifying...' : 'Verify & Create'}
-                    </button>
+                    </motion.button>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>
@@ -292,3 +339,4 @@ export default function SignupPage() {
     </>
   );
 }
+

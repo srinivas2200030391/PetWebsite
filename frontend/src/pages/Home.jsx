@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -21,16 +21,87 @@ import {
   ChevronRightIcon
 } from "@heroicons/react/24/outline";
 
+const pageVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 20,
+      mass: 0.8,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -50,
+    transition: { duration: 0.4, ease: "easeInOut" }
+  },
+};
+
+const fromLoginVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      when: "beforeChildren",
+      staggerChildren: 0.15,
+      delayChildren: 0.4,
+    },
+  },
+};
+
+const slideVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction) => ({
+    zIndex: 0,
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+};
+
+const slideTextVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+      staggerChildren: 0.1,
+    },
+  },
+};
+
 const Home = () => {
   const [setCartCount] = useState(0);
   const userId = 1;
+  const location = useLocation();
+  const fromLogin = location.state?.from === "login";
   
   const updateCartCount = (newCount) => {
     setCartCount(newCount);
   };
 
   return (
-    <div className="min-h-screen bg-white py-16">      
+    <motion.div 
+      layout
+      className="min-h-screen bg-white py-16"
+      variants={fromLogin ? fromLoginVariants : pageVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >      
       <div className="container mx-auto px-4">
         <Routes>
           <Route path="/" element={<HomeDashboard />} />
@@ -43,7 +114,7 @@ const Home = () => {
           <Route path="/profile" element={<MyProfile />} />
         </Routes>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -66,7 +137,7 @@ const heroSlides = [
 ];
 
 const HomeDashboard = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [[currentSlide, direction], setSlide] = useState([0, 0]);
   const slideInterval = useRef();
   const sliderRef = useRef(null);
   const [touchStart, setTouchStart] = useState(0);
@@ -89,19 +160,22 @@ const HomeDashboard = () => {
       y: 0,
       opacity: 1,
       transition: { 
-        duration: 0.5, 
-        ease: "easeOut" 
+        type: "spring", 
+        stiffness: 100, 
+        damping: 15, 
+        mass: 0.5,
+        delay: 0.25,
+        
       },
     },
   };
 
-  const nextSlide = () => {
-    setCurrentSlide(prev => (prev === heroSlides.length - 1 ? 0 : prev + 1));
+  const paginate = (newDirection) => {
+    setSlide([ (currentSlide + newDirection + heroSlides.length) % heroSlides.length, newDirection ]);
   };
 
-  const prevSlide = () => {
-    setCurrentSlide(prev => (prev === 0 ? heroSlides.length - 1 : prev - 1));
-  };
+  const nextSlide = () => paginate(1);
+  const prevSlide = () => paginate(-1);
 
   const startSlideTimer = () => {
     stopSlideTimer();
@@ -255,7 +329,13 @@ const HomeDashboard = () => {
       </motion.section>
 
       {/* Main Services Section - Enhanced for mobile responsiveness */}
-      <motion.section variants={itemVariants} className="container mx-auto px-4">
+      <motion.section 
+        className="container mx-auto px-4"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={itemVariants}
+      >
         <div className="text-center mb-8 sm:mb-12 md:mb-16">
           <span className="bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 sm:py-1.5 rounded-full">Premium Services</span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-3 sm:mt-4 mb-2 sm:mb-4">Our Featured Services</h2>
@@ -264,11 +344,18 @@ const HomeDashboard = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-          <Link 
+        <motion.div
+          className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.custom
             to="/Petshop" 
+            variants={itemVariants}
             className="relative h-[300px] sm:h-[400px] md:h-[500px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-lg sm:shadow-xl md:shadow-2xl group text-white touch-manipulation"
             aria-label="Browse premium pets for sale"
+            as={Link}
           >
             <img src={salesimg} alt="Pets for sale" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
@@ -279,12 +366,14 @@ const HomeDashboard = () => {
                 <span className="text-sm sm:text-base">Browse Collection</span> <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 ml-1 sm:ml-2 transition-transform duration-300 group-hover:translate-x-1" />
               </div>
             </div>
-          </Link>
+          </motion.custom>
           
-          <Link 
+          <motion.custom
             to="/matingpage" 
+            variants={itemVariants}
             className="relative h-[300px] sm:h-[400px] md:h-[500px] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-lg sm:shadow-xl md:shadow-2xl group text-white touch-manipulation"
             aria-label="Explore mating services"
+            as={Link}
           >
             <img src={matingimg} alt="Mating services" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
@@ -295,15 +384,26 @@ const HomeDashboard = () => {
                 <span className="text-sm sm:text-base">Find Partners</span> <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 ml-1 sm:ml-2 transition-transform duration-300 group-hover:translate-x-1" />
               </div>
             </div>
-          </Link>
-        </div>
+          </motion.custom>
+        </motion.div>
       </motion.section>
 
       {/* Why Choose Us Section - Redesigned */}
-      <motion.section variants={itemVariants} className="py-20 bg-white">
+      <motion.section 
+        className="py-20 bg-white"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={itemVariants}
+      >
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div className="relative">
+          <motion.div
+            className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div className="relative" variants={itemVariants}>
               <img 
                 src="https://images.unsplash.com/photo-1541364983171-a8ba01e95cfc?q=80&w=1974" 
                 alt="Happy pet owner" 
@@ -318,8 +418,8 @@ const HomeDashboard = () => {
                   </div>
                 </div>
               </div>
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={itemVariants}>
               <span className="bg-purple-100 text-purple-800 text-sm font-medium px-4 py-1.5 rounded-full">Our Commitment</span>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-4 mb-6">The Premium Pet Platform You Can Trust</h2>
               <p className="text-gray-600 text-sm sm:text-base md:text-lg mb-8">
@@ -345,13 +445,19 @@ const HomeDashboard = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </motion.section>
 
       {/* Special Launch Discounts - Redesigned */}
-      <motion.section variants={itemVariants} className="py-20 bg-gray-50 rounded-3xl">
+      <motion.section 
+        className="py-20 bg-gray-50 rounded-3xl"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={itemVariants}
+      >
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <span className="bg-red-100 text-red-800 text-sm font-medium px-4 py-1.5 rounded-full">Hot Deals</span>
@@ -361,9 +467,19 @@ const HomeDashboard = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {productCategories.map((category, index) => (
-              <div key={index} className="rounded-2xl overflow-hidden shadow-lg border-gray-100 hover:shadow-2xl transition-all duration-300 group bg-white">
+              <motion.div
+                key={index}
+                className="rounded-2xl overflow-hidden shadow-lg border-gray-100 hover:shadow-2xl transition-all duration-300 group bg-white"
+                variants={itemVariants}
+                whileHover={{ y: -8, transition: { type: 'spring', stiffness: 300 } }}
+              >
                 <div className="relative h-64 overflow-hidden">
                   <img 
                     src={category.image} 
@@ -377,14 +493,20 @@ const HomeDashboard = () => {
                   <p className="text-gray-600 mb-4">{category.description}</p>
                   <Link to="#" className="font-medium text-blue-600 hover:text-blue-800">Shop Now <ArrowRightIcon className="inline h-4 w-4" /></Link>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </motion.section>
       
       {/* CTA Section */}
-      <motion.section variants={itemVariants} className="container mx-auto px-4 py-16">
+      <motion.section 
+        className="container mx-auto px-4 py-16"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={itemVariants}
+      >
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/20">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-2/3 p-8 md:p-12 text-center md:text-left">

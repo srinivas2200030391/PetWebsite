@@ -3,10 +3,29 @@ import { useStore } from "./store/store"; // Adjust the path as needed
 import axios from "axios";
 import { useEffect, useState } from "react";
 import config from "./../config";
+import { motion, AnimatePresence } from "framer-motion";
 
 // This should be your actual test key from Razorpay dashboard
 // Hardcoding for demonstration - in production, use environment variables
 const RAZORPAY_KEY_ID = "rzp_test_BbYHp3Xn5nnaxa"; // Replace with your actual key
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { ease: "easeOut" } },
+  exit: { opacity: 0, x: -50, transition: { duration: 0.3 } },
+};
 
 const Cart = () => {
   // Get cart state and actions from the store
@@ -98,8 +117,8 @@ const Cart = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-indigo-600">Loading cart...</div>
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-indigo-600 text-lg">Loading your cart...</div>
       </div>
     );
   }
@@ -234,90 +253,81 @@ const Cart = () => {
   };
 
   return (
-    <div className="mt-[5.5rem] container mx-auto px-4 mb-5">
+    <motion.div
+      className="mt-24 container mx-auto px-4 sm:px-6 lg:px-8 mb-10"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {cartItems.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md min-h-screen justify-center items-center flex">
-          <p className="text-gray-500">Your cart is empty</p>
-        </div>
+        <motion.div
+          variants={itemVariants}
+          className="bg-white rounded-lg shadow-md p-12 text-center"
+        >
+          <p className="text-xl text-gray-500">Your cart is empty</p>
+          <p className="text-gray-400 mt-2">Looks like you haven't added any pets yet.</p>
+        </motion.div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          {/* Display error or payment status if any */}
-          {error && (
-            <div className="bg-red-100 text-red-700 p-4 mb-4">{error}</div>
-          )}
-          {paymentStatus && (
-            <div
-              className={`p-4 mb-4 ₹{
-                paymentStatus.success
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}>
-              {paymentStatus.message}
-              {paymentStatus.success && (
-                <div className="mt-2 text-sm">
-                  <p>Payment ID: {paymentStatus.paymentId}</p>
-                  <p>Order ID: {paymentStatus.orderId}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-md overflow-hidden">
+            <AnimatePresence>
+              {cartItems.map((item) => (
+                <CartItem
+                  key={item._id}
+                  item={item}
+                  onQuantityChange={updateCartItemQuantity}
+                  onRemove={removeFromCart}
+                  variants={itemVariants}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+          <motion.div variants={itemVariants} className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
+              <h2 className="text-2xl font-semibold mb-4 border-b pb-4">Order Summary</h2>
+              {/* Display error or payment status if any */}
+              {error && (
+                <div className="bg-red-100 text-red-700 p-4 mb-4">{error}</div>
+              )}
+              {paymentStatus && (
+                <div
+                  className={`p-4 mb-4 ₹{
+                    paymentStatus.success
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}>
+                  {paymentStatus.message}
+                  {paymentStatus.success && (
+                    <div className="mt-2 text-sm">
+                      <p>Payment ID: {paymentStatus.paymentId}</p>
+                      <p>Order ID: {paymentStatus.orderId}</p>
+                    </div>
+                  )}
                 </div>
               )}
+              <div className="flex justify-between text-lg font-semibold my-4">
+                <span>Total</span>
+                <span>
+                  {new Intl.NumberFormat("en-IN", {
+                    style: "currency",
+                    currency: "INR",
+                  }).format(totalPrice)}
+                </span>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleSubmit}
+                disabled={!razorpayLoaded || loading}
+                className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300 disabled:bg-gray-400"
+              >
+                {loading ? "Processing..." : "Proceed to Checkout"}
+              </motion.button>
             </div>
-          )}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product
-                  </th>
-                  <th className="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantity
-                  </th>
-                  <th className="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {cartItems.map((item) => (
-                  <CartItem
-                    key={item.id}
-                    item={item}
-                    updateQuantity={updateCartItemQuantity}
-                    removeItem={removeFromCart}
-                  />
-                ))}
-              </tbody>
-              <tfoot className="bg-gray-50">
-                <tr>
-                  <td
-                    colSpan="3"
-                    className="py-4 px-4 text-right font-medium text-gray-500">
-                    Subtotal:
-                  </td>
-                  <td className="py-4 px-4 text-right font-bold text-gray-900">
-                    ₹{totalPrice.toFixed(2)}
-                  </td>
-                  <td></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-          <div className="p-4 bg-gray-50 flex justify-end">
-            <button
-              className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors"
-              onClick={handleSubmit}
-              disabled={!razorpayLoaded || loading}>
-              {loading ? "Processing..." : "Checkout"}
-            </button>
-          </div>
+          </motion.div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
