@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Routes, Route, Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion} from "framer-motion";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Carsoule from "../components/Carsoule";
 import Cart from "./Cart";
 import salesimg from "../assets/salesimg.jpg";
 import matingimg from "../assets/matingimg.jpeg";
@@ -13,7 +12,6 @@ import MyProfile from './profile/MyProfile';
 import { 
   ArrowRightIcon, 
   ShieldCheckIcon, 
-  CheckCircleIcon, 
   SparklesIcon,
   HeartIcon,
   ShoppingBagIcon,
