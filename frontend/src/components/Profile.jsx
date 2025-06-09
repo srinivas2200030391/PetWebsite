@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { useAuthStore } from '../pages/store/useAuthstore';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   UserCircleIcon,
   InboxIcon,
@@ -15,8 +15,9 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function ProfileMenu({ closeNavbar }) {
+export default function ProfileMenu() {
   const { logout } = useAuthStore();
+  const navigate = useNavigate();
   const [userName, setUserName] = useState('User');
   const [userEmail, setUserEmail] = useState('');
   const [userProfilePic, setUserProfilePic] = useState('');
@@ -25,11 +26,16 @@ export default function ProfileMenu({ closeNavbar }) {
     // Get user data from localStorage if available
     const userData = JSON.parse(localStorage.getItem('user'));
     if (userData?.data) {
-      setUserName(userData.data.fullname || userData.data.name || 'User');
+      setUserName(userData.data.username || userData.data.name || 'User');
       setUserEmail(userData.data.email || '');
       setUserProfilePic(userData.data.profilepic || '');
     }
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const menuItems = [
     { name: 'My Profile', href: '/home/profile', icon: UserCircleIcon },
@@ -85,7 +91,7 @@ export default function ProfileMenu({ closeNavbar }) {
             leaveFrom="transform opacity-100 scale-100 translate-y-0"
             leaveTo="transform opacity-0 scale-95 translate-y-1"
           >
-            <Menu.Items className="absolute right-0 z-10 sm:mt-3 sm:top-auto bottom-12 sm:bottom-auto mt-1 w-64 origin-top-right sm:origin-top-right origin-bottom-right rounded-xl bg-white shadow-2xl ring-1 ring-black/5 focus:outline-none divide-y divide-gray-100 overflow-hidden">
+            <Menu.Items className="absolute right-0 z-10 mt-2 w-64 origin-top-right rounded-xl bg-white shadow-2xl ring-1 ring-black/5 focus:outline-none divide-y divide-gray-100 overflow-hidden">
               {/* User Profile Header */}
               <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-blue-50 to-indigo-50">
                 <p className="text-sm font-medium text-gray-900">{userName}</p>
@@ -100,7 +106,6 @@ export default function ProfileMenu({ closeNavbar }) {
                         to={item.href}
                         onClick={() => {
                           close();
-                          if (closeNavbar) closeNavbar();
                         }}
                         className={classNames(
                           active ? 'bg-blue-50' : '',
@@ -125,13 +130,10 @@ export default function ProfileMenu({ closeNavbar }) {
               <div className="py-1 sm:py-2 bg-gray-50">
                 <Menu.Item>
                   {({ active }) => (
-                    <a
-                      href="/"
-                      onClick={(e) => {
-                        e.preventDefault();
+                    <button
+                      onClick={() => {
                         close();
-                        if (closeNavbar) closeNavbar();
-                        logout();
+                        handleLogout();
                       }}
                       className={classNames(
                         active ? 'bg-red-50' : '',
@@ -147,7 +149,7 @@ export default function ProfileMenu({ closeNavbar }) {
                       <span className={active ? "text-red-700 font-medium" : "text-gray-700"}>
                         Sign Out
                       </span>
-                    </a>
+                    </button>
                   )}
                 </Menu.Item>
               </div>

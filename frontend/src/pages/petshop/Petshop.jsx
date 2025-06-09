@@ -157,8 +157,8 @@ export default function PetStore() {
   // Debounced version of fetchPets to avoid rapid API calls
   const debouncedFetchPets = useCallback(
     debounce(async (/* fetchConfig is no longer used for filtering params */) => {
-      if (pendingToastRef.current) toast.dismiss(pendingToastRef.current);
-      pendingToastRef.current = toast.loading("Fetching all pets...");
+      // Removed loading toast for cleaner user experience
+      setLoading(true); // Using the loading state is sufficient for UI feedback
     setLoading(true);
       setError(null);
 
@@ -434,18 +434,30 @@ export default function PetStore() {
                                           <DisclosureButton className="flex w-full items-center justify-between bg-white py-3 text-sm text-gray-400 hover:text-gray-500">
                                               <span className="font-medium text-gray-900">{section.name}</span>
                                               <span className="ml-6 flex items-center">{open ? <MinusIcon className="h-5 w-5" /> : <PlusIcon className="h-5 w-5" />}</span>
-                      </DisclosureButton>
-                    </h3>
-                    <DisclosurePanel className="pt-6">
-                                          <div className="space-y-4">
-                                              {section.options.map(option => (
-                                                  <div key={`mobile-${section.id}-${option.value}`} className="flex items-center">
-                                                      <input id={`mobile-filter-${section.id}-${option.value}`} name={`${section.id}[]`} value={option.value} type="checkbox" checked={!!(selectedFilters[section.id]?.[option.value])} onChange={(e) => handleFilterChange(section.id, option.value, e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                                      <label htmlFor={`mobile-filter-${section.id}-${option.value}`} className="ml-4 min-w-0 flex-1 text-sm font-medium text-gray-700">{option.label}</label>
-                                                  </div>
-                                              ))}
-                                          </div>
-                                      </DisclosurePanel>
+                                          </DisclosureButton>
+                                      </h3>
+                                      <AnimatePresence>
+                                        {open && (
+                                          <DisclosurePanel 
+                                            as={motion.div}
+                                            static
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ type: "spring", duration: 0.4, bounce: 0 }}
+                                            className="pt-6 overflow-hidden"
+                                          >
+                                            <div className="space-y-4">
+                                                {section.options.map(option => (
+                                                    <div key={`mobile-${section.id}-${option.value}`} className="flex items-center">
+                                                        <input id={`mobile-filter-${section.id}-${option.value}`} name={`${section.id}[]`} value={option.value} type="checkbox" checked={!!(selectedFilters[section.id]?.[option.value])} onChange={(e) => handleFilterChange(section.id, option.value, e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                                        <label htmlFor={`mobile-filter-${section.id}-${option.value}`} className="ml-4 min-w-0 flex-1 text-sm font-medium text-gray-700">{option.label}</label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                          </DisclosurePanel>
+                                        )}
+                                      </AnimatePresence>
                                   </>
                               )}
                           </Disclosure>
@@ -460,8 +472,8 @@ export default function PetStore() {
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 py-10 lg:px-8">
         <div className="border-b border-gray-200 pb-8 pt-16 md:pt-20">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Find Your New Friend</h1>
-            <p className="mt-4 text-md sm:text-lg text-gray-500">Browse our available pets or use filters to find the perfect match.</p>
+            <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: "easeOut" }} className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Find Your New Friend</motion.h1>
+            <motion.p initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }} className="mt-4 text-md sm:text-lg text-gray-500">Browse our available pets or use filters to find the perfect match.</motion.p>
         </div>
         
         <div className="pt-8 pb-24 lg:grid lg:grid-cols-4 lg:gap-x-8">
@@ -510,16 +522,28 @@ export default function PetStore() {
                                         <span className="ml-6 flex items-center">{open ? <MinusIcon className="h-5 w-5" /> : <PlusIcon className="h-5 w-5" />}</span>
                                     </DisclosureButton>
                                 </h3>
-                                <DisclosurePanel className="pt-6">
-                                    <div className="space-y-4">
-                                        {section.options.map(option => (
-                                            <div key={`desktop-${section.id}-${option.value}`} className="flex items-center">
-                                                <input id={`desktop-filter-${section.id}-${option.value}`} name={`${section.id}[]`} value={option.value} type="checkbox" checked={!!(selectedFilters[section.id]?.[option.value])} onChange={(e) => handleFilterChange(section.id, option.value, e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                                <label htmlFor={`desktop-filter-${section.id}-${option.value}`} className="ml-4 text-sm font-medium text-gray-700 cursor-pointer">{option.label}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </DisclosurePanel>
+                                <AnimatePresence>
+                                  {open && (
+                                    <DisclosurePanel 
+                                      as={motion.div}
+                                      static
+                                      initial={{ opacity: 0, height: 0 }}
+                                      animate={{ opacity: 1, height: 'auto' }}
+                                      exit={{ opacity: 0, height: 0 }}
+                                      transition={{ type: "spring", duration: 0.4, bounce: 0 }}
+                                      className="pt-6 overflow-hidden"
+                                    >
+                                      <div className="space-y-4">
+                                          {section.options.map(option => (
+                                              <div key={`desktop-${section.id}-${option.value}`} className="flex items-center">
+                                                  <input id={`desktop-filter-${section.id}-${option.value}`} name={`${section.id}[]`} value={option.value} type="checkbox" checked={!!(selectedFilters[section.id]?.[option.value])} onChange={(e) => handleFilterChange(section.id, option.value, e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                                  <label htmlFor={`desktop-filter-${section.id}-${option.value}`} className="ml-4 text-sm font-medium text-gray-700 cursor-pointer">{option.label}</label>
+                                              </div>
+                                          ))}
+                                      </div>
+                                    </DisclosurePanel>
+                                  )}
+                                </AnimatePresence>
                             </>
                         )}
                   </Disclosure>
@@ -541,7 +565,15 @@ export default function PetStore() {
                     Sort: {currentSort.name}
                             <ChevronDownIcon className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" />
                   </MenuButton>
-                        <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <AnimatePresence>
+                        <MenuItems 
+                          as={motion.div}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.1, ease: "easeOut" }}
+                          className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        >
                   <div className="py-1">
                                 {sortOptions.map(option => (
                       <MenuItem key={option.name}>
@@ -552,6 +584,7 @@ export default function PetStore() {
                     ))}
                   </div>
                 </MenuItems>
+                  </AnimatePresence>
               </Menu>              
                     <button type="button" onClick={() => setMobileFiltersOpen(true)} className="-m-2 ml-4 p-2 text-gray-400 hover:text-gray-500 lg:hidden">
                         <FunnelIcon className="h-5 w-5" />
@@ -562,12 +595,22 @@ export default function PetStore() {
             {activeFilterObjects().length > 0 && (
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                     <h3 className="text-sm font-medium text-gray-700">Active:</h3>
-                    {activeFilterObjects().map(tag => (
-                        <span key={`${tag.id}-${tag.value}`} className="inline-flex items-center gap-x-1.5 rounded-full bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">
-                            {tag.label}
-                            <button type="button" onClick={() => removeFilterTag(tag)} className="-mr-0.5 h-3.5 w-3.5 rounded-full text-indigo-500 hover:bg-indigo-200"><XMarkIcon className="h-2.5 w-2.5"/></button>
-                        </span>
-                    ))}
+                    <AnimatePresence>
+                      {activeFilterObjects().map(tag => (
+                          <motion.span 
+                            key={`${tag.id}-${tag.value}`} 
+                            layout
+                            initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, x: 10 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            className="inline-flex items-center gap-x-1.5 rounded-full bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700"
+                          >
+                              {tag.label}
+                              <button type="button" onClick={() => removeFilterTag(tag)} className="-mr-0.5 h-3.5 w-3.5 rounded-full text-indigo-500 hover:bg-indigo-200"><XMarkIcon className="h-2.5 w-2.5"/></button>
+                          </motion.span>
+                      ))}
+                    </AnimatePresence>
                     <button onClick={clearAllFilters} className="text-xs text-gray-500 hover:text-indigo-600 underline">Clear all</button>
                 </div>
             )}

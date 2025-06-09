@@ -533,15 +533,28 @@ const PetDetailsModal = ({
                               </div>
                             )}
                             {!hasPaid && (
-                              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-3 sm:p-4 text-white shadow">
-                                <h3 className="text-base sm:text-lg font-medium mb-2 sm:mb-3">Breeder Contact Info</h3>
-                                <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm list-disc list-inside">
-                                  <li>Breeder name and contact details</li>
-                                  <li>Shop address and location</li>
-                                  <li>Complete vaccination records</li>
-                                </ul>
+                              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-3 sm:p-4 text-white shadow flex flex-col sm:flex-row justify-between items-center">
+                                <div className="flex flex-col justify-center items-center sm:items-start w-full sm:w-auto mb-4 sm:mb-0">
+                                  <h3 className="text-base sm:text-lg font-medium mb-2 sm:mb-3 text-center sm:text-left">Breeder Contact Info</h3>
+                                  <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm list-disc list-inside">
+                                    <li>Breeder name and contact details</li>
+                                    <li>Shop address and location</li>
+                                    <li>Complete vaccination records</li>
+                                  </ul>
+                                </div>
+                                <div className="flex items-center justify-center w-full sm:w-auto">
+                                  <div className="flex flex-col items-center">
+                                    <div className="flex items-center justify-center">
+                                      <span className="line-through text-gray-400 text-sm">₹99</span>
+                                      <span className="ml-2 text-white font-bold text-lg">₹9</span>
+                                      <span className="ml-2 bg-yellow-400 text-black text-xs px-2 py-1 rounded-full uppercase font-bold">90% OFF</span>
+                                    </div>
+                                    <span className="text-gray-100 text-xs mt-1 text-center">Limited time offer - Unlock now!</span>
+                                  </div>
+                                </div>
                               </div>
                             )}
+                          
                           </div>
                         </div>
                       </motion.div>

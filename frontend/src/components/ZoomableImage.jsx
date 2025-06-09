@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+import { motion } from "framer-motion";
 import ImageGalleryModal from "./ImageGalleryModal";
 import { MagnifyingGlassPlusIcon } from "@heroicons/react/24/outline";
 
@@ -78,27 +79,47 @@ const ZoomableImage = ({
   
   return (
     <>
-      <div 
+      <motion.div 
         className={`relative group overflow-hidden ${aspectRatio ? 'aspect-square' : ''} ${className}`}
         onClick={isTouchDevice.current ? undefined : handleClick}
         onTouchStart={isTouchDevice.current ? handleTouchStart : undefined}
         onTouchMove={isTouchDevice.current ? handleTouchMove : undefined}
         onTouchEnd={isTouchDevice.current ? handleTouchEnd : undefined}
+        whileHover="hover"
       >
-        <img
+        <motion.img
           src={src}
           alt={alt || "Zoomable image"}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover"
+          variants={{
+            initial: { scale: 1 },
+            hover: { scale: 1.05 },
+          }}
+          transition={{ duration: 0.3 }}
         />
         
         {showZoomIcon && (
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/80 rounded-full p-2">
+          <motion.div 
+            className="absolute inset-0 bg-black/0 flex items-center justify-center"
+            variants={{
+              initial: { backgroundColor: "rgba(0,0,0,0)" },
+              hover: { backgroundColor: "rgba(0,0,0,0.3)" },
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div 
+              className="bg-white/80 rounded-full p-2"
+              variants={{
+                initial: { opacity: 0, scale: 0.8 },
+                hover: { opacity: 1, scale: 1 },
+              }}
+              transition={{ duration: 0.2, delay: 0.1 }}
+            >
               <MagnifyingGlassPlusIcon className="h-5 w-5 text-gray-800" />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
       
       <ImageGalleryModal
         images={imagesToShow}

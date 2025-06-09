@@ -76,7 +76,6 @@ export const useAuthStore = create((set, get) => ({
         }
       });
   
-      window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Logout failed, love 💔");
@@ -100,7 +99,7 @@ export const useAuthStore = create((set, get) => ({
         // Store in localStorage
         localStorage.setItem("user", JSON.stringify(res.data));
         
-        toast.success("Logged in successfully");
+        
         return true;
       }
     } catch (error) {

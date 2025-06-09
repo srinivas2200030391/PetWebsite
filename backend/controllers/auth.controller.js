@@ -67,7 +67,7 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    console.log("User login attempt with email:", email);
+    console.log("User login attempt with email/username:", email);
     console.log(
       "Password length:",
       password ? password.length : "No password provided"
@@ -77,7 +77,9 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [{ email: email }, { username: email }],
+    });
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
@@ -264,13 +266,65 @@ export const verifyOtp = async (req, res) => {
   }
 };
 
+export const sendResetOtp = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Please provide an email" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User with this email does not exist." });
+    }
+    
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    
+    const html = `
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333; background-color: #f8f9fa; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e9ecef;">
+          <div style="background-color: #2c3e50; color: white; padding: 24px; text-align: center;">
+            <h1 style="margin: 0; font-size: 22px; font-weight: 500;">PetZu Password Reset</h1>
+          </div>
+          <div style="padding: 30px;">
+            <h2 style="font-size: 18px; color: #2c3e50; margin-top: 0;">Verification Code</h2>
+            <p style="color: #5a6a7e; margin-bottom: 16px;">Dear User,</p>
+            <p style="color: #5a6a7e; margin-bottom: 20px;">Please use the following verification code to reset your password. This code will expire in 5 minutes.</p>
+            <div style="text-align: center; margin: 24px 0;">
+              <span style="display: inline-block; font-size: 26px; font-weight: 600; letter-spacing: 4px; color: #2c3e50; background-color: #f1f3f5; padding: 12px 20px; border-radius: 4px; border: 1px solid #e4e7eb;">${otp}</span>
+            </div>
+            <p style="color: #5a6a7e; margin-bottom: 16px;">If you did not request a password reset, please disregard this email and ensure your account is secure.</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 24px 0;">
+            <p style="font-size: 12px; color: #7f8c9d; text-align: center; margin-bottom: 0;">
+              &copy; ${new Date().getFullYear()} PetZu Inc. All Rights Reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    await sendEmail(email, "Your Password Reset Code", html);
+
+    // Send the OTP to the client for verification
+    res.status(200).json({ 
+      success: true,
+      message: `OTP sent to your email - ${email}`,
+      otp: otp  // Send OTP to client
+    });
+  } catch (error) {
+    console.error(`sendResetOtp error: ${error.message}`);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const resetPassword = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User not found 💔" });
+      return res.status(400).json({ message: "User not found" });
     }
 
     // 💫 Hash the password like it's your deepest secret

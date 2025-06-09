@@ -12,6 +12,39 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  in: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "anticipate" } },
+  out: { opacity: 0, y: -20, transition: { duration: 0.3 } },
+};
+
+const gridVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+const modalBackdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.2, delay: 0.1 } },
+};
+
+const modalPanelVariants = {
+  hidden: { opacity: 0, scale: 0.9, y: 30 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 30, duration: 0.4 } },
+  exit: { opacity: 0, scale: 0.9, y: 30, transition: { duration: 0.2 } },
+};
+
 // Image Carousel Component for Pet Cards with touch/swipe support
 const ImageCarousel = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -182,10 +215,24 @@ const PetDetailsModal = ({
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <DialogBackdrop className="fixed inset-0 bg-black/30" />
+      <motion.div
+        as={DialogBackdrop}
+        variants={modalBackdropVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="fixed inset-0 bg-black/30"
+      />
       <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
-          <DialogPanel className="mx-auto w-full max-w-2xl rounded-xl bg-white p-4 sm:p-6 shadow-xl">
+          <DialogPanel
+            as={motion.div}
+            variants={modalPanelVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="mx-auto w-full max-w-2xl rounded-xl bg-white p-4 sm:p-6 shadow-xl"
+          >
             <div className="flex justify-between items-center mb-3 sm:mb-4">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
                 {petType === "mating" ? pet.breedName : (pet.name || pet.breed)}
@@ -396,13 +443,14 @@ const PetCard = ({ pet, onViewDetails }) => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="overflow-hidden rounded-xl shadow-md bg-white hover:shadow-lg transition-all duration-300"
+      variants={cardVariants}
+      layout
+      whileHover={{ y: -5, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+      className="overflow-hidden rounded-xl shadow-md bg-white transition-all duration-300 cursor-pointer"
+      onClick={() => onViewDetails(pet, "adoption")}
     >
       <div className="relative">
-        <div className="aspect-[4/3]" onClick={() => onViewDetails(pet, "adoption")}>
+        <div className="aspect-[4/3]">
           <img 
             src={petImages[0]} 
             alt={pet.name || pet.breed} 
@@ -444,13 +492,18 @@ const PetCard = ({ pet, onViewDetails }) => {
             <span className="text-xs sm:text-sm font-medium">Purchased</span>
           </div>
           
-          <button
-            onClick={() => onViewDetails(pet, "adoption")}
-            className="inline-flex items-center rounded-md bg-blue-50 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors min-h-[36px] sm:min-h-[40px]"
+          <motion.button
+            whileHover={{ scale: 1.05, backgroundColor: "rgb(239 246 255)" }}
+            whileTap={{ scale: 0.95 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(pet, "adoption");
+            }}
+            className="inline-flex items-center rounded-md bg-blue-50 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-blue-700 transition-colors min-h-[36px] sm:min-h-[40px]"
             aria-label="View details for this pet"
           >
             View Details
-          </button>
+          </motion.button>
         </div>
       </div>
     </motion.div>
@@ -459,28 +512,33 @@ const PetCard = ({ pet, onViewDetails }) => {
 
 // Mating Pet Card Component - Redesigned
 const MatingPetCard = ({ pet, onViewDetails }) => {
-  const [isHovering, setIsHovering] = useState(false);
-  
   const petImages = Array.isArray(pet.photosAndVideos) && pet.photosAndVideos.length > 0
     ? pet.photosAndVideos
     : [];
+  
+  const matingCardVariants = {
+    rest: { scale: 1 },
+    hover: { scale: 1.03, y: -5, boxShadow: "0px 10px 20px rgba(139, 92, 246, 0.2)" },
+  };
+
+  const overlayVariants = {
+    rest: { opacity: 0 },
+    hover: { opacity: 1 },
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        type: "spring",
-        stiffness: 100,
-        damping: 12,
-        duration: 0.3
-      }}
-      className="overflow-hidden rounded-xl shadow-md bg-gradient-to-b from-white to-purple-50 hover:shadow-lg transition-all duration-300"
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      variants={matingCardVariants}
+      initial="rest"
+      whileHover="hover"
+      animate="rest"
+      layout
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="overflow-hidden rounded-xl shadow-md bg-gradient-to-b from-white to-purple-50 transition-all duration-300 cursor-pointer"
+      onClick={() => onViewDetails(pet, "mating")}
     >
       <div className="relative">
-        <div className="aspect-[4/3]" onClick={() => onViewDetails(pet, "mating")}>
+        <div className="aspect-[4/3]">
           {petImages.length > 0 ? (
             <img 
               src={petImages[0]} 
@@ -500,26 +558,25 @@ const MatingPetCard = ({ pet, onViewDetails }) => {
           </span>
         </div>
         
-        <AnimatePresence>
-          {isHovering && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/50 flex items-center justify-center"
-            >
-              <button
-                onClick={() => onViewDetails(pet, "mating")}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white text-purple-700 hover:bg-purple-50 transition-colors flex items-center space-x-1 sm:space-x-2 min-h-[36px] sm:min-h-[40px]"
-                aria-label="View details for this mating pet"
-              >
-                <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="text-xs sm:text-sm">View Details</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.div 
+          variants={overlayVariants}
+          transition={{ duration: 0.2 }}
+          className="absolute inset-0 bg-black/50 flex items-center justify-center"
+        >
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(pet, "mating");
+            }}
+            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white text-purple-700 hover:bg-purple-50 transition-colors flex items-center space-x-1 sm:space-x-2 min-h-[36px] sm:min-h-[40px]"
+            aria-label="View details for this mating pet"
+          >
+            <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-xs sm:text-sm">View Details</span>
+          </motion.button>
+        </motion.div>
       </div>
       
       <div className="p-3 sm:p-4">
@@ -560,13 +617,18 @@ const MatingPetCard = ({ pet, onViewDetails }) => {
             <span className="text-xs sm:text-sm font-medium">Purchased</span>
           </div>
           
-          <button
-            onClick={() => onViewDetails(pet, "mating")}
+          <motion.button
+            whileHover={{ scale: 1.05, backgroundColor: "rgb(245 243 255)" }}
+            whileTap={{ scale: 0.95 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(pet, "mating");
+            }}
             className="inline-flex items-center rounded-md bg-purple-50 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-purple-700 hover:bg-purple-100 transition-colors min-h-[36px] sm:min-h-[40px]"
             aria-label="View details for this mating pet"
           >
             View Details
-          </button>
+          </motion.button>
         </div>
       </div>
     </motion.div>
@@ -704,11 +766,11 @@ export default function Payments() {
   const displayedPets = displayedPetsInfo.pets;
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <motion.div className="bg-gray-50 min-h-screen" variants={pageVariants} initial="initial" animate="in" exit="out">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="pb-4 sm:pb-5 border-b border-gray-200">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Payment History</h1>
-          <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-500">View all your pet purchases and mating services</p>
+          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="text-2xl sm:text-3xl font-bold text-gray-900">Payment History</motion.h1>
+          <motion.p initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-500">View all your pet purchases and mating services</motion.p>
         </div>
         
         {/* Stats Cards */}
@@ -756,19 +818,26 @@ export default function Payments() {
         <div className="mt-4 sm:mt-6 border-b border-gray-200 overflow-x-auto scrollbar-hide">
           <nav className="-mb-px flex space-x-4 sm:space-x-8" aria-label="Tabs">
             {["all", "adoption", "mating"].map((tab) => (
-              <button
+              <motion.button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={classNames(
-                  activeTab === tab
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                  'whitespace-nowrap py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm capitalize min-h-[44px]'
+                  'whitespace-nowrap py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm capitalize min-h-[44px] relative',
+                  activeTab !== tab && 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 )}
                 aria-label={`View ${tab} pets`}
               >
-                {tab === "all" ? "All Purchases" : `${tab} Pets`}
-              </button>
+                {activeTab === tab && (
+                  <motion.div
+                    className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-indigo-500"
+                    layoutId="underline"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <span className={classNames(activeTab === tab ? 'text-indigo-600' : '')}>
+                  {tab === "all" ? "All Purchases" : `${tab} Pets`}
+                </span>
+              </motion.button>
             ))}
           </nav>
         </div>
@@ -794,7 +863,12 @@ export default function Payments() {
               </a>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <motion.div 
+              className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3"
+              variants={gridVariants}
+              initial="hidden"
+              animate="visible"
+            >
               {displayedPets.map((pet) => {
                 const petType = displayedPetsInfo.mixed ? pet.type : displayedPetsInfo.type;
                 
@@ -812,21 +886,25 @@ export default function Payments() {
                   />
                 );
               })}
-            </div>
+            </motion.div>
           )}
         </div>
         
         {/* Pet Details Modal */}
-        <PetDetailsModal
-          pet={selectedPet}
-          petType={selectedPetType}
-          isOpen={isDetailsModalOpen}
-          onClose={() => setIsDetailsModalOpen(false)}
-          wishlist={wishlist}
-          payments={payments}
-          userId={userData?._id}
-        />
+        <AnimatePresence>
+          {selectedPet && isDetailsModalOpen && (
+            <PetDetailsModal
+              pet={selectedPet}
+              petType={selectedPetType}
+              isOpen={isDetailsModalOpen}
+              onClose={() => setIsDetailsModalOpen(false)}
+              wishlist={wishlist}
+              payments={payments}
+              userId={userData?._id}
+            />
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }
