@@ -237,34 +237,6 @@ export const getOtp = async (req, res) => {
   }
 };
 
-export const verifyOtp = async (req, res) => {
-  const { email, otp } = req.body;
-
-  try {
-    if (!email || !otp) {
-      return res
-        .status(400)
-        .json({ message: "Please provide both email and OTP, sugar 🧁" });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "User not found 😢" });
-    }
-
-    if (String(user.otp) !== String(otp)) {
-      return res.status(400).json({ message: "Invalid OTP, sweetheart 😞" });
-    }
-
-    user.otp = null;
-    await user.save();
-
-    res.status(200).json({ message: "OTP verified! You're in, honey 🍯" });
-  } catch (error) {
-    console.error(`verifyOtp error: ${error.message}`);
-    res.status(500).json({ message: "Internal server error 💔" });
-  }
-};
 
 export const sendResetOtp = async (req, res) => {
   const { email } = req.body;

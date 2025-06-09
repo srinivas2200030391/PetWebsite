@@ -60,6 +60,7 @@ export default function MyProfile() {
       state: "",
     },
   });
+  const [sendOtp, setSendOtp] = useState();
 
   const [otp, setOtp] = useState("");
 
@@ -169,14 +170,18 @@ export default function MyProfile() {
   const handleForgotPassword = async () => {
     try {
       // Example API call to send OTP
-      const response = await axios.post(`${config.baseURL}/api/auth/getotp`, {
-        email: userData.email,
-      });
+      const response = await axios.post(
+        `${config.baseURL}/api/auth/send-reset-otp`,
+        {
+          email: userData.email,
+        }
+      );
 
       if (response.status === 200) {
         showAlert("OTP sent to your email", "success");
         setPasswordDialogOpen(false);
         setOtpDialogOpen(true);
+        setSendOtp(response.data.otp);
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -187,14 +192,17 @@ export default function MyProfile() {
   // Handle OTP verification
   const handleVerifyOtp = async () => {
     try {
-      await axios.post(`${config.baseURL}/api/auth/verifyotp`, {
-        email: userData.email,
-        otp,
-      });
-
-      setAlert({ open: true, severity: "success", message: "OTP Verified 💖" });
-      setOtpDialogOpen(false);
-      setResetDialogOpen(true);
+      console.log(sendOtp, otp);
+      
+      if (sendOtp == otp) {
+        setAlert({
+          open: true,
+          severity: "success",
+          message: "OTP Verified 💖",
+        });
+        setOtpDialogOpen(false);
+        setResetDialogOpen(true);
+      }
     } catch (error) {
       setAlert({ open: true, severity: "error", message: "Invalid OTP 💔" });
       console.log(error);

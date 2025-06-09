@@ -6,7 +6,6 @@ import {
   signup,
     updateprofile,
     getOtp,
-    verifyOtp,
     resetPassword,
     sendResetOtp
 } from "../controllers/auth.controller.js";
@@ -20,7 +19,6 @@ router.post("/login", login);
 router.post("/logout", logout);
 router.put("/update-profile", protectroute, updateprofile);
 router.post("/getotp", getOtp); // Uncomment if you want to use OTP functionality
-router.post("/verifyotp", verifyOtp); // Uncomment if you want to use OTP functionality
 router.post("/reset-password",resetPassword)
 router.post("/send-reset-otp", sendResetOtp);
 

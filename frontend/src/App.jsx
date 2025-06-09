@@ -1,5 +1,11 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./pages/Footer";
 import Intro from "./pages/Intro";
@@ -31,9 +37,9 @@ import Vets from "./pages/Health_Care/Vets";
 import PetDetail from "./pages/petshop/PetDetail";
 import NewBoardingRequest from "./pages/boarding/NewBoardingRequest";
 import PrivateRoute from "./components/PrivateRoute";
-import MyPet from './pages/My_Pet/MyPet';
-import PetDetails from './pages/My_Pet/PetDetails';
-import PetHealth from './pages/My_Pet/PetHealth';
+import MyPet from "./pages/My_Pet/MyPet";
+import PetDetails from "./pages/My_Pet/PetDetails";
+import PetHealth from "./pages/My_Pet/PetHealth";
 import { AnimatePresence } from "framer-motion";
 import ForgotPassword from "./pages/Authenticating/ForgotPassword";
 import BottomNavbar from "./components/BottomNavbar";
@@ -41,7 +47,7 @@ import BottomNavbar from "./components/BottomNavbar";
 const App = () => {
   const { authUser, checkAuth, ischeckingAuth } = useAuthStore();
   const location = useLocation();
-  
+
   const authRoutes = ["/login", "/signup", "/forgot-password"];
   const showNavAndFooter = !authRoutes.includes(location.pathname);
 
@@ -52,7 +58,7 @@ const App = () => {
   // Simple check to ensure events are properly bound after navigation
   useEffect(() => {
     setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
+      window.dispatchEvent(new Event("resize"));
     }, 100);
   }, []);
 
@@ -63,15 +69,14 @@ const App = () => {
       </div>
     );
 
-    return (
-      <ProductProvider>
-        <div className="min-h-screen">
-          {showNavAndFooter && <Navbar />}
-          <AnimatePresence 
-            mode="wait"
-            onExitComplete={() => window.scrollTo(0, 0)}
-          >
-            <Routes location={location} key={location.pathname}>
+  return (
+    <ProductProvider>
+      <div className="min-h-screen">
+        {showNavAndFooter && <Navbar />}
+        <AnimatePresence
+          mode="wait"
+          onExitComplete={() => window.scrollTo(0, 0)}>
+          <Routes location={location} key={location.pathname}>
             {/* Private Routes */}
             <Route
               path="/home/*"
@@ -185,10 +190,7 @@ const App = () => {
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/boardingpage"
-              element={<Navigate to="/boarding" />}
-            />
+            <Route path="/boardingpage" element={<Navigate to="/boarding" />} />
             <Route
               path="/boardingshopfilter"
               element={<Navigate to="/boarding" />}
@@ -273,29 +275,39 @@ const App = () => {
                 </PrivateRoute>
               }
             />
+            {/* Authentication Routes */}
+            <Route element={<AuthLayout />}>
+              <Route
+                path="/login"
+                element={!authUser ? <Login /> : <Navigate to="/home" />}
+              />
+              <Route
+                path="/signup"
+                element={!authUser ? <Signup /> : <Navigate to="/home" />}
+              />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+            </Route>
 
-              {/* Authentication Routes */}
-              <Route element={<AuthLayout />}>
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-              </Route>
-    
             {/* Public Routes */}
-            <Route path="/" element={<Intro />} />
-            <Route path="/intro" element={<Intro />} />
-    
+            <Route
+              path="/"
+              element={!authUser ? <Intro /> : <Navigate to="/home" />}
+            />
+            <Route
+              path="/intro"
+              element={!authUser ? <Intro /> : <Navigate to="/home" />}
+            />
+
             {/* Catch-all */}
-              <Route path="*" element={<Navigate to={authUser ? "/home" : "/"} />} />
+            <Route path="*" element={<Navigate to="/home" />} />
           </Routes>
-          </AnimatePresence>
-          {showNavAndFooter && <BottomNavbar />}
-          {showNavAndFooter && <Footer />}
-        </div>
-        <Toaster />
-      </ProductProvider>
-    );
-    
+        </AnimatePresence>
+        {showNavAndFooter && <BottomNavbar />}
+        {showNavAndFooter && <Footer />}
+      </div>
+      <Toaster />
+    </ProductProvider>
+  );
 };
 
 export default function AppWrapper() {

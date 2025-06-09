@@ -18,15 +18,15 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       set({ ischeckingAuth: true });
-  
+
       const res = await axios.get(`${config.baseURL}/api/auth/check`, {
         withCredentials: true,
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       });
-  
+
       if (res.data) {
         set({ authUser: res.data });
         console.log("Auth check response:", res.data);
@@ -39,9 +39,7 @@ export const useAuthStore = create((set, get) => ({
     } finally {
       set({ ischeckingAuth: false });
     }
-  }
-  ,
-
+  },
   signup: async (data) => {
     set({ isSigningUp: true });
     try {
@@ -66,19 +64,19 @@ export const useAuthStore = create((set, get) => ({
     try {
       localStorage.removeItem("user");
       localStorage.removeItem("authData");
+      set({ authUser: null });
 
       // Call backend to clear the HttpOnly cookie
-      await axios.post(`${config.baseURL}/api/auth/logout`, {}, {
-        withCredentials: true,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+      await fetch(`${config.baseURL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include", //ensures cookies are sent
       });
-  
+
+      toast.success("Logged out");
+      window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("Logout failed, love 💔");
+      toast.error("Logout failed");
     }
   },
 
@@ -88,18 +86,17 @@ export const useAuthStore = create((set, get) => ({
       const res = await axios.post(`${config.baseURL}/api/auth/login`, data, {
         withCredentials: true,
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       });
       if (res.data) {
         // Update auth state synchronously
         set({ authUser: res.data, ischeckingAuth: false });
-        
+
         // Store in localStorage
         localStorage.setItem("user", JSON.stringify(res.data));
-        
-        
+
         return true;
       }
     } catch (error) {

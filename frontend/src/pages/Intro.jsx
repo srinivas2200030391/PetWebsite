@@ -80,13 +80,12 @@ const itemVariants = {
 
 export default function Intro() {
   return (
-    <motion.div 
+    <motion.div
       className="relative min-h-screen bg-gray-900"
       variants={pageVariants}
       initial="hidden"
       animate="visible"
-      exit="exit"
-    >
+      exit="exit">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
@@ -104,49 +103,47 @@ export default function Intro() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-4xl"
-        >
+          className="max-w-4xl">
           <motion.h2
             variants={itemVariants}
-            className="text-lg font-medium text-white/70 tracking-[0.3em] uppercase md:text-xl"
-          >
+            className="text-lg font-medium text-white/70 tracking-[0.3em] uppercase md:text-xl">
             Petzu
           </motion.h2>
 
           <motion.h1
             variants={itemVariants}
             className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-7xl"
-            style={{ textShadow: "0 2px 15px rgba(0,0,0,0.4)" }}
-          >
-            <span className="bg-gradient-to-b from-white to-gray-300 bg-clip-text text-transparent">Your Pet's World,<br/>All in One Place.</span>
+            style={{ textShadow: "0 2px 15px rgba(0,0,0,0.4)" }}>
+            <span className="bg-gradient-to-b from-white to-gray-300 bg-clip-text text-transparent">
+              Your Pet's World,
+              <br />
+              All in One Place.
+            </span>
           </motion.h1>
 
           <motion.p
             variants={itemVariants}
-            className="mt-8 max-w-2xl mx-auto text-[15px] sm:text-lg leading-8 text-white/80"
-          >
-            From finding your perfect companion with ethical breeders to shopping for all their needs, Petzu is the ultimate destination for pet lovers.
+            className="mt-8 max-w-2xl mx-auto text-[15px] sm:text-lg leading-8 text-white/80">
+            From finding your perfect companion with ethical breeders to
+            shopping for all their needs, Petzu is the ultimate destination for
+            pet lovers.
           </motion.p>
 
           <motion.div
             variants={itemVariants}
-            className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-5"
-          >
+            className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-5">
             <Link
               to="/signup"
-              className="transform rounded-full bg-white px-4 py-2 sm:px-8 sm:py-4 text-base font-semibold text-gray-900 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-gray-50 flex items-center gap-2"
-            >
+              className="transform rounded-full bg-white px-4 py-2 sm:px-8 sm:py-4 text-base font-semibold text-gray-900 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:bg-gray-50 flex items-center gap-2">
               Get Started <ArrowRightIcon className="h-5 w-5" />
             </Link>
             <Link
               to="/login"
-              className="group flex items-center gap-2 text-base font-semibold leading-6 text-white/80 transition-colors duration-300 hover:text-white"
-            >
+              className="group flex items-center gap-2 text-base font-semibold leading-6 text-white/80 transition-colors duration-300 hover:text-white">
               Log In{" "}
               <span
                 aria-hidden="true"
-                className="transform transition-transform duration-300 group-hover:translate-x-1"
-              >
+                className="transform transition-transform duration-300 group-hover:translate-x-1">
                 →
               </span>
             </Link>
